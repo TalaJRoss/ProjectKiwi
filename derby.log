@@ -1,0 +1,37 @@
+Fri Aug 10 13:49:38 CAT 2018 : Apache Derby Network Server - 10.11.1.2 - (1629631) started and ready to accept connections on port 1527
+----------------------------------------------------------------
+Fri Aug 10 13:49:39 CAT 2018:
+Booting Derby version The Apache Software Foundation - Apache Derby - 10.11.1.2 - (1629631): instance a816c00e-0165-23ab-af54-fffff9b4d2b7 
+on database directory C:\Users\talaj\OneDrive\UCT\Third Year\CSC3003S\Capstone\ProjectKiwi\KiwiDB with class loader sun.misc.Launcher$AppClassLoader@266474c2 
+Loaded from file:/C:/Program%20Files/Java/jdk1.8.0_162/db/lib/derby.jar
+java.vendor=Oracle Corporation
+java.runtime.version=1.8.0_162-b12
+user.dir=C:\Program Files\Java\jdk1.8.0_162\db
+os.name=Windows 10
+os.arch=amd64
+os.version=10.0
+derby.system.home=C:\Users\talaj\OneDrive\UCT\Third Year\CSC3003S\Capstone\ProjectKiwi
+Database Class Loader started - derby.database.classpath=''
+----------------------------------------------------------------
+Fri Aug 10 13:49:39 CAT 2018:
+Shutting down instance a816c00e-0165-23ab-af54-fffff9b4d2b7 on database directory C:\Users\talaj\OneDrive\UCT\Third Year\CSC3003S\Capstone\ProjectKiwi\KiwiDB with class loader sun.misc.Launcher$AppClassLoader@266474c2 
+Fri Aug 10 13:49:39 CAT 2018 Thread[DRDAConnThread_3,5,main] (DATABASE = KiwiDB), (DRDAID = {2}), Database 'KiwiDB' shutdown.
+----------------------------------------------------------------
+Fri Aug 10 13:50:36 CAT 2018:
+Booting Derby version The Apache Software Foundation - Apache Derby - 10.11.1.2 - (1629631): instance a65c80ac-0165-23ab-af54-fffff9b4d2b7 
+on database directory C:\Users\talaj\OneDrive\UCT\Third Year\CSC3003S\Capstone\ProjectKiwi\KiwiDB with class loader sun.misc.Launcher$AppClassLoader@266474c2 
+Loaded from file:/C:/Program%20Files/Java/jdk1.8.0_162/db/lib/derby.jar
+java.vendor=Oracle Corporation
+java.runtime.version=1.8.0_162-b12
+user.dir=C:\Program Files\Java\jdk1.8.0_162\db
+os.name=Windows 10
+os.arch=amd64
+os.version=10.0
+derby.system.home=C:\Users\talaj\OneDrive\UCT\Third Year\CSC3003S\Capstone\ProjectKiwi
+Database Class Loader started - derby.database.classpath=''
+----------------------------------------------------------------
+Fri Aug 10 15:59:14 CAT 2018: Shutting down Derby engine
+----------------------------------------------------------------
+Fri Aug 10 15:59:14 CAT 2018:
+Shutting down instance a65c80ac-0165-23ab-af54-fffff9b4d2b7 on database directory C:\Users\talaj\OneDrive\UCT\Third Year\CSC3003S\Capstone\ProjectKiwi\KiwiDB with class loader sun.misc.Launcher$AppClassLoader@266474c2 
+----------------------------------------------------------------
