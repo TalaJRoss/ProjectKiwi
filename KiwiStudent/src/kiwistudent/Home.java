@@ -98,7 +98,7 @@ public class Home extends javax.swing.JFrame {
         
         this.setVisible(false);
         
-        Question question = new Question(this);
+        Assignment question = new Assignment(this);
         question.setVisible(true);
         
     }//GEN-LAST:event_btnStartActionPerformed
