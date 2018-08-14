@@ -26,14 +26,16 @@ public class Assignment extends javax.swing.JFrame {
     public static final int NUM_QUESTIONS= 1;
     
     static Home home;
+    static Student student;
     static ArrayList<Question> questionList;
     Question q;
     
     /**
      * Creates new form Question
      */
-    public Assignment(Home home) {
+    public Assignment(Home home, Student student) {
         this.home = home;
+        this.student = student;
         initComponents();
         questionList = new ArrayList<>();
         q = generateQuestions();
@@ -271,7 +273,7 @@ public class Assignment extends javax.swing.JFrame {
         /* Create and display the form */
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
-                new Assignment(home).setVisible(true);
+                new Assignment(home, student).setVisible(true);
             }
         });
     }

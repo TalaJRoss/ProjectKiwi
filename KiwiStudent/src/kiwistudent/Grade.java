@@ -12,13 +12,17 @@ package kiwistudent;
 public class Grade extends javax.swing.JFrame {
     
     static Home home;
+    static Student student;
     
     /**
      * Creates new form Grade
      */
-    public Grade(Home home) {
+    public Grade(Home home, Student student) {
         this.home = home;
+        this.student = student;
         initComponents();
+        txtfGrade.setText(""+student.getHighestGrade());
+        txtfSubmissions.setText(""+student.getNoSubmissionsRemaining());
     }
 
     /**
@@ -42,6 +46,12 @@ public class Grade extends javax.swing.JFrame {
         lblGrade.setText("Your highest grade is:");
 
         jLabel1.setText("No. submissions remaining: ");
+
+        txtfGrade.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                txtfGradeActionPerformed(evt);
+            }
+        });
 
         btnBack.setText("Back");
         btnBack.addActionListener(new java.awt.event.ActionListener() {
@@ -105,6 +115,10 @@ public class Grade extends javax.swing.JFrame {
         home.setVisible(true);
     }//GEN-LAST:event_btnBackActionPerformed
 
+    private void txtfGradeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtfGradeActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_txtfGradeActionPerformed
+
     /**
      * @param args the command line arguments
      */
@@ -135,7 +149,7 @@ public class Grade extends javax.swing.JFrame {
         /* Create and display the form */
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
-                new Grade(home).setVisible(true);
+                new Grade(home, student).setVisible(true);
             }
         });
     }

@@ -1,6 +1,8 @@
 
 package kiwistudent;
 
+import javax.swing.JOptionPane;
+
 /**
  *
  * @author talaj
@@ -31,6 +33,12 @@ public class Login extends javax.swing.JFrame {
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
         lblStudentNo.setText("Enter your student number: ");
+
+        txtfStudentNo.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                txtfStudentNoActionPerformed(evt);
+            }
+        });
 
         btnLogin.setText("Login");
         btnLogin.addActionListener(new java.awt.event.ActionListener() {
@@ -83,16 +91,32 @@ public class Login extends javax.swing.JFrame {
 
     
     private void btnLoginActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnLoginActionPerformed
-        
-        String studentNo = txtfStudentNo.getText();
-        
-        this.setVisible(false);
-        
-        Home home = new Home(studentNo);
-        home.setVisible(true);
-        
+        login();
     }//GEN-LAST:event_btnLoginActionPerformed
 
+    private void txtfStudentNoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtfStudentNoActionPerformed
+        login();
+    }//GEN-LAST:event_txtfStudentNoActionPerformed
+    
+    private void login() {
+        String studentNo = txtfStudentNo.getText();
+        Student student = new Student();
+        String reply = student.login(studentNo);
+        if (reply.equals(Student.SUCCESS_LOGIN)) {
+            this.setVisible(false);
+            Home home = new Home(student);
+            home.setVisible(true);
+        }
+        else if (reply.equals(Student.FAIL_LOGIN)) {
+            JOptionPane.showMessageDialog(this, "Incorrect student number!");
+            txtfStudentNo.setText("");
+        }
+        else{
+            JOptionPane.showMessageDialog(this, "Unable to connect to database!");
+            txtfStudentNo.setText("");
+        }
+    }
+    
     /**
      * @param args the command line arguments
      */

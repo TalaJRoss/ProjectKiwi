@@ -11,13 +11,13 @@ package kiwistudent;
  */
 public class Home extends javax.swing.JFrame {
     
-    static String studentNo;
+    static Student student;
     
     /**
      * Creates new form Home
      */
-    public Home(String studentNo) {
-        this.studentNo = studentNo;
+    public Home(Student student) {
+        this.student = student;
         initComponents();
     }
 
@@ -89,7 +89,7 @@ public class Home extends javax.swing.JFrame {
         
         this.setVisible(false);
         
-        Grade grade = new Grade(this);
+        Grade grade = new Grade(this, student);
         grade.setVisible(true);
         
     }//GEN-LAST:event_btnViewGradeActionPerformed
@@ -98,7 +98,7 @@ public class Home extends javax.swing.JFrame {
         
         this.setVisible(false);
         
-        Assignment question = new Assignment(this);
+        Assignment question = new Assignment(this, student);
         question.setVisible(true);
         
     }//GEN-LAST:event_btnStartActionPerformed
@@ -133,7 +133,7 @@ public class Home extends javax.swing.JFrame {
         /* Create and display the form */
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
-                new Home(studentNo).setVisible(true);
+                new Home(student).setVisible(true);
             }
         });
     }

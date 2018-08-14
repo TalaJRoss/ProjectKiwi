@@ -27,6 +27,7 @@ public class Question {
     int expectedColCount;
     ResultSet rsStudent;
     int studentColCount;
+    String errorMessage;
     
     
     public Question(String question, String answer, int difficulty) {
@@ -51,7 +52,8 @@ public class Question {
     public int getDifficulty() {
         return difficulty;
     }
-
+    
+    //TODO: check student not trying data manipulation (ie.not select command)
     public int mark(String studentAns) {
         try {
            // create our mysql database connection
@@ -66,6 +68,7 @@ public class Question {
            }
            catch (SQLException e) { //didn't compile
                System.out.println("ERROR: answer from lecturer wrong!");
+               System.out.println(e.toString());
                return -1;
            }
            expectedColCount= rsExpected.getMetaData().getColumnCount();
@@ -77,6 +80,10 @@ public class Question {
            }
            catch (SQLException e) { //didn't compile
                mark = markRange[0];
+               errorMessage = e.toString().substring("java.sql.".length());
+               if (errorMessage.contains("kiwidb.")) {
+                   errorMessage= errorMessage.replace("kiwidb.","");
+               }
                return mark;
            }
            studentColCount= rsStudent.getMetaData().getColumnCount();
@@ -119,8 +126,8 @@ public class Question {
                 return mark;
            }
         }
-        catch (Exception e) {
-            e.printStackTrace();
+        catch (ClassNotFoundException | SQLException e) {
+            System.out.println(e.toString());
         }
         return -1;
     }
@@ -157,7 +164,8 @@ public class Question {
         //show student output:
         toReturn+= "Your Output:\n";
         if (mark==Question.markRange[0]) {
-            toReturn+="SQL Statement did not compile.\n";
+            toReturn+= "SQL Statement did not compile.\n";
+            toReturn+= errorMessage+"\n";
         }
         else {
             try {
@@ -206,8 +214,13 @@ public class Question {
                 toReturn+="\n";
             }    
         }
-        catch (SQLException ex) {                
-            return "SQL Statement did not compile.\n";
+        catch (SQLException ex) {   
+            String errorMessage = ex.toString().substring("java.sql.".length());
+               if (errorMessage.contains("kiwidb.")) {
+                   errorMessage= errorMessage.replace("kiwidb.","");
+               }
+               ex.printStackTrace();
+            return "SQL Statement did not compile.\n" + errorMessage + "\n";
         } 
         catch (ClassNotFoundException ex) {
             return "ERROR: Couldn't load database driver.";
