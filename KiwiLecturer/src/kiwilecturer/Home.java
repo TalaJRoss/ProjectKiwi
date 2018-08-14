@@ -2,13 +2,18 @@ package kiwilecturer;
 
 import java.io.File;
 import javax.swing.JFileChooser;
+import javax.swing.JOptionPane;
 
 /**
  * 
  * @author Tala Ross(rsstal002)
  */
 public class Home extends javax.swing.JFrame {
-
+    
+    private File studentFile;
+    private File questionsFile;
+    private File [] dataFiles;
+    
     /**
      * Creates new form Home
      */
@@ -37,7 +42,7 @@ public class Home extends javax.swing.JFrame {
         lblViewGrades = new javax.swing.JLabel();
         btnView = new javax.swing.JButton();
         jScrollPane1 = new javax.swing.JScrollPane();
-        jTextArea1 = new javax.swing.JTextArea();
+        txtaMarks = new javax.swing.JTextArea();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -64,15 +69,37 @@ public class Home extends javax.swing.JFrame {
             }
         });
 
+        txtfQuestionsFilename.setEditable(false);
+
+        txtfQueryDataFilename.setEditable(false);
+
+        txtfStudentFilename.setEditable(false);
+        txtfStudentFilename.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                txtfStudentFilenameActionPerformed(evt);
+            }
+        });
+
         btnUpload.setText("Upload");
+        btnUpload.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnUploadActionPerformed(evt);
+            }
+        });
 
         lblViewGrades.setText("View Student Grades:");
 
         btnView.setText("View");
+        btnView.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnViewActionPerformed(evt);
+            }
+        });
 
-        jTextArea1.setColumns(20);
-        jTextArea1.setRows(5);
-        jScrollPane1.setViewportView(jTextArea1);
+        txtaMarks.setEditable(false);
+        txtaMarks.setColumns(20);
+        txtaMarks.setRows(5);
+        jScrollPane1.setViewportView(txtaMarks);
 
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
@@ -129,7 +156,7 @@ public class Home extends javax.swing.JFrame {
                     .addComponent(btnView))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 189, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap(27, Short.MAX_VALUE))
         );
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
@@ -154,9 +181,15 @@ public class Home extends javax.swing.JFrame {
         fc.setCurrentDirectory(new File(System.getProperty("user.home")));
         int result = fc.showOpenDialog(this);
         if (result==JFileChooser.APPROVE_OPTION) {
-            File selectedFile = fc.getSelectedFile();
-            txtfStudentFilename.setText(selectedFile.getAbsolutePath());
-        
+            //check that file is a csv
+            File temp= fc.getSelectedFile();
+            if (!(temp.getName().substring(temp.getName().lastIndexOf("."))).equals(".csv")) {
+                JOptionPane.showMessageDialog(null, "Incorrect file upload.\nPlease upload a .csv file.", "Error", JOptionPane.ERROR_MESSAGE);
+            }
+            else {
+                studentFile = temp;
+                txtfStudentFilename.setText(studentFile.getAbsolutePath());
+            }
         }
         
         //use file to upload
@@ -168,26 +201,72 @@ public class Home extends javax.swing.JFrame {
         fc.setCurrentDirectory(new File(System.getProperty("user.home")));
         int result = fc.showOpenDialog(this);
         if (result==JFileChooser.APPROVE_OPTION) {
-            File selectedFile = fc.getSelectedFile();
-            txtfQuestionsFilename.setText(selectedFile.getAbsolutePath());
-        
+            File temp= fc.getSelectedFile();
+            if (!(temp.getName().substring(temp.getName().lastIndexOf("."))).equals(".csv")) {
+                JOptionPane.showMessageDialog(null, "Incorrect file upload.\nPlease upload a .csv file.", "Error", JOptionPane.ERROR_MESSAGE);
+            }
+            else {
+                questionsFile = temp;
+                txtfQuestionsFilename.setText(questionsFile.getAbsolutePath());
+            }
         }
         
         //use file to upload
     }//GEN-LAST:event_btnQuestionsActionPerformed
 
     private void btnQueryDataActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnQueryDataActionPerformed
-         JFileChooser fc = new JFileChooser();
+        JFileChooser fc = new JFileChooser();
         fc.setCurrentDirectory(new File(System.getProperty("user.home")));
+        fc.setMultiSelectionEnabled(true);
         int result = fc.showOpenDialog(this);
         if (result==JFileChooser.APPROVE_OPTION) {
-            File selectedFile = fc.getSelectedFile();
-            txtfQueryDataFilename.setText(selectedFile.getAbsolutePath());
-        
+            File [] temp= fc.getSelectedFiles();
+            String selected="";
+            boolean flag=true;
+            for (File file: temp) {
+                if (!(file.getName().substring(file.getName().lastIndexOf("."))).equals(".csv")) {
+                    JOptionPane.showMessageDialog(null, "Incorrect file upload for one or more files.\nPlease upload .csv files.", "Error", JOptionPane.ERROR_MESSAGE);
+                    flag=false;
+                    break;
+                }
+                selected+= file.getAbsolutePath()+", ";
+            }
+            if(flag){
+                dataFiles = temp;
+                txtfQueryDataFilename.setText(selected.substring(0, selected.length()-2));
+            }
         }
         
         //use file to upload
     }//GEN-LAST:event_btnQueryDataActionPerformed
+
+    private void btnUploadActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnUploadActionPerformed
+        if (studentFile!=null) {
+            Lecturer.uploadStudents(studentFile);
+        }
+        if (questionsFile!=null) {
+            Lecturer.uploadQuestions(questionsFile);
+        }
+        if (dataFiles!=null) {
+            Lecturer.uploadQueryData(dataFiles);
+        }
+        JOptionPane.showMessageDialog(null, "Uploaded .csv files succesfully.", "Done",JOptionPane.PLAIN_MESSAGE);
+        //clean up:
+        studentFile = null;
+        txtfStudentFilename.setText("");
+        questionsFile = null;
+        txtfQuestionsFilename.setText("");
+        dataFiles = null;
+        txtfQueryDataFilename.setText("");
+    }//GEN-LAST:event_btnUploadActionPerformed
+
+    private void txtfStudentFilenameActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtfStudentFilenameActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_txtfStudentFilenameActionPerformed
+
+    private void btnViewActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnViewActionPerformed
+        txtaMarks.setText(Lecturer.viewGrades());
+    }//GEN-LAST:event_btnViewActionPerformed
 
     /**
      * @param args the command line arguments
@@ -232,9 +311,9 @@ public class Home extends javax.swing.JFrame {
     private javax.swing.JButton btnView;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JScrollPane jScrollPane1;
-    private javax.swing.JTextArea jTextArea1;
     private javax.swing.JLabel lblUpload;
     private javax.swing.JLabel lblViewGrades;
+    private javax.swing.JTextArea txtaMarks;
     private javax.swing.JTextField txtfQueryDataFilename;
     private javax.swing.JTextField txtfQuestionsFilename;
     private javax.swing.JTextField txtfStudentFilename;
