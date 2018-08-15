@@ -1,18 +1,22 @@
-
 package kiwistudent;
 
 import javax.swing.JOptionPane;
 
 /**
- *
- * @author talaj
+ * Creates login interface.
+ * @author Tala Ross(rsstal002)
+ * @author Nikai Jagganath (jggnik001)
+ * @author Steve Shun Wang (wngshu003)
  */
-public class Login extends javax.swing.JFrame {
-
+public class LoginFrame extends javax.swing.JFrame {
+    
+    
+    //Constructor:
+    
     /**
-     * Creates new form Login
+     * Creates new form LoginFrame.
      */
-    public Login() {
+    public LoginFrame() {
         initComponents();
     }
 
@@ -90,21 +94,37 @@ public class Login extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     
+    //Action performed methods:
+    
+    /**
+     * Gets student number from text field and processes login.
+     * @param evt Click "Login" button.
+     */
     private void btnLoginActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnLoginActionPerformed
         login();
     }//GEN-LAST:event_btnLoginActionPerformed
 
+    /**
+     * Gets student number from text field and processes login.
+     * @param evt Press enter in text field.
+     */
     private void txtfStudentNoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtfStudentNoActionPerformed
         login();
     }//GEN-LAST:event_txtfStudentNoActionPerformed
     
+    
+    //Helper login method:
+    
+    /**
+     * Processes login using student number from text field.
+     */
     private void login() {
         String studentNo = txtfStudentNo.getText();
         Student student = new Student();
         String reply = student.login(studentNo);
         if (reply.equals(Student.SUCCESS_LOGIN)) {
             this.setVisible(false);
-            Home home = new Home(student);
+            HomeFrame home = new HomeFrame(student);
             home.setVisible(true);
         }
         else if (reply.equals(Student.FAIL_LOGIN)) {
@@ -116,6 +136,9 @@ public class Login extends javax.swing.JFrame {
             txtfStudentNo.setText("");
         }
     }
+    
+    
+    //Main method: 
     
     /**
      * @param args the command line arguments
@@ -134,28 +157,35 @@ public class Login extends javax.swing.JFrame {
                 }
             }
         } catch (ClassNotFoundException ex) {
-            java.util.logging.Logger.getLogger(Login.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(LoginFrame.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         } catch (InstantiationException ex) {
-            java.util.logging.Logger.getLogger(Login.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(LoginFrame.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         } catch (IllegalAccessException ex) {
-            java.util.logging.Logger.getLogger(Login.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(LoginFrame.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         } catch (javax.swing.UnsupportedLookAndFeelException ex) {
-            java.util.logging.Logger.getLogger(Login.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(LoginFrame.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         }
+        //</editor-fold>
         //</editor-fold>
 
         /* Create and display the form */
         java.awt.EventQueue.invokeLater(new Runnable() {
+            @Override
             public void run() {
-                new Login().setVisible(true);
+                new LoginFrame().setVisible(true);
             }
         });
     }
 
+    
+    //Interface instance variables:
+    
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnLogin;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JLabel lblStudentNo;
     private javax.swing.JTextField txtfStudentNo;
     // End of variables declaration//GEN-END:variables
+
+
 }

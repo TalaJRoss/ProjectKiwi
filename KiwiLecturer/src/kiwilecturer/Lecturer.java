@@ -9,22 +9,43 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
+//TODO: get assignment deadline and no. submissions from lecturer
+//TODO: update create students table to just require studentNo fields in csv and not require formated headings row
+//TODO: update create questions table to not require formated headings row
 /**
  * Contains static lecturer functionality methods for uploading csv files.
  * @author Tala Ross(rsstal002)
+ * @author Nikai Jagganath (jggnik001)
+ * @author Steve Shun Wang (wngshu003)
  */
 public class Lecturer {
     
+    
+    //Constants for ordering grades table:
+    
+    /**
+     * Ascending order createStatement command.
+     */
     private static final String ASCENDING = "ASC";
+    
+    /**
+     * Descending order createStatement command.
+     */
     private static final String DESCENDING = "DESC";
+    
+    /**
+     * Order according to student number.
+     */
     private static final String STUDENT_NO = "StudentNo";
+    
+    /**
+     * Order according to students' highest grades.
+     */
     private static final String GRADE = "HighestGrade";
     
     
-    //Main methods(public):
+    //Main functionality methods(public):
     
     /**
      * Uploads student information contained in the given csv file to the
@@ -132,59 +153,78 @@ public class Lecturer {
      * @param csv File containing row entries information to add to table.
      */
     private static void createTable(String tblName, File csv) {
+        
         try {
             //read in csv column info:
             FileReader fileReader = new FileReader(csv);
             CSVReader csvReader = new CSVReader(fileReader);
             String[] headings = csvReader.readNext();
             
-            //get name of table:
-            //String tblName = csv.getName().substring(0, csv.getName().lastIndexOf("."));
-            
-            //process headings and create sql create statement and load statement
+            //process headings and create createStatement create statement and load statement:
             //load statement:
             String uploadStatement = "LOAD DATA INFILE \'"+csv.getName()+"\' INTO TABLE " + tblName
                     + " FIELDS OPTIONALLY ENCLOSED BY \'\"\' TERMINATED BY \',\' LINES TERMINATED BY \'\\r\\n\' IGNORE 1 ROWS";
-            String cols= " (";
-            //create statement
-            String sql = "CREATE TABLE IF NOT EXISTS " + tblName + " (";
-            String pkString= "PRIMARY KEY (";
-            int noCol = 0;
-            for (String cell : headings) {
-                String [] info = cell.split(" ");
-                String name = info[0];
-                cols+= name + ", ";
-                String type = info[1];
-                boolean isPK = Integer.parseInt(info[2])==1;
-                if (isPK) {
-                    pkString+=name+", ";
-                }
-                sql+= name+" "+type+", ";
-            }
-            cols= cols.substring(0,cols.length()-2);
-            uploadStatement+= cols+");";
-            pkString= pkString.substring(0,pkString.length()-2);
-            sql+=pkString+"))";
+            String columns = " (";
             
+            //create statement:
+            String createStatement = "CREATE TABLE IF NOT EXISTS " + tblName + " (";
+            String pkString = "PRIMARY KEY (";
+            
+            //get column info(name, type, if PK) from first csv row:
+            for (String cell : headings) {  //each cell represents all info for 1 column
+                String [] info = cell.split(" ");
+                
+                String name = info[0];  //name of column
+                String type = info[1];  //datatype eg. integer/varchar(20)
+                boolean isPK = Integer.parseInt(info[2])==1;    //1 if column is primary key
+                
+                if (isPK) {
+                    pkString+=name+", ";    //list of primary keys for end of CREATE statement
+                }
+                columns+= name + ", ";  //specify columns for LOAD statement
+                createStatement+= name+" "+type+", ";   //add column info to CREATE statement
+            }
+            
+            //remove trailing ", " and add columns to LOAD statement:
+            columns= columns.substring(0,columns.length()-2);
+            uploadStatement+= columns+");";
+            
+            //remove trailing ", " and add PKs to CREATE statement:
+            pkString= pkString.substring(0,pkString.length()-2);
+            createStatement+= pkString+"))";
+            
+            //clean up:
             fileReader.close();
             csvReader.close();
                     
-            // create database connection
-           Class.forName("com.mysql.cj.jdbc.Driver");
-           Connection conn = DriverManager.getConnection("jdbc:mysql://localhost/KiwiDB", "root", "mysql");
+            //Setup database connection: requires mysql "KiwiDB" named database on host with user="root" and pass="mysql"
+            Class.forName("com.mysql.cj.jdbc.Driver");
+            Connection conn = DriverManager.getConnection("jdbc:mysql://localhost/KiwiDB", "root", "mysql");
             
-            //create table
+            //create table:
             Statement st = conn.createStatement();
-            st.executeUpdate(sql);
+            //System.out.println(createStatement);  //DEBUG
+            st.executeUpdate(createStatement);
+            System.out.println("Created table: " + tblName);
             
             //load csv:
             //file must be in mysql database root directory (local not enabeled in ini)
-            System.out.println(uploadStatement);
+            //System.out.println(uploadStatement);  //DEBUG
             st.executeUpdate(uploadStatement);
-            
+            System.out.println("Uploaded data from csv to table: " + tblName);
         }
-         catch (ClassNotFoundException | IOException | SQLException ex) {
-            Logger.getLogger(Lecturer.class.getName()).log(Level.SEVERE, null, ex);
+        
+        catch (ClassNotFoundException e) {
+            System.out.println("Error: Problem connecting to database/loading driver: " + csv.getName() + ".");
+            System.out.println(e);
+        }
+        catch (IOException e) {
+            System.out.println("Error: Problem reading file: " + csv.getName() + ".");
+            System.out.println(e);
+        }
+        catch (SQLException  e) {
+            System.out.println("Error: Problem creating table/loading csv to database: " + csv.getName() + ".");
+            System.out.println(e);
         }
     }
    
@@ -202,34 +242,39 @@ public class Lecturer {
      * numbers mapped to the student's highest grades.
      */
     private static String getGrades(String column, String order) {
-        String toReturn= "";
+        
         try {
-            //Setup connection:
+            //Setup database connection: requires mysql "KiwiDB" named database on host with user="root" and pass="mysql"
             Class.forName("com.mysql.cj.jdbc.Driver");
             Connection conn = DriverManager.getConnection("jdbc:mysql://localhost/KiwiDB", "root", "mysql");
 
-            // get student output:
-            Statement st= conn.createStatement();
-            String sql= "SELECT StudentNo, HighestGrade FROM STUDENTS ORDER BY " + column + " " + order;
-            ResultSet rs= st.executeQuery(sql);
+            //get student output: ordering based on input
+            Statement st = conn.createStatement();
+            String selectStatement = "SELECT StudentNo, HighestGrade FROM STUDENTS ORDER BY " + column + " " + order;
+            ResultSet rs = st.executeQuery(selectStatement);
             
             //put output in string:
-            toReturn = "StudentNo\tHighestGrade\n";
-            while(rs.next()) {  //column entries
-                for (int i=1; i<=2; i++) {
+            String toReturn = "StudentNo\tHighestGrade\n";
+            while(rs.next()) {  //row entries
+                for (int i=1; i<=2; i++) {  //column entries
                     toReturn+= rs.getObject(i) + "\t";
                 }
-                toReturn+="\n";
-            }    
-        }
-        catch (SQLException ex) {   
-            System.out.println(ex.toString());
-        } 
-        catch (ClassNotFoundException ex) {
-            return "ERROR: Couldn't load database driver.";
+                toReturn+="\n"; //next row
+            }
+            
+            return toReturn;    
         }
         
-        return toReturn;
+        catch (SQLException e) { 
+            System.out.println("Error: Problem reading grades from database.");
+            System.out.println(e);
+            return "Error: Problem reading grades from database.";
+        } 
+        catch (ClassNotFoundException e) {
+            System.out.println("Error: Problem connecting to database/loading driver.");
+            System.out.println(e);
+            return "Error: Problem connecting to database/loading driver.";
+        }
     }
     
 }

@@ -1,11 +1,5 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package kiwistudent;
 
-import java.awt.List;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
@@ -16,29 +10,64 @@ import java.util.Random;
 import javax.swing.ImageIcon;
 import javax.swing.JOptionPane;
 
+//TODO: Create Assignment class to encapsulate logic and seperate from interface logic.
+//TODO: When assignment class created, make functionality to load whole assignment and not just one question
+//TODO: timers?
 /**
- *
- * @author talaj
+ * Creates assignment interface.
+ * @author Tala Ross(rsstal002)
+ * @author Nikai Jagganath (jggnik001)
+ * @author Steve Shun Wang (wngshu003)
  */
-public class Assignment extends javax.swing.JFrame {
+public class AssignmentFrame extends javax.swing.JFrame {
+    
+    
+    //Model instance variables:
+    //TODO: move most to assigment class
     
     //TODO: update to get from server:
+    /**
+     * Number of questions in an assignment.
+     */
     public static final int NUM_QUESTIONS= 1;
     
-    static Home home;
-    static Student student;
-    static ArrayList<Question> questionList;
-    Question q;
+    /**
+     * Home page frame to return to when done viewing grade.
+     */
+    static HomeFrame home;
     
     /**
-     * Creates new form Question
+     * Student object containing and controlling information relevant to logged
+     * in student.
      */
-    public Assignment(Home home, Student student) {
+    static Student student;
+    
+    //TODO: load questions into list when multiple question assignment functionality created
+    /**
+     * List of questions in assignment.
+     */
+    static ArrayList<Question> questionList;
+    
+    //TODO: remove when multiple question assignment functionality created
+    /**
+     * Single question being loaded to frame(in this deliverable stage).
+     */
+    Question q;
+    
+    
+    //Constructor:
+    
+    /**
+     * Creates new form AssignmentFrame.
+     * @param home Home frame to return to when done viewing grade.
+     * @param student Student object representing logged in student.
+     */
+    public AssignmentFrame(HomeFrame home, Student student) {
         this.home = home;
         this.student = student;
         initComponents();
         questionList = new ArrayList<>();
-        q = generateQuestions();
+        q = generateQuestions();    //TODO: remove later. Generate assignment object and load first question
         txtaQuestion.setText("Question:\n"+q.getQuestion());
     }
 
@@ -60,7 +89,7 @@ public class Assignment extends javax.swing.JFrame {
         txtfAnswer = new javax.swing.JTextField();
         btnSubmit = new javax.swing.JButton();
         btnShowSchema = new javax.swing.JButton();
-        jButton1 = new javax.swing.JButton();
+        btnCheck = new javax.swing.JButton();
         txtfMark = new javax.swing.JTextField();
         btnHome = new javax.swing.JButton();
         btnNext = new javax.swing.JButton();
@@ -98,10 +127,10 @@ public class Assignment extends javax.swing.JFrame {
             }
         });
 
-        jButton1.setText("Check Output");
-        jButton1.addActionListener(new java.awt.event.ActionListener() {
+        btnCheck.setText("Check Output");
+        btnCheck.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton1ActionPerformed(evt);
+                btnCheckActionPerformed(evt);
             }
         });
 
@@ -138,7 +167,7 @@ public class Assignment extends javax.swing.JFrame {
                 .addComponent(btnShowSchema))
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
                 .addGap(0, 0, Short.MAX_VALUE)
-                .addComponent(jButton1)
+                .addComponent(btnCheck)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(btnSubmit))
             .addGroup(jPanel1Layout.createSequentialGroup()
@@ -174,7 +203,7 @@ public class Assignment extends javax.swing.JFrame {
                 .addGap(18, 18, 18)
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(btnSubmit)
-                    .addComponent(jButton1))
+                    .addComponent(btnCheck))
                 .addGap(18, 18, 18)
                 .addComponent(jScrollPane4, javax.swing.GroupLayout.DEFAULT_SIZE, 153, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
@@ -204,43 +233,146 @@ public class Assignment extends javax.swing.JFrame {
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
+    
+    //Action performed methods:
+    
+    /**
+     * Gets answer statement from text field and uses this to mark assignment.
+     * @param evt Click "Submit" button.
+     */
     private void btnSubmitActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSubmitActionPerformed
         String answer = txtfAnswer.getText();
         int mark = q.mark(answer);
-        txtfMark.setText(mark + "/" + q.getDifficulty()*Question.markRange[2]);
+        if (mark>=0) {  //no error
+            txtfMark.setText(mark + "/" + q.getDifficulty()*Question.MARK_RANGE[2]);
+        }
         txtaFeedback.setText(q.getFeedback(answer));
-        //btnSubmit.setEnabled(false);
-        
+        btnSubmit.setEnabled(false);
     }//GEN-LAST:event_btnSubmitActionPerformed
-
-    private void btnHomeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnHomeActionPerformed
-        
-        this.setVisible(false);
-        
-        home.setVisible(true);
-        
-    }//GEN-LAST:event_btnHomeActionPerformed
-
-    private void btnNextActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnNextActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_btnNextActionPerformed
-
-    private void btnShowSchemaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnShowSchemaActionPerformed
-        
-        ImageIcon icon = new ImageIcon("schema.jpg");
-        
-        JOptionPane.showMessageDialog(null, "", "Schema", JOptionPane.PLAIN_MESSAGE, icon);
-        
-        
-    }//GEN-LAST:event_btnShowSchemaActionPerformed
-
-    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
-        String statement= txtfAnswer.getText();
-        String output= Question.check(statement);
-        txtaOutput.setText(output);
-    }//GEN-LAST:event_jButton1ActionPerformed
-
+    
     /**
+     * Goes back to home frame.
+     * @param evt Click "Home" button.
+     */
+    private void btnHomeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnHomeActionPerformed
+        this.setVisible(false);
+        home.setVisible(true);
+        this.dispose();
+    }//GEN-LAST:event_btnHomeActionPerformed
+    
+    //TODO: Create next functionality and enable next button.
+    /**
+     * Goes to next question.
+     * Mark for current question set to zero if not submitted.
+     * @param evt 
+     */
+    private void btnNextActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnNextActionPerformed
+        
+    }//GEN-LAST:event_btnNextActionPerformed
+    
+    //TODO: create functionality to generate schema based on query data and not use saved image.
+    /**
+     * Shows pop-up frame with picture representing the query data schema.
+     * @param evt Click "Show Schema" button.
+     */
+    private void btnShowSchemaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnShowSchemaActionPerformed
+        ImageIcon icon = new ImageIcon("schema.jpg");
+        JOptionPane.showMessageDialog(null, "", "Schema", JOptionPane.PLAIN_MESSAGE, icon);
+    }//GEN-LAST:event_btnShowSchemaActionPerformed
+    
+    /**
+     * Processes student's sql statement in text field and shows what the
+     * output would be.
+     * @param evt Click "Check Output" button.
+     */
+    private void btnCheckActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCheckActionPerformed
+        String statement = txtfAnswer.getText();
+        String output = Question.check(statement);
+        txtaOutput.setText(output);
+    }//GEN-LAST:event_btnCheckActionPerformed
+
+    
+    //Helper method for assignment generation:
+    
+    //TODO: create list and move functionality to assignment class
+    //TODO: make fair question selection
+    /**
+     * Generates list of questions that make up the assignment.
+     * @return The list of questions. (Currently just one question)
+     */
+    private static Question generateQuestions() {
+        
+        try {
+            //Setup database connection: requires mysql "KiwiDB" named database on host with user="root" and pass="mysql"
+            Class.forName("com.mysql.cj.jdbc.Driver");
+            Connection conn = DriverManager.getConnection("jdbc:mysql://localhost/KiwiDB", "root", "mysql");
+
+            //Get the number of questions in the questions table:
+            String query = "SELECT COUNT(*) AS noRows FROM Questions";
+            Statement st = conn.createStatement();
+            ResultSet rs = st.executeQuery(query);
+            rs.next();  //take cursor to first row
+            int noRows = rs.getInt("noRows");
+            
+            //Setup:
+            boolean [] usedQuestions = new boolean [noRows];    //true if used otherwise false (used to avoid duplicates)
+            int random = 0;
+            Random rnd = new Random();
+            
+            //Get list of questions:
+            //**for (int i=0; i<noQuestions; i++) {
+            
+            //Get question number to query:
+            boolean used = true;
+            while (used) {  //loop until unused question number found
+                random =  rnd.nextInt(noRows) + 1;
+                if (!usedQuestions[random-1]) {
+                    usedQuestions[random-1] = true;
+                    used = false;
+                }
+            }
+            
+            //Get question from questions table:
+            query = "SELECT * FROM Questions WHERE QuestionNo LIKE '" + random + "'";
+            rs = st.executeQuery(query);
+            
+            //Create question object and update
+            Question question = new Question();
+            while (rs.next()) {
+                String tempQuestion = rs.getString("Question");
+                String answer = rs.getString("Answer");
+                int difficulty = rs.getInt("Difficulty");
+                question = new Question(tempQuestion, answer, difficulty);
+                System.out.format("%s, %s, %s\n", question, answer, difficulty );   //DEBUG
+            }
+            
+            //Clean up:
+            rs.close();
+            st.close();
+            conn.close();
+            
+            return question;
+            
+            //**end for loop
+            //return question list
+            }
+        catch (SQLException e) {
+            System.out.println("Error: Problem query database or reading result set output.");
+            System.out.println(e); 
+            }
+        catch (Exception e) {
+            System.out.println("Error: Problem connecting to database/loading driver.");
+            System.out.println(e);
+            }
+        
+        return null;    //question not created
+    }
+    
+    
+    //Main method:
+    
+    /**
+     * Runs assignment frame.
      * @param args the command line arguments
      */
     public static void main(String args[]) {
@@ -257,14 +389,18 @@ public class Assignment extends javax.swing.JFrame {
                 }
             }
         } catch (ClassNotFoundException ex) {
-            java.util.logging.Logger.getLogger(Assignment.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(AssignmentFrame.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         } catch (InstantiationException ex) {
-            java.util.logging.Logger.getLogger(Assignment.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(AssignmentFrame.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         } catch (IllegalAccessException ex) {
-            java.util.logging.Logger.getLogger(Assignment.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(AssignmentFrame.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         } catch (javax.swing.UnsupportedLookAndFeelException ex) {
-            java.util.logging.Logger.getLogger(Assignment.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(AssignmentFrame.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         }
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
         //</editor-fold>
         //</editor-fold>
         //</editor-fold>
@@ -273,17 +409,20 @@ public class Assignment extends javax.swing.JFrame {
         /* Create and display the form */
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
-                new Assignment(home, student).setVisible(true);
+                new AssignmentFrame(home, student).setVisible(true);
             }
         });
     }
 
+    
+    //Interface instance variables:
+    
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton btnCheck;
     private javax.swing.JButton btnHome;
     private javax.swing.JButton btnNext;
     private javax.swing.JButton btnShowSchema;
     private javax.swing.JButton btnSubmit;
-    private javax.swing.JButton jButton1;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JPanel jPanel1;
@@ -298,64 +437,5 @@ public class Assignment extends javax.swing.JFrame {
     // End of variables declaration//GEN-END:variables
     
     
-    private static Question generateQuestions() {
-        //get inputs from db
-        try {
-            // create our mysql database connection
-            Class.forName("com.mysql.cj.jdbc.Driver");
-            String myUrl = "jdbc:mysql://localhost/KiwiDB";
-            Connection conn = DriverManager.getConnection(myUrl, "root", "mysql");
-
-            // our SQL SELECT query. 
-            // if you only need a few columns, specify them by name instead of using "*"
-            String query = "SELECT COUNT(*) AS noRows FROM Questions";
-
-            // create the java statement
-            Statement st = conn.createStatement();
-
-            // execute the query, and get a java resultset
-            ResultSet rs = st.executeQuery(query);
-            rs.next();
-            int noRows = rs.getInt("noRows");
-            boolean [] usedQuestions= new boolean [noRows];
-            
-            int random = 0;
-            Random rnd = new Random();
-            boolean used = true;
-            while (used) {
-                random =  rnd.nextInt(noRows) + 1;
-                if (!usedQuestions[random-1]) {
-                    usedQuestions[random-1] = true;
-                    used = false;
-                }
-            }
-
-            query = "SELECT * FROM Questions WHERE QuestionNo LIKE '" + random + "'";
-            // execute the query, and get a java resultset
-            rs = st.executeQuery(query);
-
-            // iterate through the java resultset
-            Question question = new Question();
-            while (rs.next()) {
-                int id = rs.getInt("QuestionNo");
-                String q = rs.getString("Question");
-                String answer = rs.getString("Answer");
-                int difficulty = rs.getInt("Difficulty");
-                question = new Question(q, answer, difficulty);
-                System.out.format("%s, %s, %s, %s\n", id, question, answer, difficulty );
-            }
-            st.close();
-            return question;
-            }
-        catch (SQLException e)
-            {
-              e.printStackTrace();
-              
-            }
-            catch (Exception e)
-            {
-              e.printStackTrace();
-            }
-        return null;
-    }
+    
 }

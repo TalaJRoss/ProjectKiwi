@@ -1,22 +1,31 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package kiwistudent;
 
+//TODO: logout functionality
 /**
- *
- * @author talaj
+ * Creates home page interface.
+ * @author Tala Ross(rsstal002)
+ * @author Nikai Jagganath (jggnik001)
+ * @author Steve Shun Wang (wngshu003)
  */
-public class Home extends javax.swing.JFrame {
+public class HomeFrame extends javax.swing.JFrame {
     
-    static Student student;
+    
+    //Model Instance Variables:
     
     /**
-     * Creates new form Home
+     * Student object containing and controlling information relevant to logged
+     * in student.
      */
-    public Home(Student student) {
+    static Student student;
+    
+    
+    //Constructor:
+    
+    /**
+     * Creates new form HomeFrame.
+     * @param student Student object representing logged in student.
+     */
+    public HomeFrame(Student student) {
         this.student = student;
         initComponents();
     }
@@ -85,25 +94,40 @@ public class Home extends javax.swing.JFrame {
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
+    
+    //Action performed methods:
+    
+    /**
+     * Transitions to grade viewing frame.
+     * @param evt Click "View Grade" button.
+     */
     private void btnViewGradeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnViewGradeActionPerformed
         
         this.setVisible(false);
         
-        Grade grade = new Grade(this, student);
+        GradeFrame grade = new GradeFrame(this, student);
         grade.setVisible(true);
         
     }//GEN-LAST:event_btnViewGradeActionPerformed
 
+    /**
+     * Transitions to assignment frame.
+     * @param evt Click "Start Assignment" button.
+     */
     private void btnStartActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnStartActionPerformed
         
         this.setVisible(false);
         
-        Assignment question = new Assignment(this, student);
+        AssignmentFrame question = new AssignmentFrame(this, student);
         question.setVisible(true);
         
     }//GEN-LAST:event_btnStartActionPerformed
 
+    
+    //Main method:
+    
     /**
+     * Runs home page frame.
      * @param args the command line arguments
      */
     public static void main(String args[]) {
@@ -120,27 +144,34 @@ public class Home extends javax.swing.JFrame {
                 }
             }
         } catch (ClassNotFoundException ex) {
-            java.util.logging.Logger.getLogger(Home.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(HomeFrame.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         } catch (InstantiationException ex) {
-            java.util.logging.Logger.getLogger(Home.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(HomeFrame.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         } catch (IllegalAccessException ex) {
-            java.util.logging.Logger.getLogger(Home.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(HomeFrame.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         } catch (javax.swing.UnsupportedLookAndFeelException ex) {
-            java.util.logging.Logger.getLogger(Home.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(HomeFrame.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         }
+        //</editor-fold>
         //</editor-fold>
 
         /* Create and display the form */
         java.awt.EventQueue.invokeLater(new Runnable() {
+            @Override
             public void run() {
-                new Home(student).setVisible(true);
+                new HomeFrame(student).setVisible(true);
             }
         });
     }
 
+    
+    //Interface instance variables:
+    
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnStart;
     private javax.swing.JButton btnViewGrade;
     private javax.swing.JPanel jPanel1;
     // End of variables declaration//GEN-END:variables
+
+
 }

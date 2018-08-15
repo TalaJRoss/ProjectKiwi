@@ -46,7 +46,7 @@
                   <Group type="103" groupAlignment="0" max="-2" attributes="0">
                       <Component id="lblUpload" min="-2" max="-2" attributes="0"/>
                       <Group type="102" alignment="1" attributes="0">
-                          <Component id="btnStudentCSV" min="-2" max="-2" attributes="0"/>
+                          <Component id="btnStudentCSV" min="-2" pref="213" max="-2" attributes="0"/>
                           <EmptySpace max="32767" attributes="0"/>
                           <Component id="txtfStudentFilename" min="-2" pref="452" max="-2" attributes="0"/>
                       </Group>
@@ -77,7 +77,7 @@
                       </Group>
                       <Component id="jScrollPane1" alignment="0" max="32767" attributes="0"/>
                   </Group>
-                  <EmptySpace pref="36" max="32767" attributes="0"/>
+                  <EmptySpace max="32767" attributes="0"/>
               </Group>
           </Group>
         </DimensionLayout>
@@ -132,7 +132,7 @@
         </Component>
         <Component class="javax.swing.JButton" name="btnQuestions">
           <Properties>
-            <Property name="text" type="java.lang.String" value="Select questions csv"/>
+            <Property name="text" type="java.lang.String" value="Select questions csv file"/>
           </Properties>
           <Events>
             <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btnQuestionsActionPerformed"/>
@@ -140,7 +140,7 @@
         </Component>
         <Component class="javax.swing.JButton" name="btnQueryData">
           <Properties>
-            <Property name="text" type="java.lang.String" value="Select query data csv"/>
+            <Property name="text" type="java.lang.String" value="Select query data csv files"/>
           </Properties>
           <Events>
             <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btnQueryDataActionPerformed"/>
@@ -160,9 +160,6 @@
           <Properties>
             <Property name="editable" type="boolean" value="false"/>
           </Properties>
-          <Events>
-            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="txtfStudentFilenameActionPerformed"/>
-          </Events>
         </Component>
         <Component class="javax.swing.JButton" name="btnUpload">
           <Properties>

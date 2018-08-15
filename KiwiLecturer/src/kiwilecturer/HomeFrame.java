@@ -5,19 +5,38 @@ import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 
 /**
- * 
+ * Interface for lecturer input.
  * @author Tala Ross(rsstal002)
+ * @author Nikai Jagganath (jggnik001)
+ * @author Steve Shun Wang (wngshu003)
  */
-public class Home extends javax.swing.JFrame {
+public class HomeFrame extends javax.swing.JFrame {
     
-    private File studentFile;
-    private File questionsFile;
-    private File [] dataFiles;
+    
+    //Model instance variables: files to upload 
     
     /**
-     * Creates new form Home
+     * Students info csv file.
      */
-    public Home() {
+    private File studentFile;
+    
+    /**
+     * Question-answer pairs csv file.
+     */
+    private File questionsFile;
+    
+    /**
+     * Array of csv files representing query data.
+     */
+    private File [] dataFiles;
+    
+    
+    //Constructor:
+    
+    /**
+     * Creates new form HomeFrame.
+     */
+    public HomeFrame() {
         initComponents();
     }
 
@@ -56,14 +75,14 @@ public class Home extends javax.swing.JFrame {
             }
         });
 
-        btnQuestions.setText("Select questions csv");
+        btnQuestions.setText("Select questions csv file");
         btnQuestions.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 btnQuestionsActionPerformed(evt);
             }
         });
 
-        btnQueryData.setText("Select query data csv");
+        btnQueryData.setText("Select query data csv files");
         btnQueryData.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 btnQueryDataActionPerformed(evt);
@@ -75,11 +94,6 @@ public class Home extends javax.swing.JFrame {
         txtfQueryDataFilename.setEditable(false);
 
         txtfStudentFilename.setEditable(false);
-        txtfStudentFilename.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                txtfStudentFilenameActionPerformed(evt);
-            }
-        });
 
         btnUpload.setText("Upload");
         btnUpload.addActionListener(new java.awt.event.ActionListener() {
@@ -118,7 +132,7 @@ public class Home extends javax.swing.JFrame {
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                     .addComponent(lblUpload)
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
-                        .addComponent(btnStudentCSV)
+                        .addComponent(btnStudentCSV, javax.swing.GroupLayout.PREFERRED_SIZE, 213, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addComponent(txtfStudentFilename, javax.swing.GroupLayout.PREFERRED_SIZE, 452, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
@@ -140,7 +154,7 @@ public class Home extends javax.swing.JFrame {
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addComponent(btnView))))
                     .addComponent(jScrollPane1))
-                .addContainerGap(36, Short.MAX_VALUE))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -186,7 +200,14 @@ public class Home extends javax.swing.JFrame {
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
-
+    
+    
+    //Action performed methods:
+    /**
+     * Gets student csv file selected from file chooser and checks that it is
+     * in fact a csv file.
+     * @param evt Click "Select student csv file"
+     */
     private void btnStudentCSVActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnStudentCSVActionPerformed
         
         JFileChooser fc = new JFileChooser();
@@ -203,10 +224,13 @@ public class Home extends javax.swing.JFrame {
                 txtfStudentFilename.setText(studentFile.getAbsolutePath());
             }
         }
-        
-        //use file to upload
     }//GEN-LAST:event_btnStudentCSVActionPerformed
-
+    
+    /**
+     * Gets questions csv file selected from file chooser and checks that it is
+     * in fact a csv file.
+     * @param evt Click "Select questions csv file"
+     */
     private void btnQuestionsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnQuestionsActionPerformed
         
         JFileChooser fc = new JFileChooser();
@@ -222,11 +246,15 @@ public class Home extends javax.swing.JFrame {
                 txtfQuestionsFilename.setText(questionsFile.getAbsolutePath());
             }
         }
-        
-        //use file to upload
     }//GEN-LAST:event_btnQuestionsActionPerformed
-
+    
+    /**
+     * Gets query data csv files selected from file chooser and checks that
+     * they are in fact a csv file.
+     * @param evt Click "Select student csv files"
+     */
     private void btnQueryDataActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnQueryDataActionPerformed
+        
         JFileChooser fc = new JFileChooser();
         fc.setCurrentDirectory(new File(System.getProperty("user.home")));
         fc.setMultiSelectionEnabled(true);
@@ -248,11 +276,14 @@ public class Home extends javax.swing.JFrame {
                 txtfQueryDataFilename.setText(selected.substring(0, selected.length()-2));
             }
         }
-        
-        //use file to upload
     }//GEN-LAST:event_btnQueryDataActionPerformed
-
+    
+    /**
+     * Uploads the selected csv files.
+     * @param evt Click "Upload"
+     */
     private void btnUploadActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnUploadActionPerformed
+        
         if (studentFile!=null) {
             Lecturer.uploadStudents(studentFile);
         }
@@ -271,20 +302,30 @@ public class Home extends javax.swing.JFrame {
         dataFiles = null;
         txtfQueryDataFilename.setText("");
     }//GEN-LAST:event_btnUploadActionPerformed
-
-    private void txtfStudentFilenameActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtfStudentFilenameActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_txtfStudentFilenameActionPerformed
-
+    
+    /**
+     * Gets table of student grades in ascending student number order from the
+     * database.
+     * @param evt Click "Student Number Ascending"
+     */
     private void btnViewActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnViewActionPerformed
         txtaMarks.setText(Lecturer.viewGradeAscStudent());
     }//GEN-LAST:event_btnViewActionPerformed
-
+    
+    /**
+     * Gets table of student grades in descending grade order from the
+     * database.
+     * @param evt Click "Grade Descending"
+     */
     private void btnGradeDescendingActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnGradeDescendingActionPerformed
         txtaMarks.setText(Lecturer.viewGradeDescGrade());
     }//GEN-LAST:event_btnGradeDescendingActionPerformed
-
+    
+    
+    //Main method:
+    
     /**
+     * Runs the interface.
      * @param args the command line arguments
      */
     public static void main(String args[]) {
@@ -301,24 +342,29 @@ public class Home extends javax.swing.JFrame {
                 }
             }
         } catch (ClassNotFoundException ex) {
-            java.util.logging.Logger.getLogger(Home.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(HomeFrame.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         } catch (InstantiationException ex) {
-            java.util.logging.Logger.getLogger(Home.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(HomeFrame.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         } catch (IllegalAccessException ex) {
-            java.util.logging.Logger.getLogger(Home.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(HomeFrame.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         } catch (javax.swing.UnsupportedLookAndFeelException ex) {
-            java.util.logging.Logger.getLogger(Home.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(HomeFrame.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         }
+        //</editor-fold>
         //</editor-fold>
 
         /* Create and display the form */
         java.awt.EventQueue.invokeLater(new Runnable() {
+            @Override
             public void run() {
-                new Home().setVisible(true);
+                new HomeFrame().setVisible(true);
             }
         });
     }
 
+    
+    //Interface instance variables:
+    
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnGradeDescending;
     private javax.swing.JButton btnQueryData;
@@ -335,4 +381,5 @@ public class Home extends javax.swing.JFrame {
     private javax.swing.JTextField txtfQuestionsFilename;
     private javax.swing.JTextField txtfStudentFilename;
     // End of variables declaration//GEN-END:variables
+
 }

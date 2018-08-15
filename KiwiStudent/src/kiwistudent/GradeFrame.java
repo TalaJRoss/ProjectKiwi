@@ -1,23 +1,36 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package kiwistudent;
 
 /**
- *
- * @author talaj
+ * Creates grade view interface.
+ * @author Tala Ross(rsstal002)
+ * @author Nikai Jagganath (jggnik001)
+ * @author Steve Shun Wang (wngshu003)
  */
-public class Grade extends javax.swing.JFrame {
+public class GradeFrame extends javax.swing.JFrame {
     
-    static Home home;
-    static Student student;
+    //Model instance variables:
     
     /**
-     * Creates new form Grade
+     * Home page frame to return to when done viewing grade.
      */
-    public Grade(Home home, Student student) {
+    static HomeFrame home;
+    
+    /**
+     * Student object containing and controlling information relevant to logged
+     * in student.
+     */
+    static Student student;
+    
+    
+    //Constructor:
+    
+    /**
+     * Creates new form GradeFrame showing information based on student
+     * controller object.
+     * @param home Home frame to return to when done viewing grade.
+     * @param student Student object representing logged in student.
+     */
+    public GradeFrame(HomeFrame home, Student student) {
         this.home = home;
         this.student = student;
         initComponents();
@@ -47,11 +60,9 @@ public class Grade extends javax.swing.JFrame {
 
         jLabel1.setText("No. submissions remaining: ");
 
-        txtfGrade.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                txtfGradeActionPerformed(evt);
-            }
-        });
+        txtfGrade.setEditable(false);
+
+        txtfSubmissions.setEditable(false);
 
         btnBack.setText("Back");
         btnBack.addActionListener(new java.awt.event.ActionListener() {
@@ -108,18 +119,24 @@ public class Grade extends javax.swing.JFrame {
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
-    private void btnBackActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnBackActionPerformed
-        
-        this.setVisible(false);
-        
-        home.setVisible(true);
-    }//GEN-LAST:event_btnBackActionPerformed
-
-    private void txtfGradeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtfGradeActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_txtfGradeActionPerformed
-
+    
+    //Action performed methods:
+    
     /**
+     * Go back to home page interface.
+     * @param evt Click "Back" button.
+     */
+    private void btnBackActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnBackActionPerformed
+        this.setVisible(false);
+        home.setVisible(true);
+        this.dispose();
+    }//GEN-LAST:event_btnBackActionPerformed
+    
+    
+    //Main method:
+    
+    /**
+     * Runs grade viewing frame.
      * @param args the command line arguments
      */
     public static void main(String args[]) {
@@ -136,24 +153,29 @@ public class Grade extends javax.swing.JFrame {
                 }
             }
         } catch (ClassNotFoundException ex) {
-            java.util.logging.Logger.getLogger(Grade.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(GradeFrame.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         } catch (InstantiationException ex) {
-            java.util.logging.Logger.getLogger(Grade.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(GradeFrame.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         } catch (IllegalAccessException ex) {
-            java.util.logging.Logger.getLogger(Grade.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(GradeFrame.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         } catch (javax.swing.UnsupportedLookAndFeelException ex) {
-            java.util.logging.Logger.getLogger(Grade.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(GradeFrame.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         }
+        //</editor-fold>
         //</editor-fold>
 
         /* Create and display the form */
         java.awt.EventQueue.invokeLater(new Runnable() {
+            @Override
             public void run() {
-                new Grade(home, student).setVisible(true);
+                new GradeFrame(home, student).setVisible(true);
             }
         });
     }
-
+    
+    
+    //Interface instance variables:
+    
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnBack;
     private javax.swing.JLabel jLabel1;
@@ -162,4 +184,6 @@ public class Grade extends javax.swing.JFrame {
     private javax.swing.JTextField txtfGrade;
     private javax.swing.JTextField txtfSubmissions;
     // End of variables declaration//GEN-END:variables
+
+
 }

@@ -5,228 +5,370 @@ import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
- *
+ * Stores information relevant to a question and processes marking and
+ * provision of feedback.
  * @author Tala Ross(rsstal002)
+ * @author Nikai Jagganath (jggnik001)
+ * @author Steve Shun Wang (wngshu003)
  */
 public class Question {
     
+    
     //Constants:
-    public static final int [] markRange = {0,1,2};
+    
+    /**
+     * Base range of marks.
+     * 0: didn't compile
+     * 1: compiled but incorrect
+     * 2: compiled and correct
+     */
+    public static final int [] MARK_RANGE = {0,1,2};
+    
     
     //Instance Variables:
+    
+    /**
+     * English question.
+     */
     private String question;
+    
+    /**
+     * SQL statement expected answer.
+     */
     private String answer;
+    
+    /**
+     * Difficulty value.
+     * Can be 1, 2 or 3.
+     */
     private int difficulty;
+    
+    /**
+     * Mark student receives after question is marked.
+     * Can be 0, difficulty or difficulty*2.
+     */
     int mark;
     
+    /**
+     * Result set from expected sql statement output.
+     */
     ResultSet rsExpected;
+    
+    /**
+     * Number of columns in expected sql statement output.
+     */
     int expectedColCount;
+    
+    /**
+     * Result set from student's sql statement output.
+     */
     ResultSet rsStudent;
+    
+    /**
+     * Number of columns in student's sql statement output.
+     */
     int studentColCount;
+    
+    /**
+     * Error message received on student statement execution - if any.
+     */
     String errorMessage;
     
     
+    //Constructor:
+    
+    /**
+     * Creates question object.
+     * @param question English question.
+     * @param answer SQL statement expected answer.
+     * @param difficulty Difficulty value (1, 2 or 3)
+     */
     public Question(String question, String answer, int difficulty) {
         this.question = question;
         this.answer = answer;
         this.difficulty = difficulty;
         this.mark = 0;
     }
-
+    
+    /**
+     * Default constructor to create a question.
+     */
     public Question() {
         mark= 0;
     }
-
+    
+    
+    //Getters:
+    
+    /**
+     * Gets English question.
+     * @return English question
+     */
     public String getQuestion() {
         return question;
     }
-
+    
+    /**
+     * Get SQL statement answer.
+     * @return SQL statement answer.
+     */
     public String getAnswer() {
         return answer;
     }
-
+    
+    /**
+     * Gets question difficulty.
+     * @return Question difficulty.
+     */
     public int getDifficulty() {
         return difficulty;
     }
     
+    
+    //Main functionality methods:
+    
     //TODO: check student not trying data manipulation (ie.not select command)
+    /**
+     * Marks the given student answer. The student answer statement and
+     * expected answer statement are run and the outputs compared. Then a mark
+     * is returned.
+     * @param studentAns SQL statement that student submitted as answer.
+     * @return Mark received by student for the question.
+     */
     public int mark(String studentAns) {
+        
         try {
-           // create our mysql database connection
+           //Setup database connection: requires mysql "KiwiDB" named database on host with user="root" and pass="mysql"
            Class.forName("com.mysql.cj.jdbc.Driver");
-           String myUrl = "jdbc:mysql://localhost/KiwiDB";
-           Connection conn = DriverManager.getConnection(myUrl, "root", "mysql");
+           Connection conn = DriverManager.getConnection("jdbc:mysql://localhost/KiwiDB", "root", "mysql");
            
-           //get expected output:
-           Statement st2 = conn.createStatement();
+           //Get expected output:
+           Statement stExpected = conn.createStatement();
            try {
-                rsExpected = st2.executeQuery(answer);
+                rsExpected = stExpected.executeQuery(answer);   //execute expected sql statement
            }
            catch (SQLException e) { //didn't compile
-               System.out.println("ERROR: answer from lecturer wrong!");
-               System.out.println(e.toString());
+               System.out.println("Error: answer from lecturer wrong!");
+               System.out.println(e);
                return -1;
            }
-           expectedColCount= rsExpected.getMetaData().getColumnCount();
+           expectedColCount = rsExpected.getMetaData().getColumnCount();
            
-           // get student output:
-           Statement st1 = conn.createStatement();
+           //Get student output:
+           Statement stStudent = conn.createStatement();
            try {
-                rsStudent = st1.executeQuery(studentAns);
+                rsStudent = stStudent.executeQuery(studentAns); //execute student's sql statement
            }
            catch (SQLException e) { //didn't compile
-               mark = markRange[0];
-               errorMessage = e.toString().substring("java.sql.".length());
+               mark = MARK_RANGE[0];
+               
+               //Process error message:
+               errorMessage = e.toString().substring("java.sql.".length()); //remove "java.sql." from error name
                if (errorMessage.contains("kiwidb.")) {
-                   errorMessage= errorMessage.replace("kiwidb.","");
+                   errorMessage= errorMessage.replace("kiwidb.","");    //remove "kiwidb." from table name
                }
+               
                return mark;
            }
            studentColCount= rsStudent.getMetaData().getColumnCount();
            
-           //wrong if not same no. columns:
-           if (studentColCount!=expectedColCount) {
-               mark = markRange[1];
+           //Wrong if not same no. columns:
+           if (studentColCount!= expectedColCount) {
+               mark = MARK_RANGE[1];
                return mark;
            }
-           //same no. columns:
+           
+           //For same no. columns:
            else {
-               //wrong if different column sql types:
-               for (int i=1; i<=expectedColCount; i++) {
-                    if (rsStudent.getMetaData().getColumnType(i)!=rsExpected.getMetaData().getColumnType(i)){
-                        mark = markRange[1];
+               //Wrong if different column sql types:
+                for (int i=1; i<=expectedColCount; i++) {    //all expected columns
+                    if (rsStudent.getMetaData().getColumnType(i)!= rsExpected.getMetaData().getColumnType(i)){  //not same type
+                        mark = MARK_RANGE[1];
                         return mark;
                     }
                 }
-               //compare rows of expected and received output:
-               while(rsExpected.next()) {
-                   if (rsStudent.next()) {
-                       //compare each column value in rows:
-                       for (int i=1; i<=expectedColCount; i++) {
-                           if(!rsStudent.getObject(i).equals(rsExpected.getObject(i))) {
-                                mark = markRange[1];
+                
+                //Compare rows of expected and received output:
+                while(rsExpected.next()) {  //all expected rows
+                    if (rsStudent.next()) { //there is another student row
+                        
+                        //Compare each column value in rows:
+                        for (int i=1; i<=expectedColCount; i++) {   //fields in given expected row
+                            if(!rsStudent.getObject(i).equals(rsExpected.getObject(i))) {   //fields not equal
+                                mark = MARK_RANGE[1];
                                 return mark;
-                           }
-                       }
-                   }
-                   else {   //too few rows
-                       mark = markRange[1];
-                       return mark;
-                   }
-               }
-               if (rsStudent.next()) {  //too many rows
-                   mark = markRange[1];
-                   return mark;
-               }
-                mark = markRange[2]*difficulty;
+                            }
+                        }
+                    }
+                    else {   //student output has too few rows
+                        mark = MARK_RANGE[1];
+                        return mark;
+                    }
+                }
+                if (rsStudent.next()) {  //student output too many rows
+                    mark = MARK_RANGE[1];
+                    return mark;
+                }
+                
+                //Output is exactly the same:
+                mark = MARK_RANGE[2]*difficulty;
                 return mark;
-           }
+            }
         }
-        catch (ClassNotFoundException | SQLException e) {
-            System.out.println(e.toString());
+        catch (ClassNotFoundException e) {
+            System.out.println("Error: Problem connecting to database/loading driver.");
+            System.out.println(e);
+        }
+        catch (SQLException e) {
+            System.out.println("Error: Problem comparing sql result set outputs.");
+            System.out.println(e);
         }
         return -1;
     }
     
-    //TODO: differences in output
+    //TODO: Show what the differences in output are?
+    /**
+     * Creates feedback, once student submits answer, which shows what the
+     * expected and received sql statements and output are.
+     * @param studentAns The statement received from student as answer.
+     * @return Formatted String showing expected and received sql statements and output.
+     */
     public String getFeedback(String studentAns) {
-        //check that lecturer sql ran:
+        
+        //Check that lecturer sql statement executed:
         if (rsExpected==null) {
-            return "ERROR: Couldn't run lecturer's sql answer!";
+            return "Error: Couldn't run lecturer's sql statement. Please contact your lecturer about this.";
         }
-        //show expected and received answer:
+        
+        //Show expected and received answer statements:
         String toReturn= "Expected SQL: " + answer + "\n"
             + "Your SQL: " + studentAns + "\n"
             + "\n";
-        //show expected output:
+        
+        //Show expected output:
         toReturn+= "Expected Output:\n";
         try {
-            rsExpected.beforeFirst();
-            for (int i=1; i<=expectedColCount; i++) {   //column names
+            rsExpected.beforeFirst();   //move cursor to start of result set
+            
+            //Get column names:
+            for (int i=1; i<=expectedColCount; i++) {   
                     toReturn+= rsExpected.getMetaData().getColumnName(i) + "\t";
                 }
             toReturn+="\n";
-            while(rsExpected.next()) {  //column entries
-                for (int i=1; i<=expectedColCount; i++) {
+            
+            //Get row entries:
+            while(rsExpected.next()) {  //each row 
+                for (int i=1; i<=expectedColCount; i++) {   //each field in row
                     toReturn+= rsExpected.getObject(i) + "\t";
                 }
                 toReturn+="\n";
             }
-            toReturn+="\n";
+            toReturn+="\n"; //end of expected output
         } 
-        catch (SQLException ex) {
-            Logger.getLogger(Question.class.getName()).log(Level.SEVERE, null, ex);
+        catch (SQLException e) {
+            toReturn+= "Error: Couldn't read output.\n\n";
+            System.out.println("Error: Couldn't read student output.");
+            System.out.println(e);
         }
-        //show student output:
+        
+        //Show student output:
         toReturn+= "Your Output:\n";
-        if (mark==Question.markRange[0]) {
+        
+        if (mark==Question.MARK_RANGE[0]) {  //answer statement didn't compile
             toReturn+= "SQL Statement did not compile.\n";
             toReturn+= errorMessage+"\n";
         }
-        else {
+        else {  //answer statement did compile
             try {
-                rsStudent.beforeFirst();
-                for (int i=1; i<=studentColCount; i++) {   //column names
+                rsStudent.beforeFirst();    //move cursor to start of result set
+                
+                //Get column names:
+                for (int i=1; i<=studentColCount; i++) {   
                         toReturn+= rsStudent.getMetaData().getColumnName(i) + "\t";
                     }
                 toReturn+="\n";
-                while(rsStudent.next()) {  //column entries
-                    for (int i=1; i<=studentColCount; i++) {
+                
+                //Get row entries:
+                while(rsStudent.next()) {  //each row
+                    for (int i=1; i<=studentColCount; i++) {    //each field in row
                         toReturn+= rsStudent.getObject(i) + "\t";
                     }
                     toReturn+="\n";
                 }
-                toReturn+="\n";
+                toReturn+="\n"; //end of student's output
             } 
-            catch (SQLException ex) {
-                Logger.getLogger(Question.class.getName()).log(Level.SEVERE, null, ex);
+            catch (SQLException e) {
+                toReturn+= "Error: Couldn't read output.\n\n";
+                System.out.println("Error: Couldn't read student output.");
+                System.out.println(e);
             }
         }
-         
-        return toReturn;
+        return toReturn;    //all feedback
     }
     
+    /**
+     * Runs given student sql statement and returns string representation of
+     * the output.
+     * @param statement Student's sql statement.
+     * @return 
+     */
     public static String check(String statement) {
-        String toReturn= "";
-        try {
-            //Setup connection:
+        
+        try {   
+            //Setup database connection: requires mysql "KiwiDB" named database on host with user="root" and pass="mysql"
             Class.forName("com.mysql.cj.jdbc.Driver");
             Connection conn = DriverManager.getConnection("jdbc:mysql://localhost/KiwiDB", "root", "mysql");
 
-            // get student output:
-            Statement st= conn.createStatement();
-            ResultSet rs= st.executeQuery(statement);
+            //Get student output:
+            Statement st = conn.createStatement();
+            ResultSet rs;
+            try {   //check it compiles 
+                rs = st.executeQuery(statement);
+            }
+            catch (SQLException e) {//didn't compile
+                //Process error message:
+                String errMessage = e.toString().substring("java.sql.".length()); //remove "java.sql." from error name
+                if (errMessage.contains("kiwidb.")) {
+                    errMessage= errMessage.replace("kiwidb.","");    //remove "kiwidb." from table name
+                }
+                //System.out.println(e);   //DEBUG
+                return "SQL Statement did not compile.\n" + errMessage + "\n";
+            }
             
-            //put output in string:
-            int noCol= rs.getMetaData().getColumnCount();
-            for (int i=1; i<=noCol; i++) {   //column names
+            //Put output in string:
+            String toReturn = "";
+            
+            //Get column names:
+            int noColumns = rs.getMetaData().getColumnCount();
+            for (int i=1; i<=noColumns; i++) {   //each column
                 toReturn+= rs.getMetaData().getColumnName(i) + "\t";
             }
             toReturn+="\n";
-            while(rs.next()) {  //column entries
-                for (int i=1; i<=noCol; i++) {
+            
+            //Get row entries
+            while(rs.next()) {  //each row
+                for (int i=1; i<=noColumns; i++) {  //each field in row
                     toReturn+= rs.getObject(i) + "\t";
                 }
-                toReturn+="\n";
-            }    
+                toReturn+="\n";     //end of row
+            } 
+            toReturn+="\n";     //end of output
+            
+            return toReturn;   
         }
-        catch (SQLException ex) {   
-            String errorMessage = ex.toString().substring("java.sql.".length());
-               if (errorMessage.contains("kiwidb.")) {
-                   errorMessage= errorMessage.replace("kiwidb.","");
-               }
-               ex.printStackTrace();
-            return "SQL Statement did not compile.\n" + errorMessage + "\n";
+        catch (SQLException e) {
+            System.out.println("Error: Problem reading output.");
+            System.out.println(e); 
+            return "Error: Problem reading output.";
         } 
-        catch (ClassNotFoundException ex) {
-            return "ERROR: Couldn't load database driver.";
+        catch (ClassNotFoundException e) {
+            System.out.println("Error: Problem connecting to database/loading driver.");
+            System.out.println(e);
+            return "Error: Problem connecting to database/loading driver.";
         }
-        
-        return toReturn;
     }
+   
     
 }
