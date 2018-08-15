@@ -43,6 +43,7 @@ public class Home extends javax.swing.JFrame {
         btnView = new javax.swing.JButton();
         jScrollPane1 = new javax.swing.JScrollPane();
         txtaMarks = new javax.swing.JTextArea();
+        btnGradeDescending = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -89,7 +90,7 @@ public class Home extends javax.swing.JFrame {
 
         lblViewGrades.setText("View Student Grades:");
 
-        btnView.setText("View");
+        btnView.setText("Student Number Ascending");
         btnView.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 btnViewActionPerformed(evt);
@@ -100,6 +101,13 @@ public class Home extends javax.swing.JFrame {
         txtaMarks.setColumns(20);
         txtaMarks.setRows(5);
         jScrollPane1.setViewportView(txtaMarks);
+
+        btnGradeDescending.setText("Grade Descending");
+        btnGradeDescending.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnGradeDescendingActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
@@ -123,11 +131,14 @@ public class Home extends javax.swing.JFrame {
                             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
                                 .addComponent(lblViewGrades)
                                 .addGap(83, 83, 83)))
-                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(txtfQueryDataFilename, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 452, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(txtfQuestionsFilename, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 452, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(btnUpload, javax.swing.GroupLayout.Alignment.TRAILING)
-                            .addComponent(btnView, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 83, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addComponent(txtfQueryDataFilename, javax.swing.GroupLayout.PREFERRED_SIZE, 452, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(txtfQuestionsFilename, javax.swing.GroupLayout.PREFERRED_SIZE, 452, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(btnUpload)
+                            .addGroup(jPanel1Layout.createSequentialGroup()
+                                .addComponent(btnGradeDescending)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(btnView))))
                     .addComponent(jScrollPane1))
                 .addContainerGap(36, Short.MAX_VALUE))
         );
@@ -153,7 +164,8 @@ public class Home extends javax.swing.JFrame {
                 .addGap(49, 49, 49)
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(lblViewGrades)
-                    .addComponent(btnView))
+                    .addComponent(btnView)
+                    .addComponent(btnGradeDescending))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 189, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap(27, Short.MAX_VALUE))
@@ -265,8 +277,12 @@ public class Home extends javax.swing.JFrame {
     }//GEN-LAST:event_txtfStudentFilenameActionPerformed
 
     private void btnViewActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnViewActionPerformed
-        txtaMarks.setText(Lecturer.viewGrades());
+        txtaMarks.setText(Lecturer.viewGradeAscStudent());
     }//GEN-LAST:event_btnViewActionPerformed
+
+    private void btnGradeDescendingActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnGradeDescendingActionPerformed
+        txtaMarks.setText(Lecturer.viewGradeDescGrade());
+    }//GEN-LAST:event_btnGradeDescendingActionPerformed
 
     /**
      * @param args the command line arguments
@@ -304,6 +320,7 @@ public class Home extends javax.swing.JFrame {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton btnGradeDescending;
     private javax.swing.JButton btnQueryData;
     private javax.swing.JButton btnQuestions;
     private javax.swing.JButton btnStudentCSV;
