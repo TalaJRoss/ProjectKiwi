@@ -44,7 +44,7 @@ public class Student {
     /**
      * The student's highest recorded assignment grade.
      */
-    int highestGrade;
+    double highestGrade;
     
     //TODO: get number of submissions from server
     /**
@@ -114,7 +114,7 @@ public class Student {
      * Gets student's highest grade.
      * @return Student's highest grade.
      */
-    public int getHighestGrade() {
+    public double getHighestGrade() {
         return highestGrade;
     }
     
@@ -127,5 +127,14 @@ public class Student {
         return maxNoSubmissions - noSubmissionsCompleted;
     }
     
+    public void decrementSubmissionsAllowed() {
+        noSubmissionsCompleted++;
+    }
     
+    public void updateGrade(double grade) {
+        if (grade>highestGrade) {
+            highestGrade = grade;
+            //update server
+        }
+    }
 }

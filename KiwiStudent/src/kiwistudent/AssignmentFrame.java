@@ -27,11 +27,6 @@ public class AssignmentFrame extends javax.swing.JFrame {
     //Model instance variables:
     //TODO: move most to assigment class
     
-    //TODO: update to get from server:
-    /**
-     * Number of questions in an assignment.
-     */
-    public static final int NUM_QUESTIONS= 1;
     
     /**
      * Home page frame to return to when done viewing grade.
@@ -44,17 +39,10 @@ public class AssignmentFrame extends javax.swing.JFrame {
      */
     static Student student;
     
-    //TODO: load questions into list when multiple question assignment functionality created
     /**
-     * List of questions in assignment.
+     * Assignment object containing questions.
      */
-    static ArrayList<Question> questionList;
-    
-    //TODO: remove when multiple question assignment functionality created
-    /**
-     * Single question being loaded to frame(in this deliverable stage).
-     */
-    Question q;
+    static Assignment assignment;
     
     
     //Constructor:
@@ -68,9 +56,9 @@ public class AssignmentFrame extends javax.swing.JFrame {
         this.home = home;
         this.student = student;
         initComponents();
-        questionList = new ArrayList<>();
-        q = generateQuestions();    //TODO: remove later. Generate assignment object and load first question
-        txtaQuestion.setText("Question:\n"+q.getQuestion());
+        this.assignment = new Assignment(student);
+        txtaQuestion.setText("Question:\n"+assignment.nextQuestion().getQuestion());
+        btnNext.setEnabled(false);
     }
 
     /**
@@ -244,12 +232,13 @@ public class AssignmentFrame extends javax.swing.JFrame {
      */
     private void btnSubmitActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSubmitActionPerformed
         String answer = txtfAnswer.getText();
-        int mark = q.mark(answer);
+        int mark = assignment.mark(answer);
         if (mark>=0) {  //no error
-            txtfMark.setText(mark + "/" + q.getDifficulty()*Question.MARK_RANGE[2]);
+            txtfMark.setText(mark + "/" + assignment.getDifficulty()*Question.MARK_RANGE[2]);
         }
-        txtaFeedback.setText(q.getFeedback(answer));
+        txtaFeedback.setText(assignment.getFeedback(answer));
         btnSubmit.setEnabled(false);
+        btnNext.setEnabled(true);
     }//GEN-LAST:event_btnSubmitActionPerformed
     
     /**
@@ -269,7 +258,20 @@ public class AssignmentFrame extends javax.swing.JFrame {
      * @param evt 
      */
     private void btnNextActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnNextActionPerformed
-        
+        Question q = assignment.nextQuestion();
+        if (q==null) {
+            btnNext.setEnabled(false);
+            JOptionPane.showMessageDialog(null, "Your final grade is: " + assignment.getGrade(), "Grade", JOptionPane.PLAIN_MESSAGE);
+        }
+        else {
+            txtaQuestion.setText("Question:\n"+q.getQuestion());
+            txtaFeedback.setText("");
+            txtaOutput.setText("");
+            txtfMark.setText("");
+            txtfAnswer.setText("");
+            btnSubmit.setEnabled(true);
+            btnNext.setEnabled(false);
+        }
     }//GEN-LAST:event_btnNextActionPerformed
     
     //TODO: create functionality to generate schema based on query data and not use saved image.
@@ -293,83 +295,6 @@ public class AssignmentFrame extends javax.swing.JFrame {
         txtaOutput.setText(output);
     }//GEN-LAST:event_btnCheckActionPerformed
 
-    
-    //Helper method for assignment generation:
-    
-    //TODO: create list and move functionality to assignment class
-    //TODO: make fair question selection
-    /**
-     * Generates list of questions that make up the assignment.
-     * @return The list of questions. (Currently just one question)
-     */
-    private static Question generateQuestions() {
-        
-        try {
-            //Setup database connection: requires mysql "KiwiDB" named database on host with user="root" and pass="mysql"
-            Class.forName("com.mysql.cj.jdbc.Driver");
-            Connection conn = DriverManager.getConnection("jdbc:mysql://localhost/KiwiDB", "root", "mysql");
-
-            //Get the number of questions in the questions table:
-            String query = "SELECT COUNT(*) AS noRows FROM Questions";
-            Statement st = conn.createStatement();
-            ResultSet rs = st.executeQuery(query);
-            rs.next();  //take cursor to first row
-            int noRows = rs.getInt("noRows");
-            
-            //Setup:
-            boolean [] usedQuestions = new boolean [noRows];    //true if used otherwise false (used to avoid duplicates)
-            int random = 0;
-            Random rnd = new Random();
-            
-            //Get list of questions:
-            //**for (int i=0; i<noQuestions; i++) {
-            
-            //Get question number to query:
-            boolean used = true;
-            while (used) {  //loop until unused question number found
-                random =  rnd.nextInt(noRows) + 1;
-                if (!usedQuestions[random-1]) {
-                    usedQuestions[random-1] = true;
-                    used = false;
-                }
-            }
-            
-            //Get question from questions table:
-            query = "SELECT * FROM Questions WHERE QuestionNo LIKE '" + random + "'";
-            rs = st.executeQuery(query);
-            
-            //Create question object and update
-            Question question = new Question();
-            while (rs.next()) {
-                String tempQuestion = rs.getString("Question");
-                String answer = rs.getString("Answer");
-                int difficulty = rs.getInt("Difficulty");
-                question = new Question(tempQuestion, answer, difficulty);
-                System.out.format("%s, %s, %s\n", question, answer, difficulty );   //DEBUG
-            }
-            
-            //Clean up:
-            rs.close();
-            st.close();
-            conn.close();
-            
-            return question;
-            
-            //**end for loop
-            //return question list
-            }
-        catch (SQLException e) {
-            System.out.println("Error: Problem query database or reading result set output.");
-            System.out.println(e); 
-            }
-        catch (Exception e) {
-            System.out.println("Error: Problem connecting to database/loading driver.");
-            System.out.println(e);
-            }
-        
-        return null;    //question not created
-    }
-    
     
     //Main method:
     

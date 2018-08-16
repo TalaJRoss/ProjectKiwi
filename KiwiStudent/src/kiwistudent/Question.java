@@ -375,6 +375,13 @@ public class Question {
             return "Error: Problem connecting to database/loading driver.";
         }
     }
+
+    public int getMark() {
+        return mark;
+    }
    
+    public int getMaxMark() {
+        return MARK_RANGE[2]*difficulty;
+    }
     
 }

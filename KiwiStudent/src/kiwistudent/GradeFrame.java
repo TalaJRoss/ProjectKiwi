@@ -1,5 +1,7 @@
 package kiwistudent;
 
+import java.text.DecimalFormat;
+
 /**
  * Creates grade view interface.
  * @author Tala Ross(rsstal002)
@@ -34,7 +36,8 @@ public class GradeFrame extends javax.swing.JFrame {
         this.home = home;
         this.student = student;
         initComponents();
-        txtfGrade.setText(""+student.getHighestGrade());
+        DecimalFormat d = new DecimalFormat("0.00");
+        txtfGrade.setText(d.format(student.getHighestGrade()));
         txtfSubmissions.setText(""+student.getNoSubmissionsRemaining());
     }
 
