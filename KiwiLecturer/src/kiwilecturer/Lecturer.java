@@ -44,6 +44,16 @@ public class Lecturer {
      */
     private static final String GRADE = "HighestGrade";
     
+    /**
+     * Indicates successful create/upload table from csv file.
+     */
+    private static final String SUCCESS = "Yayyy";
+    
+    /**
+     * Indicates failed create/upload table from csv file.
+     */
+    private static final String FAIL = "Error";
+    
     
     //Main functionality methods(public):
     
@@ -152,7 +162,7 @@ public class Lecturer {
      * @param tblName Name of the table to create and update.
      * @param csv File containing row entries information to add to table.
      */
-    private static void createTable(String tblName, File csv) {
+    private static String createTable(String tblName, File csv) {
         
         try {
             //read in csv column info:
@@ -165,6 +175,7 @@ public class Lecturer {
             String uploadStatement = "LOAD DATA INFILE \'"+csv.getName()+"\' INTO TABLE " + tblName
                     + " FIELDS OPTIONALLY ENCLOSED BY \'\"\' TERMINATED BY \',\' LINES TERMINATED BY \'\\r\\n\' IGNORE 1 ROWS";
             String columns = " (";
+            String setString = "SET ";
             
             //create statement:
             String createStatement = "CREATE TABLE IF NOT EXISTS " + tblName + " (";
@@ -181,13 +192,18 @@ public class Lecturer {
                 if (isPK) {
                     pkString+=name+", ";    //list of primary keys for end of CREATE statement
                 }
-                columns+= name + ", ";  //specify columns for LOAD statement
+                columns+= "@" + name + ", ";  //specify columns for LOAD statement
+                setString+= name + " = nullif(@" + name + ", ''), ";
                 createStatement+= name+" "+type+", ";   //add column info to CREATE statement
             }
             
             //remove trailing ", " and add columns to LOAD statement:
             columns= columns.substring(0,columns.length()-2);
-            uploadStatement+= columns+");";
+            uploadStatement+= columns+")";
+            
+            //remove trailing ", " and add set part to LOAD statement:
+            setString= setString.substring(0,setString.length()-2);
+            uploadStatement+= setString+";";
             
             //remove trailing ", " and add PKs to CREATE statement:
             pkString= pkString.substring(0,pkString.length()-2);
@@ -212,19 +228,24 @@ public class Lecturer {
             //System.out.println(uploadStatement);  //DEBUG
             st.executeUpdate(uploadStatement);
             System.out.println("Uploaded data from csv to table: " + tblName);
+            
+            return SUCCESS;     //successful upload
         }
         
         catch (ClassNotFoundException e) {
             System.out.println("Error: Problem connecting to database/loading driver: " + csv.getName() + ".");
             System.out.println(e);
+            return FAIL + ": Problem connecting to database/loading driver: " + csv.getName() + ".";
         }
         catch (IOException e) {
             System.out.println("Error: Problem reading file: " + csv.getName() + ".");
             System.out.println(e);
+            return FAIL + ": Problem reading file: " + csv.getName() + ".";
         }
         catch (SQLException  e) {
             System.out.println("Error: Problem creating table/loading csv to database: " + csv.getName() + ".");
             System.out.println(e);
+            return FAIL + ": Problem creating table/loading csv to database: " + csv.getName() + ".";
         }
     }
    
