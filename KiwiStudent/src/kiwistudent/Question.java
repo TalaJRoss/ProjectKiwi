@@ -196,7 +196,13 @@ public class Question {
                         
                         //Compare each column value in rows:
                         for (int i=1; i<=expectedColCount; i++) {   //fields in given expected row
-                            if(!rsStudent.getObject(i).equals(rsExpected.getObject(i))) {   //fields not equal
+                            if (rsStudent.getObject(i)==null || rsExpected.getObject(i)==null) {    //at least one field null
+                                if (rsStudent.getObject(i)!=null || rsExpected.getObject(i)!=null) {    //not both null
+                                    mark = MARK_RANGE[1];
+                                    return mark;
+                                }
+                            }
+                            else if (!rsStudent.getObject(i).equals(rsExpected.getObject(i))) {   //fields not equal
                                 mark = MARK_RANGE[1];
                                 return mark;
                             }

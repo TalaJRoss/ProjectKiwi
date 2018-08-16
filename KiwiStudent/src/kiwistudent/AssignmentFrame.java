@@ -13,6 +13,8 @@ import javax.swing.JOptionPane;
 //TODO: Create Assignment class to encapsulate logic and seperate from interface logic.
 //TODO: When assignment class created, make functionality to load whole assignment and not just one question
 //TODO: timers?
+//TODO: deny access to tables with student/question info
+//TODO: deny use of update statements
 /**
  * Creates assignment interface.
  * @author Tala Ross(rsstal002)
