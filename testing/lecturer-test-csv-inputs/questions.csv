@@ -1,0 +1,9 @@
+"QuestionNo int 1","Question varchar(500) 0","Answer varchar(500) 0","Difficulty int 0"
+1,"Show all information in the offices relation.","select * from offices;",1
+2,"Show how many tuples there are in the orders relation, named as totalNumOrders.","select count(*) as totalNumOrders from orders;",2
+3,"Show all employees tuples where reportsTo is the same as employeeNumber.","select * from employees where employeeNumber=reportsTo;",2
+4,"Show all information in the payments relation for payments exceeding 100 000, in decreasing order(i.e. from highest payment downwards).","select * from payments where amount>100000 order by amount desc;",2
+5,"Show all information in the employees relation for employeeNumbers 1188 and 1504.","select * from employees where employeeNumber=1188 or employeeNumber=1504;",2
+6,"Show the productCode of all products having their quantityInStock below 100, along with their total price, named totalPrice. The total price is the buyPrice plus VAT (VAT is 14% of buyPrice).","select productCode, (buyPrice*114/100) as totalPrice from products where quantityInStock<100;",3
+7,"Get average payment amount, named average, in the database?","select avg(amount) as average from payments;",2
+8,"Show all information in the offices relation where the state is missing/unknown.","select * from offices where state is null;",2

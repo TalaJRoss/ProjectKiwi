@@ -1,0 +1,16 @@
+Creating KiwiDB:
+1.Setup MySQL environment with root user password as "mysql".
+2.Create database named "KiwiDB" with user as root and password as "mysql".
+
+Testing Lecturer Inputs:
+1. Drop all tables in KiwiDB.
+2. Place test csv files in the KiwiDM root directory.
+3. Upload csv files via the Lecturer.HomeFrame user interface.
+4. Check that files were uploaded correctly by viewing the MySQL database in MySQL Workbench.
+
+Testing Student Input:
+1. Make sure the csv files have been uploaded and the MySQL database contains question, student and query data tables.
+2. Login using student numbers in the students csv file. For example, rsstal002.
+3. Start an assignment and check that mark received and output is correct for non-compile, incorrect and correct answers.
+4. Once assignment is complete, check that grades and submission numbers were updated correctly.
+Note: grade updates aren't persistent as a server has not been implemented yet.

@@ -1,0 +1,9 @@
+Question	Doesn't Compile Answer		Incorrect Answer	Correct Answer
+Show all information in the offices relation.	SELECT *;	SELECT * FROM orders;	select * from offices;
+Show how many tuples there are in the orders relation, named as totalNumOrders 		gshfdshfdh	select count(*) from orderdetails	select count(*) as totalNumOrders from orders 2
+Show all employees tuples where reportsTo is the same as employeeNumber		count(*)	select * from employees	select * from employees where employeeNumber=reportsTo
+Show all information in the payments relation for payments exceeding 100 000, in decreasing order(i.e. from highest payment downwards)	select amount>100000	select * from payments	select * from payments where amount>100000 order by amount desc
+Show all information in the employees relation for employeeNumbers 1188 and 1504	employeeNumber=1188	select * from employees where employeeNumber=1504;	select * from employees where employeeNumber=1188 or employeeNumber=1504
+Show the productCode of all products having their quantityInStock below 100, along with their total price, named totalPrice. The total price is the buyPrice plus VAT (VAT is 14% of buyPrice).	select buyPrice*144	select buyPrice from products	select productCode, (buyPrice*114/100) as totalPrice from products where quantityInStock<100;
+Get average payment amount, named average, in the database?	delete * from payment	select avg(buyPrice) from products;	select avg(amount) as average from payments;",2
+Show all information in the offices relation where the state is missing/unknown.	select state	select * from state offices where state='';	select * from offices where state is null
