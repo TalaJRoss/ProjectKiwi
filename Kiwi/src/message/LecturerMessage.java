@@ -5,14 +5,14 @@
  */
 package message;
 
-import java.io.File;
 import java.io.Serializable;
+import java.util.ArrayList;
 
 /**
  *
  * @author Tala Ross(rsstal002)
  */
-public class Message implements Serializable{
+public class LecturerMessage implements Serializable{
     
     //Constants from lecturer:
     public static final String CMD_UPLOAD_STUDENTS = "UploadStudents";
@@ -27,13 +27,15 @@ public class Message implements Serializable{
     public static final String RES_FAIL = "Fail";
     
     //Instance Variables:
-    private File [] csvFiles;  
+    private ArrayList<byte []> csvFiles;  
+    private String [] fileNames;
     private String toReturn;
     private String cmd;
     private String response;    //success vs fail
 
-    public Message(File [] csvFiles, String toReturn, String cmd, String response) {
+    public LecturerMessage(ArrayList<byte []> csvFiles, String [] fileNames, String toReturn, String cmd, String response) {
         this.csvFiles = csvFiles;
+        this.fileNames = fileNames;
         this.toReturn = toReturn;
         this.cmd = cmd;
         this.response = response;
@@ -43,12 +45,20 @@ public class Message implements Serializable{
         return toReturn;
     }
 
-    public File [] getCsvFiles() {
+    public ArrayList<byte []> getCsvFiles() {
         return csvFiles;
     }
     
-    public File getCsvFile() {
-        return csvFiles[0];
+    public byte [] getCsvFile() {
+        return csvFiles.get(0);
+    }
+
+    public String[] getFileNames() {
+        return fileNames;
+    }
+    
+    public String getFileName() {
+        return fileNames[0];
     }
 
     public String getCmd() {

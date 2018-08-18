@@ -7,6 +7,7 @@ package kiwi.kiwiserver;
 
 import com.opencsv.CSVReader;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -19,9 +20,10 @@ import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import message.Message;
+import message.LecturerMessage;
 
 /**
  *
@@ -29,6 +31,8 @@ import message.Message;
  */
 final class LecturerHandler extends Thread{
     //Constants for ordering grades table:
+    
+    private static final String DB_PATH = "C:\\ProgramData\\MySQL\\MySQL Server 8.0\\Data\\kiwidb\\";
     
     /**
      * Ascending order createStatement command.
@@ -123,11 +127,11 @@ final class LecturerHandler extends Thread{
             Class.forName("com.mysql.cj.jdbc.Driver");
             this.conn = DriverManager.getConnection("jdbc:mysql://localhost/KiwiDB", USER_NAME, PASSWORD);
             System.out.println("conn: " + conn);
-            Message m = new Message(null, "", Message.CMD_CONNECT, Message.RES_SUCCESS);
+            LecturerMessage m = new LecturerMessage(null, null, "", LecturerMessage.CMD_CONNECT, LecturerMessage.RES_SUCCESS);
             System.out.println("DEBUG: "+m.getResponse());
             writer.writeObject(m);
         } catch (SQLException | ClassNotFoundException ex) {
-            writer.writeObject(new Message(null, "", Message.CMD_CONNECT, Message.RES_FAIL));
+            writer.writeObject(new LecturerMessage(null, null, "", LecturerMessage.CMD_CONNECT, LecturerMessage.RES_FAIL));
         }
     }
     
@@ -141,7 +145,7 @@ final class LecturerHandler extends Thread{
         }
         try {
             
-            Message m = (Message) reader.readObject();   //MESSAGE
+            LecturerMessage m = (LecturerMessage) reader.readObject();   //MESSAGE
             String command;
             
             while (m!= null)
@@ -149,29 +153,29 @@ final class LecturerHandler extends Thread{
                 command = m.getCmd();
                 switch (command) 
                 {
-                    case Message.CMD_CONNECT:  //retry connect
+                    case LecturerMessage.CMD_CONNECT:  //retry connect
                         connectToDB();
                         break;
-                    case Message.CMD_GRADE_ALPH:   //view grades
+                    case LecturerMessage.CMD_GRADE_ALPH:   //view grades
                         viewGradeAscStudent();
                         break;
-                    case Message.CMD_GRADE_DESC:   //view grades
+                    case LecturerMessage.CMD_GRADE_DESC:   //view grades
                         viewGradeDescGrade();
                         break;
-                    case Message.CMD_UPLOAD_STUDENTS: //upload file
+                    case LecturerMessage.CMD_UPLOAD_STUDENTS: //upload file
                         uploadStudents(m.getCsvFile());
                         break;
-                    case Message.CMD_UPLOAD_QUESTIONS: //upload file
+                    case LecturerMessage.CMD_UPLOAD_QUESTIONS: //upload file
                         uploadQuestions(m.getCsvFile());
                         break;
-                    case Message.CMD_UPLOAD_QUERY: //upload file
-                        uploadQueryData(m.getCsvFiles());
+                    case LecturerMessage.CMD_UPLOAD_QUERY: //upload file
+                        uploadQueryData(m.getCsvFiles(), m.getFileNames());
                         break;
                     default:    //nothing else
                         break;
                 }
                 writer.flush();
-                m= (Message) reader.readObject();
+                m= (LecturerMessage) reader.readObject();
             }
             lecturerSocket.close();
         } catch (IOException | ClassNotFoundException ex) {
@@ -188,7 +192,7 @@ final class LecturerHandler extends Thread{
      * studentNo,highestGrade,noSubmissionsCompleted
      * @param csv The csv file containing student information.
      */
-    public void uploadStudents(File csv) {
+    public void uploadStudents(byte [] csv) {
         createTable("students", csv); 
     }
     
@@ -199,7 +203,7 @@ final class LecturerHandler extends Thread{
      * questionNo,question,answer,difficulty
      * @param csv The csv file containing question-answer pairs.
      */
-    public void uploadQuestions(File csv) {
+    public void uploadQuestions(byte [] csv) {
         createTable("questions", csv);
     }
     
@@ -215,9 +219,9 @@ final class LecturerHandler extends Thread{
      * and lines are terminated by '\r\n'.
      * @param csvs Array of csv files containing query data.
      */
-    public void uploadQueryData(File [] csvs) {
-        for (File file: csvs) {
-            createTable(file.getName().substring(0, file.getName().lastIndexOf(".")), file);
+    public void uploadQueryData(ArrayList<byte []> csvs, String [] names) {
+        for (int i=0; i<csvs.size(); i++) {
+            createTable(names[i], csvs.get(i));
         }
     }
     
@@ -229,7 +233,7 @@ final class LecturerHandler extends Thread{
      * ascending student number.
      */
     public void viewGradeAscStudent() throws IOException {
-        writer.writeObject(new Message(null, getGrades(STUDENT_NO, ASCENDING), Message.CMD_GRADE_ALPH, Message.RES_SUCCESS));
+        writer.writeObject(new LecturerMessage(null, null, getGrades(STUDENT_NO, ASCENDING), LecturerMessage.CMD_GRADE_ALPH, LecturerMessage.RES_SUCCESS));
     }
     
     /**
@@ -240,11 +244,8 @@ final class LecturerHandler extends Thread{
      * descending grade.
      */
     public void viewGradeDescGrade() throws IOException {
-        writer.writeObject(new Message(null, getGrades(GRADE, DESCENDING), Message.CMD_GRADE_DESC, Message.RES_SUCCESS));
+        writer.writeObject(new LecturerMessage(null, null, getGrades(GRADE, DESCENDING), LecturerMessage.CMD_GRADE_DESC, LecturerMessage.RES_SUCCESS));
     }
-    
-    
-    //Helper Methods(private):
     
     /**
      * Creates table in the database if table of given name doesn't exist and
@@ -264,17 +265,22 @@ final class LecturerHandler extends Thread{
      * @param tblName Name of the table to create and update.
      * @param csv File containing row entries information to add to table.
      */
-    private String createTable(String tblName, File csv) {
+    private String createTable(String tblName, byte [] bytes) {
         
         try {
+            //save file:
+            try (FileOutputStream fos = new FileOutputStream(DB_PATH + tblName + ".csv")) {
+                fos.write(bytes);
+            }
+        
             //read in csv column info:
-            FileReader fileReader = new FileReader(csv);
+            FileReader fileReader = new FileReader(new File(DB_PATH + tblName + ".csv"));
             CSVReader csvReader = new CSVReader(fileReader);
             String[] headings = csvReader.readNext();
             
             //process headings and create createStatement create statement and load statement:
             //load statement:
-            String uploadStatement = "LOAD DATA INFILE \'"+csv.getName()+"\' INTO TABLE " + tblName
+            String uploadStatement = "LOAD DATA INFILE \'"+tblName+".csv\' INTO TABLE " + tblName
                     + " FIELDS OPTIONALLY ENCLOSED BY \'\"\' TERMINATED BY \',\' LINES TERMINATED BY \'\\r\\n\' IGNORE 1 ROWS";
             String columns = " (";
             String setString = "SET ";
@@ -330,14 +336,14 @@ final class LecturerHandler extends Thread{
             return SUCCESS;     //successful upload
         }
         catch (IOException e) {
-            System.out.println("Error: Problem reading file: " + csv.getName() + ".");
+            System.out.println("Error: Problem reading file: " + tblName + ".");
             System.out.println(e);
-            return FAIL + ": Problem reading file: " + csv.getName() + ".";
+            return FAIL + ": Problem reading file: " + tblName + ".";
         }
         catch (SQLException  e) {
-            System.out.println("Error: Problem creating table/loading csv to database: " + csv.getName() + ".");
+            System.out.println("Error: Problem creating table/loading csv to database: " + tblName + ".");
             System.out.println(e);
-            return FAIL + ": Problem creating table/loading csv to database: " + csv.getName() + ".";
+            return FAIL + ": Problem creating table/loading csv to database: " + tblName + ".";
         }
     }
     

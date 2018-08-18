@@ -22,17 +22,18 @@ public class HomeFrame extends javax.swing.JFrame {
     /**
      * Students info csv file.
      */
-    private File studentFile;
+    private String studentPath;
     
     /**
      * Question-answer pairs csv file.
      */
-    private File questionsFile;
+    private String questionsPath;
     
     /**
      * Array of csv files representing query data.
      */
-    private File [] dataFiles;
+    private String [] dataFilePaths;
+    private String [] dataFileNames;
     
     
     //Constructor:
@@ -280,8 +281,8 @@ public class HomeFrame extends javax.swing.JFrame {
                 JOptionPane.showMessageDialog(null, "Incorrect file upload.\nPlease upload a .csv file.", "Error", JOptionPane.ERROR_MESSAGE);
             }
             else {
-                studentFile = temp;
-                txtfStudentFilename.setText(studentFile.getAbsolutePath());
+                studentPath = temp.getAbsolutePath();
+                txtfStudentFilename.setText(studentPath);
             }
         }
     }//GEN-LAST:event_btnStudentCSVActionPerformed
@@ -302,8 +303,8 @@ public class HomeFrame extends javax.swing.JFrame {
                 JOptionPane.showMessageDialog(null, "Incorrect file upload.\nPlease upload a .csv file.", "Error", JOptionPane.ERROR_MESSAGE);
             }
             else {
-                questionsFile = temp;
-                txtfQuestionsFilename.setText(questionsFile.getAbsolutePath());
+                questionsPath = temp.getAbsolutePath();
+                txtfQuestionsFilename.setText(questionsPath);
             }
         }
     }//GEN-LAST:event_btnQuestionsActionPerformed
@@ -321,18 +322,23 @@ public class HomeFrame extends javax.swing.JFrame {
         int result = fc.showOpenDialog(this);
         if (result==JFileChooser.APPROVE_OPTION) {
             File [] temp= fc.getSelectedFiles();
+            String [] names = new String [temp.length];
+            String [] paths = new String [temp.length];
             String selected="";
             boolean flag=true;
-            for (File file: temp) {
-                if (!(file.getName().substring(file.getName().lastIndexOf("."))).equals(".csv")) {
+            for (int i=0; i<temp.length; i++) {
+                if (!(temp[i].getName().substring(temp[i].getName().lastIndexOf("."))).equals(".csv")) {
                     JOptionPane.showMessageDialog(null, "Incorrect file upload for one or more files.\nPlease upload .csv files.", "Error", JOptionPane.ERROR_MESSAGE);
                     flag=false;
                     break;
                 }
-                selected+= file.getAbsolutePath()+", ";
+                names[i] = temp[i].getName().substring(0, temp[i].getName().lastIndexOf("."));
+                paths[i] = temp[i].getAbsolutePath();
+                selected+= temp[i].getAbsolutePath()+", ";
             }
             if(flag){
-                dataFiles = temp;
+                dataFilePaths = paths;
+                dataFileNames = names;
                 txtfQueryDataFilename.setText(selected.substring(0, selected.length()-2));
             }
         }
@@ -345,22 +351,22 @@ public class HomeFrame extends javax.swing.JFrame {
      */
     private void btnUploadActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnUploadActionPerformed
         
-        if (studentFile!=null) {
-            lecturer.uploadStudents(studentFile);
+        if (studentPath!=null) {
+            lecturer.uploadStudents(studentPath);
         }
-        if (questionsFile!=null) {
-            lecturer.uploadQuestions(questionsFile);
+        if (questionsPath!=null) {
+            lecturer.uploadQuestions(questionsPath);
         }
-        if (dataFiles!=null) {
-            lecturer.uploadQueryData(dataFiles);
+        if (dataFilePaths!=null) {
+            lecturer.uploadQueryData(dataFilePaths, dataFileNames);
         }
         JOptionPane.showMessageDialog(null, "Uploaded .csv files succesfully.", "Done",JOptionPane.PLAIN_MESSAGE);
         //clean up:
-        studentFile = null;
+        studentPath = null;
         txtfStudentFilename.setText("");
-        questionsFile = null;
+        questionsPath = null;
         txtfQuestionsFilename.setText("");
-        dataFiles = null;
+        dataFilePaths = null;
         txtfQueryDataFilename.setText("");
     }//GEN-LAST:event_btnUploadActionPerformed
     
