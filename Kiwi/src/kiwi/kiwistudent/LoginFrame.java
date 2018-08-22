@@ -136,13 +136,13 @@ public class LoginFrame extends javax.swing.JFrame {
     private void login() throws IOException, ClassNotFoundException {
         String studentNo = txtfStudentNo.getText();
         Student student = new Student();
-        String reply = student.login(studentNo);
-        if (reply.equals(Student.SUCCESS_LOGIN)) {
+        int reply = student.login(studentNo);
+        if (reply==Student.SUCCESS_LOGIN) {
             this.setVisible(false);
             HomeFrame home = new HomeFrame(student);
             home.setVisible(true);
         }
-        else if (reply.equals(Student.FAIL_LOGIN)) {
+        else if (reply==Student.FAIL_LOGIN) {
             JOptionPane.showMessageDialog(this, "Incorrect student number!");
             txtfStudentNo.setText("");
         }

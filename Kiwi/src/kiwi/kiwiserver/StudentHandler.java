@@ -219,7 +219,7 @@ class StudentHandler extends Thread {
         }
         
         QuestionInfo qi = new QuestionInfo(assignment, schemaImg);  //question info to return to student end
-        writer.writeObject(new StudentMessage(StudentMessage.CMD_START, qi, null));
+        writer.writeObject(new StudentMessage(StudentMessage.CMD_START, qi));
     }
 
     private void viewStats() throws IOException {

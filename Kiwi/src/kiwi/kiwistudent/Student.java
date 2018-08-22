@@ -24,8 +24,6 @@ public class Student {
     
     
     //Constants:
-    
-    
     /**
      * Name/IP address of the server socket.(Either "localhost" or
      * "IP_address>").
@@ -100,8 +98,6 @@ public class Student {
     protected Date deadlineDay;
     protected Time deadlineTime;
     
-    
-    
     //Constructor:
     
     /**
@@ -120,7 +116,7 @@ public class Student {
             writer= new ObjectOutputStream(os);   //MESSAGE
             //check connection:
             StudentMessage response = (StudentMessage) reader.readObject();
-            connected = (int)(response.getBody())==StudentMessage.RESP_SUCCESS;
+            connected = (int)(response.getBody())==StudentMessage.SUCCESS;
     }
     
     
@@ -131,14 +127,14 @@ public class Student {
     public int login(String studentNumber) {
         try {
             //Check student number exists and load values:
-            writer.writeObject(new StudentMessage(StudentMessage.CMD_LOGIN, studentNumber, null));
+            writer.writeObject(new StudentMessage(StudentMessage.CMD_LOGIN, studentNumber));
             StudentMessage loginResponce = (StudentMessage) reader.readObject();
-            if (loginResponce.getMessage().equals(StudentMessage.FAIL_CONNECT))
+            if (loginResponce.getResponse()==StudentMessage.FAIL_CONNECT)
             {
                 System.out.println("Error: Failed to connect.");
                 return FAIL_CONNECT;
             }
-            else if (loginResponce.getMessage().equals(StudentMessage.FAIL_INPUT))
+            else if (loginResponce.getResponse()==StudentMessage.FAIL_INPUT)
             {
                 System.out.println("Error: Student is not register in the databease.");
                 return FAIL_LOGIN;
