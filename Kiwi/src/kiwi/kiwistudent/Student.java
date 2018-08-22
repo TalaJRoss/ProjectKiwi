@@ -7,11 +7,14 @@ import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.net.Socket;
 import java.sql.Connection;
+import java.sql.Date;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.sql.Time;
 import kiwi.message.StudentMessage;
+import kiwi.message.StudentStatistics;
 
 /**
  * Creates object to handle access to and control of student's information.
@@ -57,24 +60,30 @@ public class Student {
     /**
      * The student's student number.
      */
-    String studentNo;
+    protected String studentNo;
     
     /**
      * The student's highest recorded assignment grade.
      */
-    double highestGrade;
+    protected double highestGrade;
     
     //TODO: get number of submissions from server
     /**
      * The number of submissions a student is allowed.
      */
-    int maxNoSubmissions = 3;
+    protected int maxNoSubmissions = 3;
     
     /**
-     * The number of submissions the student has completed already.
+     * The number of submissions the student has remaining.
      */
-    int noSubmissionsCompleted;
+    protected int noSubmissionsRemaining;
     
+    
+    /**
+     *  The date and the time of the deadline of the assignment
+     */
+    protected Date deadlineDay;
+    protected Time deadlineTime;
     
     /**
      * This student's socket which is used to communicate with the server.
@@ -126,33 +135,40 @@ public class Student {
      */
     public String login(String studentNumber) {
         try {
-            //Setup database connection: requires mysql "KiwiDB" named database on host with user="root" and pass="mysql"
-            Class.forName("com.mysql.cj.jdbc.Driver");
-            Connection conn = DriverManager.getConnection("jdbc:mysql://localhost/KiwiDB", "root", "mysql");
-
-            //Get student output:
-            Statement st = conn.createStatement();
-            String statement = "SELECT * FROM students WHERE StudentNo LIKE '" + studentNumber + "'";   //check for student number in student table
-            ResultSet rs = st.executeQuery(statement);
-            
             //Check student number exists and load values:
-            if (rs.next()) {    //student number exists
-                studentNo = (String) rs.getObject("studentNo");
-                highestGrade = (int) rs.getObject("highestGrade");
-                noSubmissionsCompleted = (int) rs.getObject("noSubmissionsCompleted");
+            writer.writeObject(new StudentMessage(StudentMessage.CMD_LOGIN, studentNumber, null));
+            
+            StudentMessage loginResponce = (StudentMessage) reader.readObject();
+            if (loginResponce.getMessage().equals(StudentMessage.FAIL_CONNECT))
+            {
+                System.out.println("Error: Failed to connect.");
+                return FAIL_CONNECT;
+            }
+            else if (loginResponce.getMessage().equals(StudentMessage.FAIL_INPUT))
+            {
+                System.out.println("Error: Student is not register in the databease.");
+                return FAIL_LOGIN;
+            }
+            else
+            {
+                StudentStatistics st = (StudentStatistics) loginResponce.getBody();
+                highestGrade = st.getHighestGrade();
+                noSubmissionsRemaining = st.getNoSubmissionsRemaining();
+                deadlineDay = st.getDeadlineDay();
+                deadlineTime = st.getDeadlineTime();
                 return SUCCESS_LOGIN;
             }
-            return FAIL_LOGIN;  //student number doesn't exist
+
+        } catch (ClassNotFoundException e) {  //can't read the return message
+            System.out.println("Error: Unable to get responce from server.");
+            System.out.println(e);
+            return FAIL_CONNECT;
         }
-        catch (SQLException e) { //can't check student number
-            System.out.println("Error: Problem checking student number on database for login.");
-            System.out.println(e);
-            return FAIL_CONNECT;
-        } 
-        catch (ClassNotFoundException e) {  //can't check student number
-            System.out.println("Error: Problem connecting to database/loading driver.");
-            System.out.println(e);
-            return FAIL_CONNECT;
+        //can't check student number
+         catch (IOException ex) {
+             System.out.println("Error: Unable to sent message to server.");
+             System.out.println(ex);
+             return FAIL_CONNECT;
         }
     }
     
@@ -167,18 +183,6 @@ public class Student {
         return highestGrade;
     }
     
-    /**
-     * Gets student's number of submissions remaining.
-     * That is, noSubmissionsAllowed - noSubmissionsCompleted.
-     * @return Student's number of submissions remaining.
-     */
-    public int getNoSubmissionsRemaining() {
-        return maxNoSubmissions - noSubmissionsCompleted;
-    }
-    
-    public void decrementSubmissionsAllowed() {
-        noSubmissionsCompleted++;
-    }
     
     public void updateGrade(double grade) {
         if (grade>highestGrade) {

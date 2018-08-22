@@ -29,11 +29,6 @@ public class AssignmentFrame extends javax.swing.JFrame {
     
     
     /**
-     * Home page frame to return to when done viewing grade.
-     */
-    static HomeFrame home;
-    
-    /**
      * Student object containing and controlling information relevant to logged
      * in student.
      */
@@ -52,8 +47,7 @@ public class AssignmentFrame extends javax.swing.JFrame {
      * @param home Home frame to return to when done viewing grade.
      * @param student Student object representing logged in student.
      */
-    public AssignmentFrame(HomeFrame home, Student student) {
-        this.home = home;
+    public AssignmentFrame(Student student) {
         this.student = student;
         initComponents();
         this.assignment = new Assignment(student);
@@ -247,6 +241,7 @@ public class AssignmentFrame extends javax.swing.JFrame {
      */
     private void btnHomeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnHomeActionPerformed
         this.setVisible(false);
+        HomeFrame home = new HomeFrame(student);
         home.setVisible(true);
         this.dispose();
     }//GEN-LAST:event_btnHomeActionPerformed
@@ -344,7 +339,7 @@ public class AssignmentFrame extends javax.swing.JFrame {
         /* Create and display the form */
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
-                new AssignmentFrame(home, student).setVisible(true);
+                new AssignmentFrame(student).setVisible(true);
             }
         });
     }

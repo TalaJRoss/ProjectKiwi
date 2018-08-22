@@ -85,12 +85,12 @@ public class Assignment {
                 rs = st.executeQuery(query);
 
                 //Create question object:
-                Question question = new Question();
+                Question question = new Question(conn);
                 while (rs.next()) {
                     String tempQuestion = rs.getString("Question");
                     String answer = rs.getString("Answer");
                     int difficulty = rs.getInt("Difficulty");
-                    question = new Question(tempQuestion, answer, difficulty);
+                    question = new Question(tempQuestion, answer, difficulty,conn);
                     System.out.format("%s, %s, %s\n", question, answer, difficulty );   //DEBUG
                 }
 

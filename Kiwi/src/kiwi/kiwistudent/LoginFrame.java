@@ -1,5 +1,8 @@
 package kiwi.kiwistudent;
 
+import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JOptionPane;
 
 /**
@@ -101,7 +104,13 @@ public class LoginFrame extends javax.swing.JFrame {
      * @param evt Click "Login" button.
      */
     private void btnLoginActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnLoginActionPerformed
-        login();
+        try {
+            login();
+        } catch (IOException ex) {
+            Logger.getLogger(LoginFrame.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (ClassNotFoundException ex) {
+            Logger.getLogger(LoginFrame.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }//GEN-LAST:event_btnLoginActionPerformed
 
     /**
@@ -109,7 +118,13 @@ public class LoginFrame extends javax.swing.JFrame {
      * @param evt Press enter in text field.
      */
     private void txtfStudentNoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtfStudentNoActionPerformed
-        login();
+        try {
+            login();
+        } catch (IOException ex) {
+            Logger.getLogger(LoginFrame.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (ClassNotFoundException ex) {
+            Logger.getLogger(LoginFrame.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }//GEN-LAST:event_txtfStudentNoActionPerformed
     
     
@@ -118,7 +133,7 @@ public class LoginFrame extends javax.swing.JFrame {
     /**
      * Processes login using student number from text field.
      */
-    private void login() {
+    private void login() throws IOException, ClassNotFoundException {
         String studentNo = txtfStudentNo.getText();
         Student student = new Student();
         String reply = student.login(studentNo);

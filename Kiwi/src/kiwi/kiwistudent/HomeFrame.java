@@ -1,6 +1,9 @@
 package kiwi.kiwistudent;
 
 //TODO: logout functionality
+
+import java.text.DecimalFormat;
+
 /**
  * Creates home page interface.
  * @author Tala Ross(rsstal002)
@@ -28,6 +31,11 @@ public class HomeFrame extends javax.swing.JFrame {
     public HomeFrame(Student student) {
         this.student = student;
         initComponents();
+        DecimalFormat d = new DecimalFormat("0.00");
+        txtGrade.setText(""+d.format(student.highestGrade));
+        txtSubRemain.setText(""+student.maxNoSubmissions);
+        txtDeadlineDate.setText(student.deadlineDay.toString());
+        txtDeadlineTime.setText(student.deadlineTime.toString());
     }
 
     /**
@@ -41,7 +49,14 @@ public class HomeFrame extends javax.swing.JFrame {
 
         jPanel1 = new javax.swing.JPanel();
         btnStart = new javax.swing.JButton();
-        btnViewGrade = new javax.swing.JButton();
+        lblGrade = new javax.swing.JLabel();
+        txtGrade = new javax.swing.JTextField();
+        lblSubRemain = new javax.swing.JLabel();
+        txtSubRemain = new javax.swing.JTextField();
+        lblDeadlineDate = new javax.swing.JLabel();
+        txtDeadlineDate = new javax.swing.JTextField();
+        lblDeadlineTime = new javax.swing.JLabel();
+        txtDeadlineTime = new javax.swing.JTextField();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -52,12 +67,26 @@ public class HomeFrame extends javax.swing.JFrame {
             }
         });
 
-        btnViewGrade.setText("View Grade");
-        btnViewGrade.addActionListener(new java.awt.event.ActionListener() {
+        lblGrade.setText("Your highest grade is:");
+
+        txtGrade.setEditable(false);
+
+        lblSubRemain.setText("No. submision remaining:");
+
+        txtSubRemain.setEditable(false);
+        txtSubRemain.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnViewGradeActionPerformed(evt);
+                txtSubRemainActionPerformed(evt);
             }
         });
+
+        lblDeadlineDate.setText("Deadline date:");
+
+        txtDeadlineDate.setEditable(false);
+
+        lblDeadlineTime.setText("Deadline time:");
+
+        txtDeadlineTime.setEditable(false);
 
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
@@ -65,19 +94,45 @@ public class HomeFrame extends javax.swing.JFrame {
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
                 .addContainerGap(128, Short.MAX_VALUE)
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                    .addComponent(btnViewGrade, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(btnStart, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addComponent(btnStart)
                 .addGap(119, 119, 119))
+            .addGroup(jPanel1Layout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                    .addComponent(lblDeadlineTime, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(lblSubRemain, javax.swing.GroupLayout.DEFAULT_SIZE, 147, Short.MAX_VALUE)
+                    .addComponent(lblGrade, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(lblDeadlineDate, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addGap(35, 35, 35)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(txtGrade)
+                    .addComponent(txtSubRemain)
+                    .addComponent(txtDeadlineDate)
+                    .addComponent(txtDeadlineTime))
+                .addContainerGap())
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel1Layout.createSequentialGroup()
                 .addGap(75, 75, 75)
                 .addComponent(btnStart)
-                .addGap(42, 42, 42)
-                .addComponent(btnViewGrade)
-                .addContainerGap(125, Short.MAX_VALUE))
+                .addGap(25, 25, 25)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(lblGrade)
+                    .addComponent(txtGrade, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(lblSubRemain)
+                    .addComponent(txtSubRemain, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(lblDeadlineDate)
+                    .addComponent(txtDeadlineDate, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(lblDeadlineTime)
+                    .addComponent(txtDeadlineTime, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap(62, Short.MAX_VALUE))
         );
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
@@ -95,33 +150,20 @@ public class HomeFrame extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     
-    //Action performed methods:
-    
-    /**
-     * Transitions to grade viewing frame.
-     * @param evt Click "View Grade" button.
-     */
-    private void btnViewGradeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnViewGradeActionPerformed
-        
-        this.setVisible(false);
-        
-        GradeFrame grade = new GradeFrame(this, student);
-        grade.setVisible(true);
-        
-    }//GEN-LAST:event_btnViewGradeActionPerformed
-
     /**
      * Transitions to assignment frame.
      * @param evt Click "Start Assignment" button.
      */
     private void btnStartActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnStartActionPerformed
-        
         this.setVisible(false);
-        
-        AssignmentFrame question = new AssignmentFrame(this, student);
+        AssignmentFrame question = new AssignmentFrame(student);
         question.setVisible(true);
-        
+        this.dispose();
     }//GEN-LAST:event_btnStartActionPerformed
+
+    private void txtSubRemainActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtSubRemainActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_txtSubRemainActionPerformed
 
     
     //Main method:
@@ -171,8 +213,15 @@ public class HomeFrame extends javax.swing.JFrame {
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnStart;
-    private javax.swing.JButton btnViewGrade;
     private javax.swing.JPanel jPanel1;
+    private javax.swing.JLabel lblDeadlineDate;
+    private javax.swing.JLabel lblDeadlineTime;
+    private javax.swing.JLabel lblGrade;
+    private javax.swing.JLabel lblSubRemain;
+    private javax.swing.JTextField txtDeadlineDate;
+    private javax.swing.JTextField txtDeadlineTime;
+    private javax.swing.JTextField txtGrade;
+    private javax.swing.JTextField txtSubRemain;
     // End of variables declaration//GEN-END:variables
 
 
