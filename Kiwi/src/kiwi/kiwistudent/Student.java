@@ -1,10 +1,17 @@
 package kiwi.kiwistudent;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.OutputStream;
+import java.net.Socket;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import kiwi.message.StudentMessage;
 
 /**
  * Creates object to handle access to and control of student's information.
@@ -18,6 +25,17 @@ public class Student {
     
     //Constants:
     
+    
+    /**
+     * Name/IP address of the server socket.(Either "localhost" or
+     * "IP_address>").
+     */
+    private static final String SERVER_NAME = "localhost";
+    
+    /**
+     * Port number on which server is listening.
+     */
+    private static final int PORT_NO = 2048;
     /**
      * Indicates that login was successful.
      */
@@ -58,12 +76,43 @@ public class Student {
     int noSubmissionsCompleted;
     
     
+    /**
+     * This student's socket which is used to communicate with the server.
+     */
+    private final Socket studentSocket;
+    
+    /**
+     * Stream used to read in messages from the server.
+     */
+    private final ObjectOutputStream writer;
+    
+    /**
+     * Stream used to write messages to the server.
+     */
+    private final ObjectInputStream reader;
+    
+    private boolean connected;
+    
+    
     //Constructor:
     
     /**
      * Default constructor.
+     * @throws java.io.IOException
+     * @throws java.lang.ClassNotFoundException
      */
-    public Student() {
+    public Student() throws IOException, ClassNotFoundException {
+            //make socket:
+            studentSocket = new Socket(SERVER_NAME, PORT_NO);
+            System.out.println("Client port is: " + studentSocket.getLocalPort());
+            //Set up streams:
+            InputStream is= studentSocket.getInputStream();
+            reader= new ObjectInputStream(is); //MESSAGE
+            OutputStream os= studentSocket.getOutputStream();
+            writer= new ObjectOutputStream(os);   //MESSAGE
+            //check connection:
+            StudentMessage response = (StudentMessage) reader.readObject();
+            connected = (int)(response.getBody())==StudentMessage.RESP_SUCCESS;
     }
     
     

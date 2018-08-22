@@ -23,7 +23,7 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import message.LecturerMessage;
+import kiwi.message.LecturerMessage;
 
 /**
  *
@@ -109,10 +109,10 @@ final class LecturerHandler extends Thread{
     public LecturerHandler(Socket lecturerSocket) {
         this.lecturerSocket = lecturerSocket;
         try {
-            OutputStream os= lecturerSocket.getOutputStream();
-            writer= new ObjectOutputStream(os);   //MESSAGE
-            InputStream is= lecturerSocket.getInputStream();
-            reader= new ObjectInputStream(is); //MESSAGE
+            OutputStream os = lecturerSocket.getOutputStream();
+            writer = new ObjectOutputStream(os);   //MESSAGE
+            InputStream is = lecturerSocket.getInputStream();
+            reader = new ObjectInputStream(is); //MESSAGE
         } 
         catch (IOException ex) {
             Logger.getLogger(LecturerHandler.class.getName()).log(Level.SEVERE, null, ex);

@@ -13,14 +13,10 @@ import java.net.Socket;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import message.LecturerMessage;
+import kiwi.message.LecturerMessage;
 
 //TODO: get assignment deadline and no. submissions from lecturer
 //TODO: update create students table to just require studentNo fields in csv and not require formated headings row
