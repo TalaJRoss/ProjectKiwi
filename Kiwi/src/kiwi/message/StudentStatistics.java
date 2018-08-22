@@ -5,6 +5,7 @@
  */
 package kiwi.message;
 
+import java.io.Serializable;
 import java.sql.Time;
 import java.sql.Date;
 
@@ -12,7 +13,7 @@ import java.sql.Date;
  *
  * @author Tala Ross(rsstal002)
  */
-public class StudentStatistics {
+public class StudentStatistics implements Serializable{
     private double highestGrade;
     private int noSubmissionsRemaining;
     private Date deadlineDay;

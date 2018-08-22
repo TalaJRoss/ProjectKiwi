@@ -1,9 +1,6 @@
 package kiwi.kiwilecturer;
 
-import com.opencsv.CSVReader;
-import java.sql.Statement;
-import java.io.File;
-import java.io.FileReader;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
@@ -16,6 +13,7 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import kiwi.kiwiserver.ServerStartup;
 import kiwi.message.LecturerMessage;
 
 //TODO: get assignment deadline and no. submissions from lecturer
@@ -31,17 +29,6 @@ public class Lecturer {
     
     
     //Server:
-    
-    /**
-     * Name/IP address of the server socket.(Either "localhost" or
-     * "IP_address>").
-     */
-    private static final String SERVER_NAME = "localhost";
-    
-    /**
-     * Port number on which server is listening.
-     */
-    private static final int PORT_NO = 2048;
     
     /**
      * This lecturer's socket which is used to communicate with the server.
@@ -62,7 +49,7 @@ public class Lecturer {
 
     public Lecturer() throws IOException, ClassNotFoundException {
         //make socket:
-        lecturerSocket= new Socket(SERVER_NAME, PORT_NO);
+        lecturerSocket= new Socket(ServerStartup.SERVER_NAME, ServerStartup.LECTURER_PORT_NUM);
         System.out.println("Client port is: " + lecturerSocket.getLocalPort());
         //Set up streams:
         InputStream is= lecturerSocket.getInputStream();

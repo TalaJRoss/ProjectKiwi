@@ -33,9 +33,13 @@ public class StudentListener extends Thread{
      * @param server The server which the listener is servicing
      * @throws java.io.IOException
      */
-    public StudentListener() throws IOException {
-        this.serverSocket= new ServerSocket(ServerStartup.STUDENT_PORT_NUM);
-        this.handlerList= new CopyOnWriteArrayList<>();
+    public StudentListener() {
+        try {
+            this.serverSocket= new ServerSocket(ServerStartup.STUDENT_PORT_NUM);
+            this.handlerList= new CopyOnWriteArrayList<>();
+        } catch (IOException ex) {
+            Logger.getLogger(StudentListener.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
     
     

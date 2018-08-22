@@ -26,8 +26,8 @@ public class ServerStartup {
     public static void main(String[] args) {
         LecturerListener lecturerListener = new LecturerListener();
         lecturerListener.start();
-        /*StudentListener studentListener= new StudentListener();
-        studentListener.start();*/
+        StudentListener studentListener= new StudentListener();
+        studentListener.start();
     }
     
 }

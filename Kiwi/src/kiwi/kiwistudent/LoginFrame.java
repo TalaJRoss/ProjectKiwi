@@ -141,14 +141,17 @@ public class LoginFrame extends javax.swing.JFrame {
             this.setVisible(false);
             HomeFrame home = new HomeFrame(student);
             home.setVisible(true);
+            System.out.println("dbug 0");
         }
         else if (reply==Student.FAIL_LOGIN) {
             JOptionPane.showMessageDialog(this, "Incorrect student number!");
             txtfStudentNo.setText("");
+            System.out.println("dbug 1");
         }
         else{
             JOptionPane.showMessageDialog(this, "Unable to connect to database!");
             txtfStudentNo.setText("");
+            System.out.println("dbug 2");
         }
     }
     

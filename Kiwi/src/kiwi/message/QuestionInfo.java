@@ -5,13 +5,14 @@
  */
 package kiwi.message;
 
+import java.io.Serializable;
 import kiwi.kiwiserver.Assignment;
 
 /**
  *
  * @author Tala Ross(rsstal002)
  */
-public class QuestionInfo {
+public class QuestionInfo implements Serializable{
     
     private int questionNo;
     private int totalNoQuestions;

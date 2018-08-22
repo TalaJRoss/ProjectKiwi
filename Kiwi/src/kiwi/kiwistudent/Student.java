@@ -9,6 +9,7 @@ import java.io.OutputStream;
 import java.net.Socket;
 import java.sql.Date;
 import java.sql.Time;
+import kiwi.kiwiserver.ServerStartup;
 import kiwi.message.QuestionInfo;
 import kiwi.message.StudentMessage;
 import kiwi.message.StudentStatistics;
@@ -22,18 +23,6 @@ import kiwi.message.StudentStatistics;
 //TODO: update grade/submissions on server at end of each assignment
 public class Student {
     
-    
-    //Constants:
-    /**
-     * Name/IP address of the server socket.(Either "localhost" or
-     * "IP_address>").
-     */
-    private static final String SERVER_NAME = "localhost";
-    
-    /**
-     * Port number on which server is listening.
-     */
-    private static final int PORT_NO = 2048;
     
     public static int FAIL_CONNECT = 0;
     public static int FAIL_LOGIN = 1;
@@ -107,7 +96,7 @@ public class Student {
      */
     public Student() throws IOException, ClassNotFoundException {
             //make socket:
-            studentSocket = new Socket(SERVER_NAME, PORT_NO);
+            studentSocket = new Socket(ServerStartup.SERVER_NAME, ServerStartup.STUDENT_PORT_NUM);
             System.out.println("Client port is: " + studentSocket.getLocalPort());
             //Set up streams:
             InputStream is= studentSocket.getInputStream();
@@ -116,7 +105,7 @@ public class Student {
             writer= new ObjectOutputStream(os);   //MESSAGE
             //check connection:
             StudentMessage response = (StudentMessage) reader.readObject();
-            connected = (int)(response.getBody())==StudentMessage.SUCCESS;
+            connected = (int)(response.getResponse())==StudentMessage.SUCCESS;
     }
     
     

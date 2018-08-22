@@ -5,11 +5,13 @@
  */
 package kiwi.message;
 
+import java.io.Serializable;
+
 /**
  *
  * @author Tala Ross(rsstal002)
  */
-public class StudentMessage {
+public class StudentMessage implements Serializable{
     //from student:
     //start_assignment
     //get schema
