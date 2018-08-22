@@ -9,6 +9,7 @@ import java.io.OutputStream;
 import java.net.Socket;
 import java.sql.Date;
 import java.sql.Time;
+import java.text.DecimalFormat;
 import kiwi.kiwiserver.ServerStartup;
 import kiwi.message.QuestionInfo;
 import kiwi.message.StudentMessage;
@@ -35,10 +36,11 @@ public class Student {
     private int currentOutOf;
     private int currentMark;
     private String nextQuestion;
+    private int nextQuestionNo;
     
     private double currentFinalGrade;
     private int noQuestions;
-    private File schemaImg;
+    private byte [] schemaImg;
     
     
     /**
@@ -118,24 +120,20 @@ public class Student {
             //Check student number exists and load values:
             writer.writeObject(new StudentMessage(StudentMessage.CMD_LOGIN, studentNumber));
             StudentMessage loginResponce = (StudentMessage) reader.readObject();
-            if (loginResponce.getResponse()==StudentMessage.FAIL_CONNECT)
-            {
-                System.out.println("Error: Failed to connect.");
-                return FAIL_CONNECT;
-            }
-            else if (loginResponce.getResponse()==StudentMessage.FAIL_INPUT)
-            {
-                System.out.println("Error: Student is not register in the databease.");
-                return FAIL_LOGIN;
-            }
-            else
-            {
-                StudentStatistics st = (StudentStatistics) loginResponce.getBody();
-                highestGrade = st.getHighestGrade();
-                noSubmissionsRemaining = st.getNoSubmissionsRemaining();
-                deadlineDay = st.getDeadlineDay();
-                deadlineTime = st.getDeadlineTime();
-                return SUCCESS_LOGIN;
+            switch (loginResponce.getResponse()) {
+                case StudentMessage.FAIL_CONNECT:
+                    System.out.println("Error: Failed to connect.");
+                    return FAIL_CONNECT;
+                case StudentMessage.FAIL_INPUT:
+                    System.out.println("Error: Student is not register in the databease.");
+                    return FAIL_LOGIN;
+                default:
+                    StudentStatistics st = (StudentStatistics) loginResponce.getBody();
+                    highestGrade = st.getHighestGrade();
+                    noSubmissionsRemaining = st.getNoSubmissionsRemaining();
+                    deadlineDay = st.getDeadlineDay();
+                    deadlineTime = st.getDeadlineTime();
+                    return SUCCESS_LOGIN;
             }
     
         } catch (ClassNotFoundException e) {  //can't read the return message
@@ -151,6 +149,29 @@ public class Student {
         }
     }
     
+    public boolean startAssignment() {
+        try {
+            writer.writeObject(new StudentMessage(StudentMessage.CMD_START, null));
+            
+            //get feedback and mark:
+            StudentMessage m = (StudentMessage) reader.readObject();
+            if (m.getResponse()==StudentMessage.SUCCESS) {
+                QuestionInfo qi = (QuestionInfo) m.getBody();
+                noQuestions = qi.getTotalNoQuestions();
+                nextQuestionNo = qi.getQuestionNo();
+                nextQuestion = qi.getQuestion();
+                schemaImg = qi.getSchemaImg();
+                return true;
+            }
+            else {
+                return false;
+            }
+        } catch (IOException | ClassNotFoundException e) {
+            System.out.println("Error: Problem sending/receiving tcp socket messages in startMessage() method.");
+            System.out.println(e);
+            return false;
+        }
+    }
     
     /**
      * Checks students output from the given statement and saves the formatted
@@ -160,16 +181,22 @@ public class Student {
      * @throws IOException
      * @throws ClassNotFoundException 
      */
-    public boolean check(String studentStatement) throws IOException, ClassNotFoundException {
-        writer.writeObject(new StudentMessage(StudentMessage.CMD_CHECK, studentStatement));
-        
-        //get feedback and mark:
-        StudentMessage m = (StudentMessage) reader.readObject();
-        if (m.getResponse()==StudentMessage.SUCCESS) {
-            currentCheckOutput = (String) m.getBody();
-            return true;
-        }
-        else {
+    public boolean check(String studentStatement) {
+        try {
+            writer.writeObject(new StudentMessage(StudentMessage.CMD_CHECK, studentStatement));
+            
+            //get feedback and mark:
+            StudentMessage m = (StudentMessage) reader.readObject();
+            if (m.getResponse()==StudentMessage.SUCCESS) {
+                currentCheckOutput = (String) m.getBody();
+                return true;
+            }
+            else {
+                return false;
+            }
+        } catch (IOException | ClassNotFoundException e) {
+            System.out.println("Error: Problem sending/receiving tcp socket messages in check() method.");
+            System.out.println(e);
             return false;
         }
     }
@@ -181,39 +208,50 @@ public class Student {
      * @throws IOException
      * @throws ClassNotFoundException 
      */
-    public boolean submit(String studentAns) throws IOException, ClassNotFoundException {
-        writer.writeObject(new StudentMessage(StudentMessage.CMD_SUBMIT, studentAns));
-        
-        //get feedback and mark:
-        StudentMessage m = (StudentMessage) reader.readObject();
-        if (m.getResponse()==StudentMessage.SUCCESS) {
-            QuestionInfo qi = (QuestionInfo) m.getBody();
-            currentFeedback = qi.getFeedback();
-            currentMark = qi.getMark();
-            currentOutOf = qi.getOutOf();
-            nextQuestion = qi.getQuestion();
-            return true;
-        }
-        else {
+    public boolean submit(String studentAns) {
+        try {    
+            writer.writeObject(new StudentMessage(StudentMessage.CMD_SUBMIT, studentAns));
+
+            //get feedback and mark:
+            StudentMessage m = (StudentMessage) reader.readObject();
+            if (m.getResponse()==StudentMessage.SUCCESS) {
+                QuestionInfo qi = (QuestionInfo) m.getBody();
+                currentFeedback = qi.getFeedback();
+                currentMark = qi.getMark();
+                currentOutOf = qi.getOutOf();
+                nextQuestion = qi.getQuestion();
+                return true;
+            }
+            else {
+                return false;
+            }
+        } catch (IOException | ClassNotFoundException e) {
+            System.out.println("Error: Problem sending/receiving tcp socket messages in submit() method.");
+            System.out.println(e);
             return false;
         }
     }
     
-    public boolean leaveAssignment() throws IOException, ClassNotFoundException {
-        writer.writeObject(new StudentMessage(StudentMessage.CMD_QUIT, null));
-        
-        //get feedback and mark:
-        StudentMessage m = (StudentMessage) reader.readObject();
-        if (m.getResponse()==StudentMessage.SUCCESS) {
-            currentCheckOutput = (String) m.getBody();
-            return true;
-        }
-        else {
+    public boolean leaveAssignment() {
+        try {
+            writer.writeObject(new StudentMessage(StudentMessage.CMD_QUIT, null));
+
+            //get feedback and mark:
+            StudentMessage m = (StudentMessage) reader.readObject();
+            if (m.getResponse()==StudentMessage.SUCCESS) {  //saved grades
+                return true;
+            }
+            else {  //didn't save grades
+                return false;
+            }
+        } catch (IOException | ClassNotFoundException e) {
+            System.out.println("Error: Problem sending/receiving tcp socket messages in leaveAssignment() method.");
+            System.out.println(e);
             return false;
         }
     }
     
-    public File getSchemaImage() {
+    public byte [] getSchemaImage() {
         return schemaImg;
     }
     
@@ -231,6 +269,23 @@ public class Student {
 
     public String getNextQuestion() {
         return nextQuestion;
+    }
+
+    public int getNextQuestionNo() {
+        return nextQuestionNo;
+    }
+
+    public String getFinalGrade() {
+        DecimalFormat d = new DecimalFormat("0.00");
+        return d.format(currentFinalGrade);
+    }
+
+    public int getNoQuestions() {
+        return noQuestions;
+    }
+
+    boolean isAssignmentDone() {
+        return nextQuestionNo<0;
     }
     
 }

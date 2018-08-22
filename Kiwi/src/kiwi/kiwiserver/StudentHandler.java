@@ -5,6 +5,9 @@
  */
 package kiwi.kiwiserver;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
@@ -18,6 +21,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Time;
+import java.util.Arrays;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import kiwi.message.QuestionInfo;
@@ -79,7 +83,7 @@ class StudentHandler extends Thread {
     
     Connection conn;
     
-    private String schemaImg;
+    private byte [] schemaImg;
     
     
     //Constructor:
@@ -91,6 +95,21 @@ class StudentHandler extends Thread {
      * @param clientSocket socket on client side linking server to client
      */
     public StudentHandler(Socket studentSocket) {
+        //DEBUG:
+        File file = new File("schema.jpg");
+        byte[] bytesArray = new byte[(int) file.length()]; 
+
+        FileInputStream fis;
+        try {
+            fis = new FileInputStream(file);
+            fis.read(bytesArray); //read file into bytes[]
+            fis.close();
+            schemaImg = bytesArray;
+        } catch (FileNotFoundException ex) {
+            Logger.getLogger(StudentHandler.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (IOException ex) {
+            Logger.getLogger(StudentHandler.class.getName()).log(Level.SEVERE, null, ex);
+        }
         this.studentSocket = studentSocket;
         studentNo = null;
         try {
@@ -217,9 +236,10 @@ class StudentHandler extends Thread {
             System.out.println(e); 
             writer.writeObject(new StudentMessage(StudentMessage.CMD_START, null, StudentMessage.FAIL_CONNECT));
         }
-        
-        QuestionInfo qi = new QuestionInfo(assignment, schemaImg);  //question info to return to student end
-        writer.writeObject(new StudentMessage(StudentMessage.CMD_START, qi));
+        System.out.println("schema img: " + schemaImg.getClass());
+        System.out.println("schema img: " + Arrays.toString(schemaImg));
+        //QuestionInfo qi = new QuestionInfo(assignment, schemaImg);  //question info to return to student end
+        //writer.writeObject(new StudentMessage(StudentMessage.CMD_START, qi));
     }
 
     private void viewStats() throws IOException {

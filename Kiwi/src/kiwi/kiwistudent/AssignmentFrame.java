@@ -1,12 +1,5 @@
 package kiwi.kiwistudent;
 
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.util.ArrayList;
-import java.util.Random;
 import javax.swing.ImageIcon;
 import javax.swing.JOptionPane;
 
@@ -34,10 +27,6 @@ public class AssignmentFrame extends javax.swing.JFrame {
      */
     static Student student;
     
-    /**
-     * Assignment object containing questions.
-     */
-    static Assignment assignment;
     
     
     //Constructor:
@@ -49,10 +38,22 @@ public class AssignmentFrame extends javax.swing.JFrame {
      */
     public AssignmentFrame(Student student) {
         this.student = student;
-        initComponents();
-        this.assignment = new Assignment(student);
-        txtaQuestion.setText("Question:\n"+assignment.nextQuestion().getQuestion());
-        btnNext.setEnabled(false);
+        if (student.startAssignment()) {    //successful startup
+            initComponents();
+            jpbQuestionProgress.setMinimum(0);
+            jpbQuestionProgress.setMaximum(student.getNoQuestions());
+            jpbQuestionProgress.setStringPainted(true);
+            txtaQuestion.setText("Question:\n" + student.getNextQuestion());
+            btnNext.setEnabled(false);
+        }
+        else {  //error in creation of assignment
+            JOptionPane.showMessageDialog(null, "There was an error connecting to the database."
+                    + "\nPlease start the assignment again.", "Startup Error", JOptionPane.ERROR_MESSAGE);
+            this.setVisible(false);
+            HomeFrame home = new HomeFrame(student);
+            home.setVisible(true);
+            this.dispose();
+        }
     }
 
     /**
@@ -80,6 +81,7 @@ public class AssignmentFrame extends javax.swing.JFrame {
         jLabel2 = new javax.swing.JLabel();
         jScrollPane4 = new javax.swing.JScrollPane();
         txtaOutput = new javax.swing.JTextArea();
+        jpbQuestionProgress = new javax.swing.JProgressBar();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -142,13 +144,12 @@ public class AssignmentFrame extends javax.swing.JFrame {
         txtaOutput.setText("Output:");
         jScrollPane4.setViewportView(txtaOutput);
 
+        jpbQuestionProgress.setToolTipText("");
+
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addComponent(btnShowSchema))
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
                 .addGap(0, 0, Short.MAX_VALUE)
                 .addComponent(btnCheck)
@@ -157,11 +158,16 @@ public class AssignmentFrame extends javax.swing.JFrame {
             .addGroup(jPanel1Layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
+                        .addGap(0, 0, Short.MAX_VALUE)
+                        .addComponent(btnShowSchema))
                     .addComponent(jScrollPane2, javax.swing.GroupLayout.Alignment.TRAILING)
                     .addComponent(jScrollPane1)
                     .addGroup(jPanel1Layout.createSequentialGroup()
                         .addComponent(btnHome)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 288, Short.MAX_VALUE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 90, Short.MAX_VALUE)
+                        .addComponent(jpbQuestionProgress, javax.swing.GroupLayout.PREFERRED_SIZE, 181, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(75, 75, 75)
                         .addComponent(jLabel2)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(txtfMark, javax.swing.GroupLayout.PREFERRED_SIZE, 60, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -193,11 +199,13 @@ public class AssignmentFrame extends javax.swing.JFrame {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 173, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(18, 18, 18)
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(btnHome)
-                    .addComponent(btnNext)
-                    .addComponent(txtfMark, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jLabel2))
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addComponent(btnHome)
+                        .addComponent(btnNext)
+                        .addComponent(txtfMark, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(jLabel2))
+                    .addComponent(jpbQuestionProgress, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
         );
 
@@ -226,13 +234,23 @@ public class AssignmentFrame extends javax.swing.JFrame {
      */
     private void btnSubmitActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSubmitActionPerformed
         String answer = txtfAnswer.getText();
-        int mark = assignment.mark(answer);
-        if (mark>=0) {  //no error
-            txtfMark.setText(mark + "/" + assignment.getDifficulty()*Question.MARK_RANGE[2]);
+        if (answer.equals("")) {    //empty answer field
+            int confirm = JOptionPane.showConfirmDialog(null, "You did not provide an answer."
+                    + "\nAre you sure you want to submit?", "Empty Submit Confirmation", JOptionPane.YES_NO_OPTION);
+            if (confirm!=JOptionPane.YES_OPTION) {  //don't submit
+                return;
+            }
         }
-        txtaFeedback.setText(assignment.getFeedback(answer));
-        btnSubmit.setEnabled(false);
-        btnNext.setEnabled(true);
+        if (student.submit(answer)) { //submitted correctly to server
+            txtfMark.setText(student.getCurrentMark());
+            txtaFeedback.setText(student.getCurrentFeedback());
+            btnSubmit.setEnabled(false);
+            btnNext.setEnabled(true);
+        }
+        else {
+            JOptionPane.showMessageDialog(null, "There was an error connecting to the database."
+                    + "\nPlease resubmit your answer.", "Submission Error", JOptionPane.ERROR_MESSAGE);
+        }
     }//GEN-LAST:event_btnSubmitActionPerformed
     
     /**
@@ -240,43 +258,66 @@ public class AssignmentFrame extends javax.swing.JFrame {
      * @param evt Click "Home" button.
      */
     private void btnHomeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnHomeActionPerformed
-        this.setVisible(false);
-        HomeFrame home = new HomeFrame(student);
-        home.setVisible(true);
-        this.dispose();
+        if (!student.isAssignmentDone()) {  //assignment isn't complete
+            int confirm = JOptionPane.showConfirmDialog(null, "You did not complete the assignment."
+                    + "\nIf you quit now, you will receive 0 for this submission.\n"
+                    + "Are you sure you want to quit?", "Quit Confirmation", JOptionPane.YES_NO_OPTION);
+            if (confirm!=JOptionPane.YES_OPTION) {  //don't quit
+                return;
+            }
+        }
+        if (student.leaveAssignment()) {    //successful processing
+            this.setVisible(false);
+            HomeFrame home = new HomeFrame(student);
+            home.setVisible(true);
+            this.dispose();
+        }
+        else {
+            int confirm = JOptionPane.showConfirmDialog(null, "There was an error saving your grade. If you leave now, your grade may not be saved.\n"
+                    + "We suggest you re-attempt to leave the assignment so that your grade is properly saved."
+                    + "Would you like to reattempt?", "Grade Saving Error", JOptionPane.YES_NO_OPTION);
+            if (confirm==JOptionPane.YES_OPTION) {  //don't quit
+                return;
+            }
+            else {  //quit anyway
+                this.setVisible(false);
+                HomeFrame home = new HomeFrame(student);
+                home.setVisible(true);
+                this.dispose();
+            }
+        }
     }//GEN-LAST:event_btnHomeActionPerformed
     
-    //TODO: Create next functionality and enable next button.
     /**
      * Goes to next question.
      * Mark for current question set to zero if not submitted.
      * @param evt 
      */
     private void btnNextActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnNextActionPerformed
-        Question q = assignment.nextQuestion();
-        if (q==null) {
+        if (student.isAssignmentDone()) {
             btnNext.setEnabled(false);
-            JOptionPane.showMessageDialog(null, "Your final grade is: " + assignment.getGrade(), "Grade", JOptionPane.PLAIN_MESSAGE);
+            JOptionPane.showMessageDialog(null, "Your final grade is: " + student.getFinalGrade(), "Assignment Grade", JOptionPane.PLAIN_MESSAGE);
         }
         else {
-            txtaQuestion.setText("Question:\n"+q.getQuestion());
+            txtaQuestion.setText("Question:\n" + student.getNextQuestion());
             txtaFeedback.setText("");
             txtaOutput.setText("");
             txtfMark.setText("");
             txtfAnswer.setText("");
             btnSubmit.setEnabled(true);
             btnNext.setEnabled(false);
+            jpbQuestionProgress.setValue(student.getNextQuestionNo());
         }
     }//GEN-LAST:event_btnNextActionPerformed
     
-    //TODO: create functionality to generate schema based on query data and not use saved image.
     /**
      * Shows pop-up frame with picture representing the query data schema.
      * @param evt Click "Show Schema" button.
      */
     private void btnShowSchemaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnShowSchemaActionPerformed
-        ImageIcon icon = new ImageIcon("schema.jpg");
-        JOptionPane.showMessageDialog(null, "", "Schema", JOptionPane.PLAIN_MESSAGE, icon);
+        //ImageIcon icon = new ImageIcon("schema.jpg");
+        ImageIcon icon = new ImageIcon(student.getSchemaImage());
+        JOptionPane.showMessageDialog(null, "Query Database Schema", "Schema", JOptionPane.PLAIN_MESSAGE, icon);
     }//GEN-LAST:event_btnShowSchemaActionPerformed
     
     /**
@@ -286,8 +327,13 @@ public class AssignmentFrame extends javax.swing.JFrame {
      */
     private void btnCheckActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCheckActionPerformed
         String statement = txtfAnswer.getText();
-        String output = Question.check(statement);
-        txtaOutput.setText(output);
+        if (student.check(statement)) { //successful processing
+            txtaOutput.setText(student.getCurrentCheckOutput());
+        }
+        else {
+            JOptionPane.showMessageDialog(null, "There was an error connecting to the database."
+                    + "\nPlease retry your statement check.", "Checking Error", JOptionPane.ERROR_MESSAGE);
+        }
     }//GEN-LAST:event_btnCheckActionPerformed
 
     
@@ -359,6 +405,7 @@ public class AssignmentFrame extends javax.swing.JFrame {
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JScrollPane jScrollPane4;
+    private javax.swing.JProgressBar jpbQuestionProgress;
     private javax.swing.JTextArea txtaFeedback;
     private javax.swing.JTextArea txtaOutput;
     private javax.swing.JTextArea txtaQuestion;
