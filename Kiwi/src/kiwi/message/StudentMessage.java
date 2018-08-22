@@ -29,27 +29,27 @@ public class StudentMessage {
     /**
      * Indicates that action was unsuccessful due to input error.
      */
-    public static final int FAIL_INPUT = 2;
+    public static final String FAIL_INPUT = "INP_ERR";
     
     /**
      * Indicates that action was unsuccessful due to failed database connection.
      */
-    public static final int FAIL_CONNECT = 1;
+    public static final String FAIL_CONNECT = "CON_ERR";
     
     /**
      * Indicates that action was unsuccessful due to input error.
      */
-    public static final int SUCCESS = 0;
+    public static final String SUCCESS = "YAY";
     
     
     //Instance Variables:
     private int cmd;
     private Object body;
-    private int response;
+    private String response;
 
     
     //there was an error
-    public StudentMessage(int cmd, Object body, int returnMessage) {
+    public StudentMessage(int cmd, Object body, String returnMessage) {
         this.cmd = cmd;
         this.body = body;
         this.response = returnMessage;
@@ -70,7 +70,7 @@ public class StudentMessage {
         return body;
     }
     
-    public int getResponse() {
+    public String getMessage() {
         return response;
     }
     
