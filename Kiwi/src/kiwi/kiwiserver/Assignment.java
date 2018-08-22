@@ -65,8 +65,23 @@ public class Assignment {
         int random = 0;
         Random rnd = new Random();
 
+<<<<<<< HEAD
         //Get list of questions:
         for (int i=0; i<noQuestions; i++) {
+=======
+                //Create question object:
+                Question question = new Question(conn);
+                while (rs.next()) {
+                    String tempQuestion = rs.getString("Question");
+                    String answer = rs.getString("Answer");
+                    int difficulty = rs.getInt("Difficulty");
+                    question = new Question(tempQuestion, answer, difficulty,conn);
+                    System.out.format("%s, %s, %s\n", question, answer, difficulty );   //DEBUG
+                }
+
+                //Add question to list:
+                questionList.add(question);
+>>>>>>> StudentSide
 
             //Get question number to query:
             boolean used = true;
