@@ -5,6 +5,8 @@
  */
 package kiwi.message;
 
+import kiwi.kiwiserver.Assignment;
+
 /**
  *
  * @author Tala Ross(rsstal002)
@@ -30,6 +32,50 @@ public class QuestionInfo {
         this.outOf = outOf;
         this.feedback = feedback;
         this.finalGrade = finalGrade;
+        this.schemaImg = schemaImg;
+    }
+    
+    //from student
+    public QuestionInfo(int questionNo, String answer) {
+        this.questionNo = questionNo;
+        this.answer = answer;
+    }
+    
+    //creates return object
+    public QuestionInfo(Assignment assignment, String studentAns) {
+        this.schemaImg = null;
+        this.answer = null;
+        
+        this.mark = assignment.mark(studentAns);    //mark of current
+        this.outOf = assignment.getQuestion().getOutOf();
+        this.feedback = assignment.getFeedback(studentAns);
+        
+        if (assignment.getQuestionNumber()+1>assignment.getNoQuestions()) { //no questions left
+            this.question = null;
+            this.questionNo = -1;
+            this.totalNoQuestions = assignment.getNoQuestions();   //total no. questions
+            this.finalGrade = assignment.getGrade();
+        }
+        else {  //questions left
+            this.question = assignment.nextQuestion().getQuestion();    //question text of next q
+            this.questionNo = assignment.getQuestionNumber();   //question no. of next q
+            this.totalNoQuestions = assignment.getNoQuestions();   //total no. questions
+            this.finalGrade = 0;
+        }
+    }
+    
+    //create first return obj:
+    public QuestionInfo(Assignment assignment, byte [] schemaImg) {
+        this.mark = 0;
+        this.outOf = 0;
+        this.feedback = null;
+        this.answer = null;
+        this.finalGrade = 0;
+        
+        this.question = assignment.nextQuestion().getQuestion();    //question text of next q
+        this.questionNo = assignment.getQuestionNumber();   //question no. of next q
+        this.totalNoQuestions = assignment.getNoQuestions();   //total no. questions
+        
         this.schemaImg = schemaImg;
     }
 

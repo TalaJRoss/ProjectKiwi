@@ -139,7 +139,8 @@ public class Question {
      * expected answer statement are run and the outputs compared. Then a mark
      * is returned.
      * @param studentAns SQL statement that student submitted as answer.
-     * @return Mark received by student for the question.
+     * @return Mark received by student for the question or -1 for lecturer
+     * answer err or -2 for db conn/processing err
      */
     public int mark(String studentAns) {
         
@@ -223,15 +224,11 @@ public class Question {
                 return mark;
             }
         }
-        catch (ClassNotFoundException e) {
-            System.out.println("Error: Problem connecting to database/loading driver.");
-            System.out.println(e);
-        }
         catch (SQLException e) {
             System.out.println("Error: Problem comparing sql result set outputs.");
             System.out.println(e);
+            return -2;
         }
-        return -1;
     }
     
     //TODO: Show what the differences in output are?
@@ -239,7 +236,8 @@ public class Question {
      * Creates feedback, once student submits answer, which shows what the
      * expected and received sql statements and output are.
      * @param studentAns The statement received from student as answer.
-     * @return Formatted String showing expected and received sql statements and output.
+     * @return Formatted String showing expected and received sql statements
+     * and output or null if db conneection/processing error occurs
      */
     public String getFeedback(String studentAns) {
         
@@ -274,9 +272,9 @@ public class Question {
             toReturn+="\n"; //end of expected output
         } 
         catch (SQLException e) {
-            toReturn+= "Error: Couldn't read output.\n\n";
             System.out.println("Error: Couldn't read student output.");
             System.out.println(e);
+            return null;
         }
         
         //Show student output:
@@ -306,82 +304,24 @@ public class Question {
                 toReturn+="\n"; //end of student's output
             } 
             catch (SQLException e) {
-                toReturn+= "Error: Couldn't read output.\n\n";
                 System.out.println("Error: Couldn't read student output.");
                 System.out.println(e);
+                return null;
             }
         }
         return toReturn;    //all feedback
     }
     
-    /**
-     * Runs given student sql statement and returns string representation of
-     * the output.
-     * @param statement Student's sql statement.
-     * @return 
-     */
-    public static String check(String statement) {
-        
-        try {   
-            //Setup database connection: requires mysql "KiwiDB" named database on host with user="root" and pass="mysql"
-            Class.forName("com.mysql.cj.jdbc.Driver");
-            Connection conn = DriverManager.getConnection("jdbc:mysql://localhost/KiwiDB", "root", "mysql");
-
-            //Get student output:
-            Statement st = conn.createStatement();
-            ResultSet rs;
-            try {   //check it compiles 
-                rs = st.executeQuery(statement);
-            }
-            catch (SQLException e) {//didn't compile
-                //Process error message:
-                String errMessage = e.toString().substring("java.sql.".length()); //remove "java.sql." from error name
-                if (errMessage.contains("kiwidb.")) {
-                    errMessage= errMessage.replace("kiwidb.","");    //remove "kiwidb." from table name
-                }
-                //System.out.println(e);   //DEBUG
-                return "SQL Statement did not compile.\n" + errMessage + "\n";
-            }
-            
-            //Put output in string:
-            String toReturn = "";
-            
-            //Get column names:
-            int noColumns = rs.getMetaData().getColumnCount();
-            for (int i=1; i<=noColumns; i++) {   //each column
-                toReturn+= rs.getMetaData().getColumnName(i) + "\t";
-            }
-            toReturn+="\n";
-            
-            //Get row entries
-            while(rs.next()) {  //each row
-                for (int i=1; i<=noColumns; i++) {  //each field in row
-                    toReturn+= rs.getObject(i) + "\t";
-                }
-                toReturn+="\n";     //end of row
-            } 
-            toReturn+="\n";     //end of output
-            
-            return toReturn;   
-        }
-        catch (SQLException e) {
-            System.out.println("Error: Problem reading output.");
-            System.out.println(e); 
-            return "Error: Problem reading output.";
-        } 
-        catch (ClassNotFoundException e) {
-            System.out.println("Error: Problem connecting to database/loading driver.");
-            System.out.println(e);
-            return "Error: Problem connecting to database/loading driver.";
-        }
-    }
-
     public int getMark() {
         return mark;
     }
    
     public int getMaxMark() {
         return MARK_RANGE[2]*difficulty;
+    }
+
+    public int getOutOf() {
+        return difficulty*MARK_RANGE[2];
     }
     
 }

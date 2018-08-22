@@ -24,9 +24,7 @@ public class StudentMessage {
     public static final int CMD_STATS = 3;
     public static final int CMD_LOGIN = 4;
     public static final int CMD_CONNECT = 5;
-    
-    public static final int RESP_SUCCESS = 1;
-    public static final int RESP_FAIL = 0;
+    public static final int CMD_QUIT = 6;
     
     /**
      * Indicates that action was unsuccessful due to input error.
@@ -38,22 +36,30 @@ public class StudentMessage {
      */
     public static final String FAIL_CONNECT = "CON_ERR";
     
+    /**
+     * Indicates that action was unsuccessful due to input error.
+     */
+    public static final String SUCCESS = "YAY";
+    
     
     //Instance Variables:
     private int cmd;
     private Object body;
-    private String returnMessage;
+    private String response;
 
-
+    
+    //there was an error
     public StudentMessage(int cmd, Object body, String returnMessage) {
         this.cmd = cmd;
         this.body = body;
-        this.returnMessage = returnMessage;
+        this.response = returnMessage;
     }
-
+    
+    //no error
     public StudentMessage(int cmd, Object body) {
         this.cmd = cmd;
         this.body = body;
+        this.response = SUCCESS;
     }
 
     public int getCmd() {
@@ -65,7 +71,7 @@ public class StudentMessage {
     }
     
     public String getMessage() {
-        return returnMessage;
+        return response;
     }
     
 }

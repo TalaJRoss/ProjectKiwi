@@ -20,6 +20,7 @@ import java.sql.Statement;
 import java.sql.Time;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import kiwi.message.QuestionInfo;
 import kiwi.message.StudentMessage;
 import kiwi.message.StudentStatistics;
 
@@ -70,12 +71,15 @@ class StudentHandler extends Thread {
      * User name of client that this thread manages.
      */
     private String studentNo;
+    
     private Assignment assignment;
     
     
     //DB stuff:
     
     Connection conn;
+    
+    private String schemaImg;
     
     
     //Constructor:
@@ -106,9 +110,9 @@ class StudentHandler extends Thread {
             Class.forName("com.mysql.cj.jdbc.Driver");
             this.conn = DriverManager.getConnection("jdbc:mysql://localhost/KiwiDB", USER_NAME, PASSWORD);
             System.out.println("conn: " + conn);
-            writer.writeObject(new StudentMessage(StudentMessage.CMD_CONNECT, StudentMessage.RESP_SUCCESS));
+            writer.writeObject(new StudentMessage(StudentMessage.CMD_CONNECT, null));
         } catch (SQLException | ClassNotFoundException ex) {
-            writer.writeObject(new StudentMessage(StudentMessage.CMD_CONNECT, StudentMessage.RESP_FAIL));
+            writer.writeObject(new StudentMessage(StudentMessage.CMD_CONNECT, null, StudentMessage.FAIL_CONNECT));
         }
     }
     
@@ -146,6 +150,9 @@ class StudentHandler extends Thread {
                         break;
                     case StudentMessage.CMD_SUBMIT: //upload file
                         markQuestion((String)m.getBody());
+                        break;
+                    case StudentMessage.CMD_QUIT: //upload file
+                        updateGrade();
                         break;
                     default:    //nothing else
                         break;
@@ -191,30 +198,91 @@ class StudentHandler extends Thread {
         }
          
     }
-
-    private void generateAssignment() {
-        assignment = new Assignment(this);
-        decrementSubmissionsAllowed();
+    
+    private void generateAssignment() throws IOException {
+        try {
+            assignment = new Assignment(conn);  //create assignment 
+        
+            //decrease submissions allowed on server:
+            Statement st = conn.createStatement();
+            //increase noSubmissions by 1:
+            String statement = "UPDATE students SET NoSubmissionsCompleted = NoSubmissionsCompleted + 1 WHERE StudentNo LIKE '" + studentNo + "';";  
+            int updateResp = st.executeUpdate(statement);
+            if (updateResp!=1) {    //error updating
+                writer.writeObject(new StudentMessage(StudentMessage.CMD_START, null, StudentMessage.FAIL_CONNECT));
+                //TODO: revert with transacts
+            }
+        } catch (SQLException e) {
+            System.out.println("Error: Problem updating number of submissions and creating assignment.");
+            System.out.println(e); 
+            writer.writeObject(new StudentMessage(StudentMessage.CMD_START, null, StudentMessage.FAIL_CONNECT));
+        }
+        
+        QuestionInfo qi = new QuestionInfo(assignment, schemaImg);  //question info to return to student end
+        writer.writeObject(new StudentMessage(StudentMessage.CMD_START, qi, null));
     }
 
-    private void viewStats() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    private void viewStats() throws IOException {
+        try {
+            Statement st = conn.createStatement();
+            String statement = "SELECT * FROM students WHERE StudentNo LIKE '" + studentNo + "'";   //check for student number in student table
+            ResultSet rs = st.executeQuery(statement);
+            
+            //load values for this student:
+            if (rs.next()) {
+                double highestGrade = (double) rs.getObject("highestGrade");
+                int noSubmissionsCompleted = (int) rs.getObject("noSubmissionsCompleted");
+                Date deadlineDay = (Date) rs.getObject("deadlineDay");
+                Time deadlineTime = (Time) rs.getObject("deadlineTime");
+                StudentStatistics ss = new StudentStatistics(highestGrade, noSubmissionsCompleted, deadlineDay, deadlineTime);
+                writer.writeObject(new StudentMessage(StudentMessage.CMD_STATS, ss));
+            }
+        } catch (SQLException ex) {
+            writer.writeObject(new StudentMessage(StudentMessage.CMD_STATS, null, StudentMessage.FAIL_CONNECT));
+        }
     }
 
-    private void checkOutput(String string) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    private void checkOutput(String studentStatement) throws IOException {
+        String output = assignment.check(studentStatement);
+        if (output!=null) {
+            writer.writeObject(new StudentMessage(StudentMessage.CMD_CHECK, output));
+        }
+        else {
+            writer.writeObject(new StudentMessage(StudentMessage.CMD_CHECK, null, StudentMessage.FAIL_CONNECT));
+        }
+    }
+    
+    //TODO: check for err handling in underlying logic
+    private void markQuestion(String sudentAns) throws IOException {
+        //marks question and creates return object with feedback and next question info:
+        QuestionInfo qi = new QuestionInfo(assignment, sudentAns);
+        writer.writeObject(new StudentMessage(StudentMessage.CMD_SUBMIT, qi));
     }
 
-    private void markQuestion(String string) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    private void updateGrade() throws IOException {
+        try {
+            double grade = 0;
+            Statement st = conn.createStatement();
+            //update grade if higher:
+            if (assignment.getQuestionNumber() >= assignment.getNoQuestions()) {    //finished assignment
+                grade = assignment.getGrade();
+            }
+            String statement = "UPDATE students SET HighestGrade = " + grade + " WHERE StudentNo LIKE '" + studentNo + "' AND HighestGrade < " + grade + ";";  
+            int updateResp = st.executeUpdate(statement);
+            if (updateResp!=1) {   //error updating
+                writer.writeObject(new StudentMessage(StudentMessage.CMD_QUIT, null, StudentMessage.FAIL_CONNECT));
+                //TODO: revert with transacts
+            }
+            else {
+                writer.writeObject(new StudentMessage(StudentMessage.CMD_QUIT, null));
+            }
+        } catch (SQLException e) {
+            System.out.println("Error: Problem updating table.");
+            System.out.println(e); 
+            writer.writeObject(new StudentMessage(StudentMessage.CMD_QUIT, null, StudentMessage.FAIL_CONNECT));
+        }
     }
-
-    void decrementSubmissionsAllowed() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    void updateGrade(double grade) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
+    
+    
     
 }
