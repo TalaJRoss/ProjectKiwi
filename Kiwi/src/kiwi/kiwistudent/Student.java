@@ -1,20 +1,14 @@
 package kiwi.kiwistudent;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.net.Socket;
-import java.sql.Connection;
-import java.sql.Date;
-import java.sql.DriverManager;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.sql.Time;
+import kiwi.message.QuestionInfo;
 import kiwi.message.StudentMessage;
-import kiwi.message.StudentStatistics;
 
 /**
  * Creates object to handle access to and control of student's information.
@@ -39,51 +33,42 @@ public class Student {
      * Port number on which server is listening.
      */
     private static final int PORT_NO = 2048;
-    /**
-     * Indicates that login was successful.
-     */
-    public static final String SUCCESS_LOGIN = "PASS";
-    
-    /**
-     * Indicates that login was unsuccessful due to non-existent student number.
-     */
-    public static final String FAIL_LOGIN = "FAIL";
-    
-    /**
-     * Indicates that login was unsuccessful due to failed database connection.
-     */
-    public static final String FAIL_CONNECT = "CON_ERR";
     
     
     //Instance Variables:
     
+    private String currentFeedback;
+    private String currentCheckOutput;
+    private int currentOutOf;
+    private int currentMark;
+    private String nextQuestion;
+    
+    private double currentFinalGrade;
+    private int noQuestions;
+    private File schemaImg;
+    
+    
     /**
      * The student's student number.
      */
-    protected String studentNo;
+    String studentNo;
     
     /**
      * The student's highest recorded assignment grade.
      */
-    protected double highestGrade;
+    double highestGrade;
     
     //TODO: get number of submissions from server
     /**
      * The number of submissions a student is allowed.
      */
-    protected int maxNoSubmissions = 3;
+    int maxNoSubmissions = 3;
     
     /**
-     * The number of submissions the student has remaining.
+     * The number of submissions the student has completed already.
      */
-    protected int noSubmissionsRemaining;
+    int noSubmissionsCompleted;
     
-    
-    /**
-     *  The date and the time of the deadline of the assignment
-     */
-    protected Date deadlineDay;
-    protected Time deadlineTime;
     
     /**
      * This student's socket which is used to communicate with the server.
@@ -127,67 +112,119 @@ public class Student {
     
     //Main functionality methods(public):
     
-    /**
-     * Checks whether student number given is stored in students table on the
-     * database and initializes instance variables if login is successful.
-     * @param studentNumber The student number of the student to login.
-     * @return Success/error message.
-     */
-    public String login(String studentNumber) {
+    /*public String login(String studentNumber) {
         try {
-            //Check student number exists and load values:
-            writer.writeObject(new StudentMessage(StudentMessage.CMD_LOGIN, studentNumber, null));
+            //Setup database connection: requires mysql "KiwiDB" named database on host with user="root" and pass="mysql"
+            Class.forName("com.mysql.cj.jdbc.Driver");
+            Connection conn = DriverManager.getConnection("jdbc:mysql://localhost/KiwiDB", "root", "mysql");
+
+            //Get student output:
+            Statement st = conn.createStatement();
+            String statement = "SELECT * FROM students WHERE StudentNo LIKE '" + studentNumber + "'";   //check for student number in student table
+            ResultSet rs = st.executeQuery(statement);
             
-            StudentMessage loginResponce = (StudentMessage) reader.readObject();
-            if (loginResponce.getMessage().equals(StudentMessage.FAIL_CONNECT))
-            {
-                System.out.println("Error: Failed to connect.");
-                return FAIL_CONNECT;
-            }
-            else if (loginResponce.getMessage().equals(StudentMessage.FAIL_INPUT))
-            {
-                System.out.println("Error: Student is not register in the databease.");
-                return FAIL_LOGIN;
-            }
-            else
-            {
-                StudentStatistics st = (StudentStatistics) loginResponce.getBody();
-                highestGrade = st.getHighestGrade();
-                noSubmissionsRemaining = st.getNoSubmissionsRemaining();
-                deadlineDay = st.getDeadlineDay();
-                deadlineTime = st.getDeadlineTime();
+            //Check student number exists and load values:
+            if (rs.next()) {    //student number exists
+                studentNo = (String) rs.getObject("studentNo");
+                highestGrade = (int) rs.getObject("highestGrade");
+                noSubmissionsCompleted = (int) rs.getObject("noSubmissionsCompleted");
                 return SUCCESS_LOGIN;
             }
-
-        } catch (ClassNotFoundException e) {  //can't read the return message
-            System.out.println("Error: Unable to get responce from server.");
+            return FAIL_LOGIN;  //student number doesn't exist
+        }
+        catch (SQLException e) { //can't check student number
+            System.out.println("Error: Problem checking student number on database for login.");
+            System.out.println(e);
+            return FAIL_CONNECT;
+        } 
+        catch (ClassNotFoundException e) {  //can't check student number
+            System.out.println("Error: Problem connecting to database/loading driver.");
             System.out.println(e);
             return FAIL_CONNECT;
         }
-        //can't check student number
-         catch (IOException ex) {
-             System.out.println("Error: Unable to sent message to server.");
-             System.out.println(ex);
-             return FAIL_CONNECT;
-        }
-    }
+    }/*
     
     
-    //Getters:
     
     /**
-     * Gets student's highest grade.
-     * @return Student's highest grade.
+     * Checks students output from the given statement and saves the formatted
+     * String output.
+     * @param studentStatement
+     * @return true if successfully executed otherwise false (ie. couldn't mark)
+     * @throws IOException
+     * @throws ClassNotFoundException 
      */
-    public double getHighestGrade() {
-        return highestGrade;
-    }
-    
-    
-    public void updateGrade(double grade) {
-        if (grade>highestGrade) {
-            highestGrade = grade;
-            //update server
+    public boolean check(String studentStatement) throws IOException, ClassNotFoundException {
+        writer.writeObject(new StudentMessage(StudentMessage.CMD_CHECK, studentStatement));
+        
+        //get feedback and mark:
+        StudentMessage m = (StudentMessage) reader.readObject();
+        if (m.getResponse()==StudentMessage.SUCCESS) {
+            currentCheckOutput = (String) m.getBody();
+            return true;
+        }
+        else {
+            return false;
         }
     }
+    
+    /**
+     * Takes in student answer gets feedback and marks and saves them.
+     * @param studentAns
+     * @return true if successfully executed otherwise false (ie. couldn't mark)
+     * @throws IOException
+     * @throws ClassNotFoundException 
+     */
+    public boolean submit(String studentAns) throws IOException, ClassNotFoundException {
+        writer.writeObject(new StudentMessage(StudentMessage.CMD_SUBMIT, studentAns));
+        
+        //get feedback and mark:
+        StudentMessage m = (StudentMessage) reader.readObject();
+        if (m.getResponse()==StudentMessage.SUCCESS) {
+            QuestionInfo qi = (QuestionInfo) m.getBody();
+            currentFeedback = qi.getFeedback();
+            currentMark = qi.getMark();
+            currentOutOf = qi.getOutOf();
+            nextQuestion = qi.getQuestion();
+            return true;
+        }
+        else {
+            return false;
+        }
+    }
+    
+    public boolean leaveAssignment() throws IOException, ClassNotFoundException {
+        writer.writeObject(new StudentMessage(StudentMessage.CMD_QUIT, null));
+        
+        //get feedback and mark:
+        StudentMessage m = (StudentMessage) reader.readObject();
+        if (m.getResponse()==StudentMessage.SUCCESS) {
+            currentCheckOutput = (String) m.getBody();
+            return true;
+        }
+        else {
+            return false;
+        }
+    }
+    
+    public File getSchemaImage() {
+        return schemaImg;
+    }
+    
+    public String getCurrentFeedback() {
+        return currentFeedback;
+    }
+
+    public String getCurrentCheckOutput() {
+        return currentCheckOutput;
+    }
+
+    public String getCurrentMark() {
+        return currentMark + "/" + currentOutOf;
+    }
+
+    public String getNextQuestion() {
+        return nextQuestion;
+    }
+    
 }
