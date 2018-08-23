@@ -1,9 +1,6 @@
 package kiwi.kiwilecturer;
 
-<<<<<<< HEAD
 
-=======
->>>>>>> LecturerSideUpdate
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
@@ -16,12 +13,9 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-<<<<<<< HEAD
+
 import kiwi.kiwiserver.ServerStartup;
-import kiwi.message.LecturerMessage;
-=======
 import kiwi.message.*;
->>>>>>> LecturerSideUpdate
 
 //TODO: get assignment deadline and no. submissions from lecturer
 //TODO: update create students table to just require studentNo fields in csv and not require formated headings row
@@ -212,7 +206,7 @@ public class Lecturer {
             writer.writeObject(new LecturerMessage(LecturerMessage.CMD_GRADE_DESC, null));
             LecturerMessage response = (LecturerMessage) reader.readObject();
             Grades grades = (Grades) response.getBody(); //Object is of type Grades
-            return grades.getGrades();
+            return grades.getGrades(); //FIX getGrades()
             
         } catch (IOException | ClassNotFoundException ex) {
             Logger.getLogger(Lecturer.class.getName()).log(Level.SEVERE, null, ex);
