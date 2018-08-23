@@ -1,6 +1,9 @@
 package kiwi.kiwilecturer;
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> LecturerSideUpdate
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
@@ -13,8 +16,12 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+<<<<<<< HEAD
 import kiwi.kiwiserver.ServerStartup;
 import kiwi.message.LecturerMessage;
+=======
+import kiwi.message.*;
+>>>>>>> LecturerSideUpdate
 
 //TODO: get assignment deadline and no. submissions from lecturer
 //TODO: update create students table to just require studentNo fields in csv and not require formated headings row
@@ -26,7 +33,6 @@ import kiwi.message.LecturerMessage;
  * @author Steve Shun Wang (wngshu003)
  */
 public class Lecturer {
-    
     
     //Server:
     
@@ -46,6 +52,16 @@ public class Lecturer {
     private final ObjectInputStream reader;
     
     private boolean connected;
+    
+    /**
+     * Success message
+     */
+    public static final String SUCCESS = "Success";
+    
+    /**
+     * Fail message
+     */
+    public static final String FAIL = "Error";
 
     public Lecturer() throws IOException, ClassNotFoundException {
         //make socket:
@@ -58,7 +74,7 @@ public class Lecturer {
         writer= new ObjectOutputStream(os);   //MESSAGE
         
         LecturerMessage response = (LecturerMessage) reader.readObject();
-        connected = response.getResponse().equals(LecturerMessage.RES_SUCCESS);
+        connected = (response.getMessage() == LecturerMessage.RESP_SUCCESS);
     }
     
     public boolean isConnected() {
@@ -72,30 +88,47 @@ public class Lecturer {
      * @return byte array representing file data
      * @throws IOException 
      */
-    private byte[] getFileBytes(String filePath) throws IOException
-        {
+    private byte[] getFileBytes(String filePath) throws IOException {
         Path path= Paths.get(filePath);
         byte[] data= Files.readAllBytes(path); //Convert file to byte array
         return data;
-        }
+    }
     
     //Main functionality methods(public):
+    
+    public String uploadAssignmentInfo(String noSubmissions, String noQuestions, String date, String time, String schemaPath){
+        
+        byte [] schemaImg = null;
+        
+        try {
+            if (schemaPath != null) {
+                schemaImg = getFileBytes(schemaPath);
+            }
+            writer.writeObject(new LecturerMessage(LecturerMessage.CMD_ASSIGNMENT_INFO, new AssignmentInfo(noSubmissions, noQuestions, date, time, schemaImg)));
+            return SUCCESS;
+        } catch (IOException ex) {
+            Logger.getLogger(Lecturer.class.getName()).log(Level.SEVERE, null, ex);
+            return FAIL;
+        }
+    }
     
     /**
      * Uploads student information contained in the given csv file to the
      * students table in the database on the server.
      * Expected csv file format:
      * studentNo,highestGrade,noSubmissionsCompleted
-     * @param csv The csv file containing student information.
+     * @param path The path to the csv file containing student information.
+     * @return a success/fail message.
      */
-    public void uploadStudents(String path) {
+    public String uploadStudents(String path) {
         try {
             ArrayList<byte []> csvFiles = new ArrayList<>();
             csvFiles.add(getFileBytes(path));
-            //String [] filenames = {name};
-            writer.writeObject(new LecturerMessage(csvFiles, null, "", LecturerMessage.CMD_UPLOAD_STUDENTS, ""));
+            writer.writeObject(new LecturerMessage(LecturerMessage.CMD_UPLOAD_STUDENTS, new CSVFiles(csvFiles, null)));
+            return SUCCESS;
         } catch (IOException ex) {
             Logger.getLogger(Lecturer.class.getName()).log(Level.SEVERE, null, ex);
+            return FAIL;
         }
     }
     
@@ -104,16 +137,18 @@ public class Lecturer {
      * questions table in the database on the server.
      * Expected csv file format:
      * questionNo,question,answer,difficulty
-     * @param csv The csv file containing question-answer pairs.
+     * @param path The path to the csv file containing question-answer pairs.
+     * @return a success/fail message.
      */
-    public void uploadQuestions(String path) {
+    public String uploadQuestions(String path) {
         try {
             ArrayList<byte []> csvFiles = new ArrayList<>();
             csvFiles.add(getFileBytes(path));
-            //String [] filenames = {name};
-            writer.writeObject(new LecturerMessage(csvFiles, null, "", LecturerMessage.CMD_UPLOAD_QUESTIONS, ""));
+            writer.writeObject(new LecturerMessage(LecturerMessage.CMD_UPLOAD_QUESTIONS, new CSVFiles(csvFiles, null)));
+            return SUCCESS;
         } catch (IOException ex) {
             Logger.getLogger(Lecturer.class.getName()).log(Level.SEVERE, null, ex);
+            return FAIL;
         }
     }
     
@@ -127,17 +162,21 @@ public class Lecturer {
      * This is comma-separated for each column.
      * Actual row entries: fields are comma-separated and enclosed in quotes
      * and lines are terminated by '\r\n'.
-     * @param csvs Array of csv files containing query data.
+     * @param paths Array of paths of csv files containing query data.
+     * @param names Names of the csv files containing query data.
+     * @return a success/fail message.
      */
-    public void uploadQueryData(String [] paths, String [] names) {
+    public String uploadQueryData(String [] paths, String [] names) {
         try {
             ArrayList<byte []> csvFiles = new ArrayList<>();
             for (String path: paths) {
                 csvFiles.add(getFileBytes(path));
             }
-            writer.writeObject(new LecturerMessage(csvFiles, names, "", LecturerMessage.CMD_UPLOAD_QUERY, ""));
+            writer.writeObject(new LecturerMessage(LecturerMessage.CMD_UPLOAD_QUERY, new CSVFiles(csvFiles, names)));
+            return SUCCESS;
         } catch (IOException ex) {
             Logger.getLogger(Lecturer.class.getName()).log(Level.SEVERE, null, ex);
+            return FAIL;
         }
     }
     
@@ -150,13 +189,15 @@ public class Lecturer {
      */
     public String viewGradeAscStudent() {
         try {
-            writer.writeObject(new LecturerMessage(null, null, "", LecturerMessage.CMD_GRADE_ALPH, ""));
+            writer.writeObject(new LecturerMessage(LecturerMessage.CMD_GRADE_ALPH, null));
             LecturerMessage response = (LecturerMessage) reader.readObject();
-            return response.getToReturn();
+            Grades grades = (Grades) response.getBody(); //Object is of type Grades
+            return grades.getGrades();
+            
         } catch (IOException | ClassNotFoundException ex) {
             Logger.getLogger(Lecturer.class.getName()).log(Level.SEVERE, null, ex);
         }
-        return "error";
+        return FAIL;
     }
     
     /**
@@ -168,19 +209,21 @@ public class Lecturer {
      */
     public String viewGradeDescGrade() {
         try {
-            writer.writeObject(new LecturerMessage(null, null, "", LecturerMessage.CMD_GRADE_DESC, ""));
+            writer.writeObject(new LecturerMessage(LecturerMessage.CMD_GRADE_DESC, null));
             LecturerMessage response = (LecturerMessage) reader.readObject();
-            return response.getToReturn();
+            Grades grades = (Grades) response.getBody(); //Object is of type Grades
+            return grades.getGrades();
+            
         } catch (IOException | ClassNotFoundException ex) {
             Logger.getLogger(Lecturer.class.getName()).log(Level.SEVERE, null, ex);
         }
-        return "error";
+        return FAIL;
     }
 
-    void connectToDB() throws IOException, ClassNotFoundException {
-        writer.writeObject(new LecturerMessage(null, null, "", LecturerMessage.CMD_CONNECT, ""));
+    public void connectToDB() throws IOException, ClassNotFoundException {
+        writer.writeObject(new LecturerMessage(LecturerMessage.CMD_CONNECT, null));
         LecturerMessage response = (LecturerMessage) reader.readObject();
-        connected = response.getResponse().equals(LecturerMessage.RES_SUCCESS);
+        connected = (response.getMessage() == LecturerMessage.RESP_SUCCESS);            
     }
     
 }
