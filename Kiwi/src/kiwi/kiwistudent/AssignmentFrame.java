@@ -1,5 +1,6 @@
 package kiwi.kiwistudent;
 
+import java.text.DecimalFormat;
 import javax.swing.ImageIcon;
 import javax.swing.JOptionPane;
 
@@ -27,6 +28,7 @@ public class AssignmentFrame extends javax.swing.JFrame {
      */
     static Student student;
     
+    static boolean createdFlag;
     
     
     //Constructor:
@@ -38,24 +40,43 @@ public class AssignmentFrame extends javax.swing.JFrame {
      */
     public AssignmentFrame(Student student) {
         this.student = student;
-        if (student.startAssignment()) {    //successful startup
+        int resp = student.startAssignment();
+        if (resp==Student.SUCCESS) {    //successful startup
             initComponents();
             jpbQuestionProgress.setMinimum(0);
             jpbQuestionProgress.setMaximum(student.getNoQuestions());
             jpbQuestionProgress.setStringPainted(true);
             txtaQuestion.setText("Question:\n" + student.getNextQuestion());
             btnNext.setEnabled(false);
+            createdFlag = true;
+        }
+        else if (resp==Student.FAIL_DENY) {
+            DecimalFormat d = new DecimalFormat("0.00");
+            JOptionPane.showMessageDialog(null, "You have used up all your submissions."
+                    + "\nYour final grade is: " + d.format(student.highestGrade), "Final Grade", JOptionPane.PLAIN_MESSAGE);
+            createdFlag = false;
         }
         else {  //error in creation of assignment
             JOptionPane.showMessageDialog(null, "There was an error connecting to the database."
                     + "\nPlease start the assignment again.", "Startup Error", JOptionPane.ERROR_MESSAGE);
-            this.setVisible(false);
+            createdFlag = false;
+        }
+    }
+    
+    @Override
+    public void setVisible(boolean isVisible) {
+        if (!createdFlag) {
+            super.setVisible(false);
             HomeFrame home = new HomeFrame(student);
             home.setVisible(true);
             this.dispose();
         }
+        else {
+            super.setVisible(isVisible);
+        }
     }
-
+    
+    
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -84,6 +105,9 @@ public class AssignmentFrame extends javax.swing.JFrame {
         jpbQuestionProgress = new javax.swing.JProgressBar();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+        setPreferredSize(new java.awt.Dimension(1024, 768));
+
+        jPanel1.setPreferredSize(new java.awt.Dimension(1024, 768));
 
         txtaQuestion.setEditable(false);
         txtaQuestion.setColumns(20);
@@ -214,12 +238,12 @@ public class AssignmentFrame extends javax.swing.JFrame {
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, 625, Short.MAX_VALUE)
                 .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, 679, Short.MAX_VALUE)
         );
 
         pack();
@@ -246,6 +270,7 @@ public class AssignmentFrame extends javax.swing.JFrame {
             txtaFeedback.setText(student.getCurrentFeedback());
             btnSubmit.setEnabled(false);
             btnNext.setEnabled(true);
+            jpbQuestionProgress.setValue(student.getNextQuestionNo()-1);
         }
         else {
             JOptionPane.showMessageDialog(null, "There was an error connecting to the database."
@@ -306,7 +331,6 @@ public class AssignmentFrame extends javax.swing.JFrame {
             txtfAnswer.setText("");
             btnSubmit.setEnabled(true);
             btnNext.setEnabled(false);
-            jpbQuestionProgress.setValue(student.getNextQuestionNo());
         }
     }//GEN-LAST:event_btnNextActionPerformed
     
@@ -317,7 +341,7 @@ public class AssignmentFrame extends javax.swing.JFrame {
     private void btnShowSchemaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnShowSchemaActionPerformed
         //ImageIcon icon = new ImageIcon("schema.jpg");
         ImageIcon icon = new ImageIcon(student.getSchemaImage());
-        JOptionPane.showMessageDialog(null, "Query Database Schema", "Schema", JOptionPane.PLAIN_MESSAGE, icon);
+        JOptionPane.showMessageDialog(null, "", "Query Database Schema", JOptionPane.PLAIN_MESSAGE, icon);
     }//GEN-LAST:event_btnShowSchemaActionPerformed
     
     /**
@@ -384,6 +408,7 @@ public class AssignmentFrame extends javax.swing.JFrame {
 
         /* Create and display the form */
         java.awt.EventQueue.invokeLater(new Runnable() {
+            @Override
             public void run() {
                 new AssignmentFrame(student).setVisible(true);
             }

@@ -21,7 +21,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Time;
-import java.util.Arrays;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import kiwi.message.QuestionInfo;
@@ -200,12 +199,7 @@ class StudentHandler extends Thread {
             //Check student number exists and load values:
             if (rs.next()) {    //student number exists
                 studentNo = (String) rs.getObject("studentNo");
-                double highestGrade = (double) rs.getObject("highestGrade");
-                int noSubmissionsCompleted = (int) rs.getObject("noSubmissionsCompleted");
-                Date deadlineDay = (Date) rs.getObject("deadlineDay");
-                Time deadlineTime = (Time) rs.getObject("deadlineTime");
-                StudentStatistics ss = new StudentStatistics(highestGrade, noSubmissionsCompleted, deadlineDay, deadlineTime);
-                writer.writeObject(new StudentMessage(StudentMessage.CMD_LOGIN, ss));   //non null on student end indicates success
+                writer.writeObject(new StudentMessage(StudentMessage.CMD_LOGIN, null));
             }
             else { //student number doesn't exist
                 writer.writeObject(new StudentMessage(StudentMessage.CMD_LOGIN, null, StudentMessage.FAIL_INPUT)); //null on student end indicates error
@@ -220,12 +214,41 @@ class StudentHandler extends Thread {
     
     private void generateAssignment() throws IOException {
         try {
+            //Get max no. submissions allowed:
+            Statement st = conn.createStatement();
+            String statement = "SELECT NoSubmissions FROM AssignmentInfo;"; 
+            ResultSet rs = st.executeQuery(statement);
+            int maxNoSubmissions;
+            if (rs.next()) {
+                maxNoSubmissions = (int) rs.getObject("NoSubmissions");
+            }
+            else {  //couldn't get max no. submissions
+                writer.writeObject(new StudentMessage(StudentMessage.CMD_STATS, null, StudentMessage.FAIL_CONNECT));
+                return;
+            }
+            
+            //Check that student allowed to do assignment:
+            statement = "SELECT NoSubmissionsCompleted FROM Students WHERE StudentNo LIKE '" + studentNo + "'"; 
+            rs = st.executeQuery(statement);
+            int noSubmissionsCompleted;
+            if (rs.next()) {
+                noSubmissionsCompleted = (int) rs.getObject("NoSubmissionsCompleted");
+            }
+            else {  //couldn't get max no. submissions
+                writer.writeObject(new StudentMessage(StudentMessage.CMD_START, null, StudentMessage.FAIL_CONNECT));
+                return;
+            }
+            if (maxNoSubmissions-noSubmissionsCompleted<=0) {   //no more submissions allowed 
+                writer.writeObject(new StudentMessage(StudentMessage.CMD_START, null, StudentMessage.FAIL_DENY));
+                return;
+            }
+            
+            //Submissions still allowed:
             assignment = new Assignment(conn);  //create assignment 
         
             //decrease submissions allowed on server:
-            Statement st = conn.createStatement();
             //increase noSubmissions by 1:
-            String statement = "UPDATE students SET NoSubmissionsCompleted = NoSubmissionsCompleted + 1 WHERE StudentNo LIKE '" + studentNo + "';";  
+            statement = "UPDATE Students SET NoSubmissionsCompleted = NoSubmissionsCompleted + 1 WHERE StudentNo LIKE '" + studentNo + "';";  
             int updateResp = st.executeUpdate(statement);
             if (updateResp!=1) {    //error updating
                 writer.writeObject(new StudentMessage(StudentMessage.CMD_START, null, StudentMessage.FAIL_CONNECT));
@@ -236,26 +259,42 @@ class StudentHandler extends Thread {
             System.out.println(e); 
             writer.writeObject(new StudentMessage(StudentMessage.CMD_START, null, StudentMessage.FAIL_CONNECT));
         }
-        System.out.println("schema img: " + schemaImg.getClass());
-        System.out.println("schema img: " + Arrays.toString(schemaImg));
-        //QuestionInfo qi = new QuestionInfo(assignment, schemaImg);  //question info to return to student end
-        //writer.writeObject(new StudentMessage(StudentMessage.CMD_START, qi));
+        QuestionInfo qi = new QuestionInfo(assignment, schemaImg);  //question info to return to student end
+        writer.writeObject(new StudentMessage(StudentMessage.CMD_START, qi));
     }
 
     private void viewStats() throws IOException {
         try {
+            //Get max no. submissions allowed:
             Statement st = conn.createStatement();
-            String statement = "SELECT * FROM students WHERE StudentNo LIKE '" + studentNo + "'";   //check for student number in student table
+            String statement = "SELECT NoSubmissions FROM AssignmentInfo;"; 
             ResultSet rs = st.executeQuery(statement);
+            int maxNoSubmissions;
+            if (rs.next()) {
+                maxNoSubmissions = (int) rs.getObject("NoSubmissions");
+            }
+            else {  //couldn't get max no. submissions
+                writer.writeObject(new StudentMessage(StudentMessage.CMD_STATS, null, StudentMessage.FAIL_CONNECT));
+                return;
+            }
+            
+            //get student info:
+            st = conn.createStatement();
+            statement = "SELECT * FROM students WHERE StudentNo LIKE '" + studentNo + "'";   //check for student number in student table
+            rs = st.executeQuery(statement);
             
             //load values for this student:
             if (rs.next()) {
                 double highestGrade = (double) rs.getObject("highestGrade");
                 int noSubmissionsCompleted = (int) rs.getObject("noSubmissionsCompleted");
+                int noSubmissionsRemaining = maxNoSubmissions - noSubmissionsCompleted;
                 Date deadlineDay = (Date) rs.getObject("deadlineDay");
                 Time deadlineTime = (Time) rs.getObject("deadlineTime");
-                StudentStatistics ss = new StudentStatistics(highestGrade, noSubmissionsCompleted, deadlineDay, deadlineTime);
+                StudentStatistics ss = new StudentStatistics(highestGrade, noSubmissionsRemaining, deadlineDay, deadlineTime);
                 writer.writeObject(new StudentMessage(StudentMessage.CMD_STATS, ss));
+            }
+            else {
+                writer.writeObject(new StudentMessage(StudentMessage.CMD_STATS, null, StudentMessage.FAIL_CONNECT));
             }
         } catch (SQLException ex) {
             writer.writeObject(new StudentMessage(StudentMessage.CMD_STATS, null, StudentMessage.FAIL_CONNECT));
@@ -284,12 +323,12 @@ class StudentHandler extends Thread {
             double grade = 0;
             Statement st = conn.createStatement();
             //update grade if higher:
-            if (assignment.getQuestionNumber() >= assignment.getNoQuestions()) {    //finished assignment
+            if (!assignment.hasNext()) {    //finished assignment
                 grade = assignment.getGrade();
             }
             String statement = "UPDATE students SET HighestGrade = " + grade + " WHERE StudentNo LIKE '" + studentNo + "' AND HighestGrade < " + grade + ";";  
             int updateResp = st.executeUpdate(statement);
-            if (updateResp!=1) {   //error updating
+            if (updateResp!=1 && updateResp!=0) {   //error updating
                 writer.writeObject(new StudentMessage(StudentMessage.CMD_QUIT, null, StudentMessage.FAIL_CONNECT));
                 //TODO: revert with transacts
             }

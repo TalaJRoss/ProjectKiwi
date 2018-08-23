@@ -3,6 +3,7 @@ package kiwi.kiwistudent;
 //TODO: logout functionality
 
 import java.text.DecimalFormat;
+import javax.swing.JOptionPane;
 
 /**
  * Creates home page interface.
@@ -31,11 +32,20 @@ public class HomeFrame extends javax.swing.JFrame {
     public HomeFrame(Student student) {
         this.student = student;
         initComponents();
-        DecimalFormat d = new DecimalFormat("0.00");
-        txtGrade.setText(""+d.format(student.highestGrade));
-        txtSubRemain.setText(""+student.maxNoSubmissions);
-        txtDeadlineDate.setText(student.deadlineDay.toString());
-        txtDeadlineTime.setText(student.deadlineTime.toString());
+        if (student.viewStats()) {
+            DecimalFormat d = new DecimalFormat("0.00");
+            txtGrade.setText(""+d.format(student.highestGrade));
+            txtSubRemain.setText(""+student.noSubmissionsRemaining);
+            txtDeadlineDate.setText(student.deadlineDay.toString());
+            txtDeadlineTime.setText(student.deadlineTime.toString());
+        }
+        else {
+            txtGrade.setText("Unavailable");
+            txtSubRemain.setText("Unavailable");
+            txtDeadlineDate.setText("Unavailable");
+            txtDeadlineTime.setText("Unavailable");
+            JOptionPane.showMessageDialog(null, "Could not access student information on database.", "Grade Access Error", JOptionPane.ERROR_MESSAGE);
+        }
     }
 
     /**
@@ -57,8 +67,12 @@ public class HomeFrame extends javax.swing.JFrame {
         txtDeadlineDate = new javax.swing.JTextField();
         lblDeadlineTime = new javax.swing.JLabel();
         txtDeadlineTime = new javax.swing.JTextField();
+        jSeparator1 = new javax.swing.JSeparator();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+        setPreferredSize(new java.awt.Dimension(1024, 768));
+
+        jPanel1.setPreferredSize(new java.awt.Dimension(1024, 768));
 
         btnStart.setText("Start Assignment");
         btnStart.addActionListener(new java.awt.event.ActionListener() {
@@ -67,11 +81,11 @@ public class HomeFrame extends javax.swing.JFrame {
             }
         });
 
-        lblGrade.setText("Your highest grade is:");
+        lblGrade.setText("Highest Grade:");
 
         txtGrade.setEditable(false);
 
-        lblSubRemain.setText("No. submision remaining:");
+        lblSubRemain.setText("Submissions Remaining:");
 
         txtSubRemain.setEditable(false);
         txtSubRemain.addActionListener(new java.awt.event.ActionListener() {
@@ -80,11 +94,11 @@ public class HomeFrame extends javax.swing.JFrame {
             }
         });
 
-        lblDeadlineDate.setText("Deadline date:");
+        lblDeadlineDate.setText("Deadline Date:");
 
         txtDeadlineDate.setEditable(false);
 
-        lblDeadlineTime.setText("Deadline time:");
+        lblDeadlineTime.setText("Deadline Time:");
 
         txtDeadlineTime.setEditable(false);
 
@@ -92,58 +106,61 @@ public class HomeFrame extends javax.swing.JFrame {
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel1Layout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addComponent(lblDeadlineTime, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(lblGrade, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(lblDeadlineDate, javax.swing.GroupLayout.PREFERRED_SIZE, 108, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(lblSubRemain, javax.swing.GroupLayout.DEFAULT_SIZE, 186, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(txtSubRemain)
+                    .addComponent(txtDeadlineDate)
+                    .addComponent(txtGrade)
+                    .addComponent(txtDeadlineTime))
+                .addContainerGap())
+            .addComponent(jSeparator1)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
                 .addContainerGap(128, Short.MAX_VALUE)
                 .addComponent(btnStart)
                 .addGap(119, 119, 119))
-            .addGroup(jPanel1Layout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                    .addComponent(lblDeadlineTime, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(lblSubRemain, javax.swing.GroupLayout.DEFAULT_SIZE, 147, Short.MAX_VALUE)
-                    .addComponent(lblGrade, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(lblDeadlineDate, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                .addGap(35, 35, 35)
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(txtGrade)
-                    .addComponent(txtSubRemain)
-                    .addComponent(txtDeadlineDate)
-                    .addComponent(txtDeadlineTime))
-                .addContainerGap())
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel1Layout.createSequentialGroup()
-                .addGap(75, 75, 75)
+                .addGap(31, 31, 31)
                 .addComponent(btnStart)
-                .addGap(25, 25, 25)
+                .addGap(29, 29, 29)
+                .addComponent(jSeparator1, javax.swing.GroupLayout.PREFERRED_SIZE, 10, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(23, 23, 23)
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(lblGrade)
                     .addComponent(txtGrade, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGap(27, 27, 27)
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(lblSubRemain)
                     .addComponent(txtSubRemain, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGap(28, 28, 28)
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(lblDeadlineDate)
                     .addComponent(txtDeadlineDate, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGap(32, 32, 32)
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(lblDeadlineTime)
                     .addComponent(txtDeadlineTime, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(62, Short.MAX_VALUE))
+                .addContainerGap())
         );
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, 400, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, 329, Short.MAX_VALUE)
         );
 
         pack();
@@ -214,6 +231,7 @@ public class HomeFrame extends javax.swing.JFrame {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnStart;
     private javax.swing.JPanel jPanel1;
+    private javax.swing.JSeparator jSeparator1;
     private javax.swing.JLabel lblDeadlineDate;
     private javax.swing.JLabel lblDeadlineTime;
     private javax.swing.JLabel lblGrade;

@@ -28,6 +28,12 @@ public class StudentMessage implements Serializable{
     public static final int CMD_CONNECT = 5;
     public static final int CMD_QUIT = 6;
     
+    
+    /**
+     * Indicates that action was unsuccessful due to input error.
+     */
+    public static final int SUCCESS = 0;
+    
     /**
      * Indicates that action was unsuccessful due to input error.
      */
@@ -39,9 +45,10 @@ public class StudentMessage implements Serializable{
     public static final int FAIL_CONNECT = 2;
     
     /**
-     * Indicates that action was unsuccessful due to input error.
+     * Indicates that action was unsuccessful due to failed database connection.
      */
-    public static final int SUCCESS = 0;
+    public static final int FAIL_DENY = 3;
+    
     
     
     //Instance Variables:

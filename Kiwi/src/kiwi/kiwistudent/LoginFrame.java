@@ -38,6 +38,7 @@ public class LoginFrame extends javax.swing.JFrame {
         btnLogin = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+        setPreferredSize(new java.awt.Dimension(1024, 768));
 
         lblStudentNo.setText("Enter your student number: ");
 
@@ -59,25 +60,24 @@ public class LoginFrame extends javax.swing.JFrame {
         jPanel1Layout.setHorizontalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel1Layout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                .addGap(258, 258, 258)
+                .addComponent(lblStudentNo)
+                .addGap(44, 44, 44)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(btnLogin)
-                    .addGroup(jPanel1Layout.createSequentialGroup()
-                        .addComponent(lblStudentNo)
-                        .addGap(44, 44, 44)
-                        .addComponent(txtfStudentNo, javax.swing.GroupLayout.PREFERRED_SIZE, 201, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addContainerGap(162, Short.MAX_VALUE))
+                    .addComponent(txtfStudentNo, javax.swing.GroupLayout.PREFERRED_SIZE, 201, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap(319, Short.MAX_VALUE))
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel1Layout.createSequentialGroup()
-                .addGap(109, 109, 109)
+                .addContainerGap(343, Short.MAX_VALUE)
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(lblStudentNo)
                     .addComponent(txtfStudentNo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(54, 54, 54)
+                .addGap(67, 67, 67)
                 .addComponent(btnLogin)
-                .addContainerGap(216, Short.MAX_VALUE))
+                .addGap(303, 303, 303))
         );
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
@@ -137,7 +137,7 @@ public class LoginFrame extends javax.swing.JFrame {
         String studentNo = txtfStudentNo.getText();
         Student student = new Student();
         int reply = student.login(studentNo);
-        if (reply==Student.SUCCESS_LOGIN) {
+        if (reply==Student.SUCCESS) {
             this.setVisible(false);
             HomeFrame home = new HomeFrame(student);
             home.setVisible(true);

@@ -53,9 +53,13 @@ public class Assignment {
      */
     private void generateQuestions() throws SQLException {
         
+        //Check no submissions remaining:
+        //String query = "SELECT MaxNoSubmissions";
+        Statement st = conn.createStatement();
+        //ResultSet rs = st.executeQuery(query);
+        
         //Get the number of questions in the questions table:
         String query = "SELECT COUNT(*) AS noRows FROM Questions";
-        Statement st = conn.createStatement();
         ResultSet rs = st.executeQuery(query);
         rs.next();  //take cursor to first row
         int noRows = rs.getInt("noRows");
@@ -112,6 +116,10 @@ public class Assignment {
         }
         currentPos++;
         return questionList.get(currentPos);
+    }
+    
+    public boolean hasNext() {
+        return questionList.size()-1 < currentPos;
     }
     
     public Question getQuestion()  {

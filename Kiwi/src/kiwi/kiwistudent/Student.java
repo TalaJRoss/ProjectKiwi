@@ -25,12 +25,14 @@ import kiwi.message.StudentStatistics;
 public class Student {
     
     
-    public static int FAIL_CONNECT = 0;
-    public static int FAIL_LOGIN = 1;
-    public static int SUCCESS_LOGIN = 2;
+    public static int FAIL_CONNECT = 1;
+    public static int FAIL_LOGIN = 2;
+    public static int FAIL_DENY = 3;
+    public static int SUCCESS = 0;
     
     //Instance Variables:
     
+    //Assignment running
     private String currentFeedback;
     private String currentCheckOutput;
     private int currentOutOf;
@@ -42,7 +44,7 @@ public class Student {
     private int noQuestions;
     private byte [] schemaImg;
     
-    
+    //student info:
     /**
      * The student's student number.
      */
@@ -51,19 +53,18 @@ public class Student {
     /**
      * The student's highest recorded assignment grade.
      */
-    double highestGrade;
-    
-    //TODO: get number of submissions from server
-    /**
-     * The number of submissions a student is allowed.
-     */
-    int maxNoSubmissions = 3;
+    protected double highestGrade;
     
     /**
      * The number of submissions the student has completed already.
      */
-    int noSubmissionsRemaining;
+    protected int noSubmissionsRemaining;
     
+    protected Date deadlineDay;
+    protected Time deadlineTime;
+    
+    
+    //TCP Messages:
     
     /**
      * This student's socket which is used to communicate with the server.
@@ -81,13 +82,6 @@ public class Student {
     private final ObjectInputStream reader;
     
     private boolean connected;
-    
-    
-    /**
-     *  The date and the time of the deadline of the assignment
-     */
-    protected Date deadlineDay;
-    protected Time deadlineTime;
     
     //Constructor:
     
@@ -114,6 +108,8 @@ public class Student {
     //Main functionality methods(public):
          /**
      * This student's socket which is used to communicate with the server.
+     * @param studentNumber
+     * @return 
      */
     public int login(String studentNumber) {
         try {
@@ -128,12 +124,7 @@ public class Student {
                     System.out.println("Error: Student is not register in the databease.");
                     return FAIL_LOGIN;
                 default:
-                    StudentStatistics st = (StudentStatistics) loginResponce.getBody();
-                    highestGrade = st.getHighestGrade();
-                    noSubmissionsRemaining = st.getNoSubmissionsRemaining();
-                    deadlineDay = st.getDeadlineDay();
-                    deadlineTime = st.getDeadlineTime();
-                    return SUCCESS_LOGIN;
+                    return SUCCESS;
             }
     
         } catch (ClassNotFoundException e) {  //can't read the return message
@@ -149,7 +140,7 @@ public class Student {
         }
     }
     
-    public boolean startAssignment() {
+    public int startAssignment() {
         try {
             writer.writeObject(new StudentMessage(StudentMessage.CMD_START, null));
             
@@ -161,15 +152,18 @@ public class Student {
                 nextQuestionNo = qi.getQuestionNo();
                 nextQuestion = qi.getQuestion();
                 schemaImg = qi.getSchemaImg();
-                return true;
+                return SUCCESS;
+            }
+            else if (m.getResponse()==StudentMessage.FAIL_DENY){
+                return FAIL_DENY;
             }
             else {
-                return false;
+                return FAIL_CONNECT;
             }
         } catch (IOException | ClassNotFoundException e) {
             System.out.println("Error: Problem sending/receiving tcp socket messages in startMessage() method.");
             System.out.println(e);
-            return false;
+            return FAIL_CONNECT;
         }
     }
     
@@ -220,6 +214,8 @@ public class Student {
                 currentMark = qi.getMark();
                 currentOutOf = qi.getOutOf();
                 nextQuestion = qi.getQuestion();
+                nextQuestionNo = qi.getQuestionNo();
+                currentFinalGrade = qi.getFinalGrade();
                 return true;
             }
             else {
@@ -246,6 +242,30 @@ public class Student {
             }
         } catch (IOException | ClassNotFoundException e) {
             System.out.println("Error: Problem sending/receiving tcp socket messages in leaveAssignment() method.");
+            System.out.println(e);
+            return false;
+        }
+    }
+    
+    public boolean viewStats() {
+        try {
+            writer.writeObject(new StudentMessage(StudentMessage.CMD_STATS, null));
+
+            //get feedback and mark:
+            StudentMessage m = (StudentMessage) reader.readObject();
+            if (m.getResponse()==StudentMessage.SUCCESS) {  //saved grades
+                StudentStatistics ss = (StudentStatistics) m.getBody();
+                highestGrade = ss.getHighestGrade();
+                noSubmissionsRemaining = ss.getNoSubmissionsRemaining();
+                deadlineDay = ss.getDeadlineDay();
+                deadlineTime = ss.getDeadlineTime();
+                return true;
+            }
+            else {  //didn't manage to access new grades
+                return false;
+            }
+        } catch (IOException | ClassNotFoundException e) {
+            System.out.println("Error: Problem sending/receiving tcp socket messages in viewStats() method.");
             System.out.println(e);
             return false;
         }
@@ -285,7 +305,7 @@ public class Student {
     }
 
     boolean isAssignmentDone() {
-        return nextQuestionNo<0;
+        return nextQuestion==null;
     }
     
 }
