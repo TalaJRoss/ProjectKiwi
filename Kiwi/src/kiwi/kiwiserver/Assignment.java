@@ -91,7 +91,8 @@ public class Assignment {
                 String tempQuestion = rs.getString("Question");
                 String answer = rs.getString("Answer");
                 int difficulty = rs.getInt("Difficulty");
-                question = new Question(tempQuestion, answer, difficulty, conn);
+                String type = rs.getString("Type");
+                question = new Question(tempQuestion, answer, difficulty, type, conn);
             }
 
             //Add question to list:
@@ -151,8 +152,11 @@ public class Assignment {
         int outOf = 0;
         int received = 0;
         for (Question q: questionList) {
-            outOf+= q.getMaxMark();
-            received+= q.getMark();
+            //if lecturers code does not compile then don't include question in calculation:
+            if (q.getMark()!=-1)    {   
+                outOf+= q.getMaxMark();
+                received+= q.getMark();
+            }
         }
         double grade = ((double)received)/outOf*100;
         return grade;

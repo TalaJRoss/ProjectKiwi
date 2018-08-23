@@ -21,6 +21,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Time;
+import java.util.Random;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import kiwi.message.QuestionInfo;
@@ -95,7 +96,7 @@ class StudentHandler extends Thread {
      */
     public StudentHandler(Socket studentSocket) {
         //DEBUG:
-        File file = new File("schema.jpg");
+        File file = new File(DB_PATH + "schema.jpg");
         byte[] bytesArray = new byte[(int) file.length()]; 
 
         FileInputStream fis;
@@ -311,11 +312,20 @@ class StudentHandler extends Thread {
         }
     }
     
-    //TODO: check for err handling in underlying logic
     private void markQuestion(String sudentAns) throws IOException {
         //marks question and creates return object with feedback and next question info:
         QuestionInfo qi = new QuestionInfo(assignment, sudentAns);
-        writer.writeObject(new StudentMessage(StudentMessage.CMD_SUBMIT, qi));
+        switch (qi.getMark()) {
+            case -1:    //lecturer answer is wrong
+                writer.writeObject(new StudentMessage(StudentMessage.CMD_SUBMIT, qi, StudentMessage.FAIL_INPUT));
+                break;
+            case -2:    //problem comparing result sets
+                writer.writeObject(new StudentMessage(StudentMessage.CMD_SUBMIT, qi, StudentMessage.FAIL_CONNECT));
+                break;
+            default:
+                writer.writeObject(new StudentMessage(StudentMessage.CMD_SUBMIT, qi));
+                break;
+        }
     }
 
     private void updateGrade() throws IOException {

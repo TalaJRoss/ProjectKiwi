@@ -44,7 +44,7 @@ public class HomeFrame extends javax.swing.JFrame {
             txtSubRemain.setText("Unavailable");
             txtDeadlineDate.setText("Unavailable");
             txtDeadlineTime.setText("Unavailable");
-            JOptionPane.showMessageDialog(null, "Could not access student information on database.", "Grade Access Error", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this, "Could not access student information on database.", "Grade Access Error", JOptionPane.ERROR_MESSAGE);
         }
     }
 

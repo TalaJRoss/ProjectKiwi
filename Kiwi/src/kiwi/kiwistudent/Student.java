@@ -283,8 +283,12 @@ public class Student {
         return currentCheckOutput;
     }
 
-    public String getCurrentMark() {
+    public String getCurrentMarkString() {
         return currentMark + "/" + currentOutOf;
+    }
+    
+    public int getCurrentMark() {
+        return currentMark;
     }
 
     public String getNextQuestion() {

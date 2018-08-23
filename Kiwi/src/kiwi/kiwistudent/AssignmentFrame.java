@@ -52,12 +52,12 @@ public class AssignmentFrame extends javax.swing.JFrame {
         }
         else if (resp==Student.FAIL_DENY) {
             DecimalFormat d = new DecimalFormat("0.00");
-            JOptionPane.showMessageDialog(null, "You have used up all your submissions."
+            JOptionPane.showMessageDialog(this, "You have used up all your submissions."
                     + "\nYour final grade is: " + d.format(student.highestGrade), "Final Grade", JOptionPane.PLAIN_MESSAGE);
             createdFlag = false;
         }
         else {  //error in creation of assignment
-            JOptionPane.showMessageDialog(null, "There was an error connecting to the database."
+            JOptionPane.showMessageDialog(this, "There was an error connecting to the database."
                     + "\nPlease start the assignment again.", "Startup Error", JOptionPane.ERROR_MESSAGE);
             createdFlag = false;
         }
@@ -259,21 +259,27 @@ public class AssignmentFrame extends javax.swing.JFrame {
     private void btnSubmitActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSubmitActionPerformed
         String answer = txtfAnswer.getText();
         if (answer.equals("")) {    //empty answer field
-            int confirm = JOptionPane.showConfirmDialog(null, "You did not provide an answer."
+            int confirm = JOptionPane.showConfirmDialog(this, "You did not provide an answer."
                     + "\nAre you sure you want to submit?", "Empty Submit Confirmation", JOptionPane.YES_NO_OPTION);
             if (confirm!=JOptionPane.YES_OPTION) {  //don't submit
                 return;
             }
         }
         if (student.submit(answer)) { //submitted correctly to server
-            txtfMark.setText(student.getCurrentMark());
+            txtfMark.setText(student.getCurrentMarkString());
             txtaFeedback.setText(student.getCurrentFeedback());
             btnSubmit.setEnabled(false);
             btnNext.setEnabled(true);
             jpbQuestionProgress.setValue(student.getNextQuestionNo()-1);
         }
+        else if (student.getCurrentMark()==-1) {    //lecturer answer was wrong
+            JOptionPane.showMessageDialog(this, "Couldn't run lecturer's sql statement.\n"
+                    + "Please contact your lecturer about this."
+                    + "\nImportant note: This question will not be included in your assignment grade calculation..",
+                    "Submission Error", JOptionPane.ERROR_MESSAGE);
+        }
         else {
-            JOptionPane.showMessageDialog(null, "There was an error connecting to the database."
+            JOptionPane.showMessageDialog(this, "There was an error connecting to the database."
                     + "\nPlease resubmit your answer.", "Submission Error", JOptionPane.ERROR_MESSAGE);
         }
     }//GEN-LAST:event_btnSubmitActionPerformed
@@ -284,7 +290,7 @@ public class AssignmentFrame extends javax.swing.JFrame {
      */
     private void btnHomeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnHomeActionPerformed
         if (!student.isAssignmentDone()) {  //assignment isn't complete
-            int confirm = JOptionPane.showConfirmDialog(null, "You did not complete the assignment."
+            int confirm = JOptionPane.showConfirmDialog(this, "You did not complete the assignment."
                     + "\nIf you quit now, you will receive 0 for this submission.\n"
                     + "Are you sure you want to quit?", "Quit Confirmation", JOptionPane.YES_NO_OPTION);
             if (confirm!=JOptionPane.YES_OPTION) {  //don't quit
@@ -298,7 +304,7 @@ public class AssignmentFrame extends javax.swing.JFrame {
             this.dispose();
         }
         else {
-            int confirm = JOptionPane.showConfirmDialog(null, "There was an error saving your grade. If you leave now, your grade may not be saved.\n"
+            int confirm = JOptionPane.showConfirmDialog(this, "There was an error saving your grade. If you leave now, your grade may not be saved.\n"
                     + "We suggest you re-attempt to leave the assignment so that your grade is properly saved."
                     + "Would you like to reattempt?", "Grade Saving Error", JOptionPane.YES_NO_OPTION);
             if (confirm==JOptionPane.YES_OPTION) {  //don't quit
@@ -321,7 +327,7 @@ public class AssignmentFrame extends javax.swing.JFrame {
     private void btnNextActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnNextActionPerformed
         if (student.isAssignmentDone()) {
             btnNext.setEnabled(false);
-            JOptionPane.showMessageDialog(null, "Your final grade is: " + student.getFinalGrade(), "Assignment Grade", JOptionPane.PLAIN_MESSAGE);
+            JOptionPane.showMessageDialog(this, "Your final grade is: " + student.getFinalGrade(), "Assignment Grade", JOptionPane.PLAIN_MESSAGE);
         }
         else {
             txtaQuestion.setText("Question:\n" + student.getNextQuestion());
@@ -341,7 +347,7 @@ public class AssignmentFrame extends javax.swing.JFrame {
     private void btnShowSchemaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnShowSchemaActionPerformed
         //ImageIcon icon = new ImageIcon("schema.jpg");
         ImageIcon icon = new ImageIcon(student.getSchemaImage());
-        JOptionPane.showMessageDialog(null, "", "Query Database Schema", JOptionPane.PLAIN_MESSAGE, icon);
+        JOptionPane.showMessageDialog(this, "", "Query Database Schema", JOptionPane.PLAIN_MESSAGE, icon);
     }//GEN-LAST:event_btnShowSchemaActionPerformed
     
     /**
@@ -355,7 +361,7 @@ public class AssignmentFrame extends javax.swing.JFrame {
             txtaOutput.setText(student.getCurrentCheckOutput());
         }
         else {
-            JOptionPane.showMessageDialog(null, "There was an error connecting to the database."
+            JOptionPane.showMessageDialog(this, "There was an error connecting to the database."
                     + "\nPlease retry your statement check.", "Checking Error", JOptionPane.ERROR_MESSAGE);
         }
     }//GEN-LAST:event_btnCheckActionPerformed

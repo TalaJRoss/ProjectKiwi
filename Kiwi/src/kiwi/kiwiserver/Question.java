@@ -45,6 +45,8 @@ public class Question {
      */
     private int difficulty;
     
+    private String type;
+    
     /**
      * Mark student receives after question is marked.
      * Can be 0, difficulty or difficulty*2.
@@ -87,10 +89,11 @@ public class Question {
      * @param answer SQL statement expected answer.
      * @param difficulty Difficulty value (1, 2 or 3)
      */
-    public Question(String question, String answer, int difficulty, Connection conn) {
+    public Question(String question, String answer, int difficulty, String type, Connection conn) {
         this.question = question;
         this.answer = answer;
         this.difficulty = difficulty;
+        this.type = type;
         this.mark = 0;
         this.conn = conn;
     }
