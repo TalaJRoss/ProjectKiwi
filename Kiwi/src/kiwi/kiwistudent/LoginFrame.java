@@ -1,8 +1,6 @@
 package kiwi.kiwistudent;
 
 import java.io.IOException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.JOptionPane;
 
 /**
@@ -142,7 +140,8 @@ public class LoginFrame extends javax.swing.JFrame {
             txtfStudentNo.setText("");
         }
         else{
-            JOptionPane.showMessageDialog(this, "Unable to connect to database. Please retry.", "Login Error", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this, "Unable to connect to server/database. Please retry.\n"
+                    + "If the problem persists, please retry later or contact your lecturer.", "Login Error", JOptionPane.ERROR_MESSAGE);
             txtfStudentNo.setText("");
         }
     }

@@ -266,11 +266,17 @@ public class AssignmentFrame extends javax.swing.JFrame {
             }
         }
         if (student.submit(answer)) { //submitted correctly to server
-            txtfMark.setText(student.getCurrentMark());
+            txtfMark.setText(student.getCurrentMarkString());
             txtaFeedback.setText(student.getCurrentFeedback());
             btnSubmit.setEnabled(false);
             btnNext.setEnabled(true);
             jpbQuestionProgress.setValue(student.getNextQuestionNo()-1);
+        }
+        else if (student.getCurrentMark()==-1) {    //lecturer answer was wrong
+            JOptionPane.showMessageDialog(this, "Couldn't run lecturer's sql statement.\n"
+                    + "Please contact your lecturer about this."
+                    + "\nImportant note: This question will not be included in your assignment grade calculation..",
+                    "Submission Error", JOptionPane.ERROR_MESSAGE);
         }
         else {
             JOptionPane.showMessageDialog(this, "There was an error connecting to the database."
