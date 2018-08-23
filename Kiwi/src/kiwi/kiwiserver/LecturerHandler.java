@@ -1,11 +1,12 @@
 /*
- * Server-side handling of the Lecturer
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
  */
 package kiwi.kiwiserver;
 
 import com.opencsv.CSVReader;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
@@ -22,7 +23,7 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import kiwi.message.*;
+import kiwi.message.LecturerMessage;
 
 /**
  *
@@ -56,7 +57,7 @@ final class LecturerHandler extends Thread{
     /**
      * Indicates successful create/upload table from csv file.
      */
-    private static final String SUCCESS = "Success";
+    private static final String SUCCESS = "Yayyy";
     
     /**
      * Indicates failed create/upload table from csv file.
@@ -126,9 +127,11 @@ final class LecturerHandler extends Thread{
             Class.forName("com.mysql.cj.jdbc.Driver");
             this.conn = DriverManager.getConnection("jdbc:mysql://localhost/KiwiDB", USER_NAME, PASSWORD);
             System.out.println("conn: " + conn);
-            writer.writeObject(new LecturerMessage(LecturerMessage.CMD_CONNECT, null, LecturerMessage.RESP_SUCCESS));
+            LecturerMessage m = new LecturerMessage(null, null, "", LecturerMessage.CMD_CONNECT, LecturerMessage.RES_SUCCESS);
+            System.out.println("DEBUG: "+m.getResponse());
+            writer.writeObject(m);
         } catch (SQLException | ClassNotFoundException ex) {
-            writer.writeObject(new LecturerMessage(LecturerMessage.CMD_CONNECT, null, LecturerMessage.RESP_FAIL));
+            writer.writeObject(new LecturerMessage(null, null, "", LecturerMessage.CMD_CONNECT, LecturerMessage.RES_FAIL));
         }
     }
     
@@ -140,19 +143,16 @@ final class LecturerHandler extends Thread{
         } catch (IOException ex) {
             Logger.getLogger(LecturerHandler.class.getName()).log(Level.SEVERE, null, ex);
         }
-        
         try {
             
             LecturerMessage m = (LecturerMessage) reader.readObject();   //MESSAGE
-            int command;
+            String command;
             
             while (m!= null)
             {
                 command = m.getCmd();
                 switch (command) 
                 {
-                    case LecturerMessage.CMD_ASSIGNMENT_INFO: //upload assignment info (noSubmissions, deadline etc.)
-                        uploadAssignmentInfo((AssignmentInfo)m.getBody());
                     case LecturerMessage.CMD_CONNECT:  //retry connect
                         connectToDB();
                         break;
@@ -163,19 +163,19 @@ final class LecturerHandler extends Thread{
                         viewGradeDescGrade();
                         break;
                     case LecturerMessage.CMD_UPLOAD_STUDENTS: //upload file
-                        uploadStudents(((CSVFiles)m.getBody()).getCsvFile());
+                        uploadStudents(m.getCsvFile());
                         break;
                     case LecturerMessage.CMD_UPLOAD_QUESTIONS: //upload file
-                        uploadQuestions(((CSVFiles)m.getBody()).getCsvFile());
+                        uploadQuestions(m.getCsvFile());
                         break;
                     case LecturerMessage.CMD_UPLOAD_QUERY: //upload file
-                        uploadQueryData(((CSVFiles)m.getBody()).getCsvFiles(), ((CSVFiles)m.getBody()).getFileNames());
+                        uploadQueryData(m.getCsvFiles(), m.getFileNames());
                         break;
                     default:    //nothing else
                         break;
                 }
                 writer.flush();
-                m = (LecturerMessage) reader.readObject();
+                m= (LecturerMessage) reader.readObject();
             }
             lecturerSocket.close();
         } catch (IOException | ClassNotFoundException ex) {
@@ -185,58 +185,6 @@ final class LecturerHandler extends Thread{
     
     //Main functionality methods(public):
     
-    
-    public void uploadAssignmentInfo(AssignmentInfo assignmentInfo) throws IOException{ //NoSubmissions, deadline date etc.
-        
-        String tblName = "AssignmentInfo";
-        
-        //drop table statement:
-        String dropStatement = "DROP TABLE IF EXISTS " + tblName;
-        
-        //create table statement:
-        String createStatement = "CREATE TABLE AssignmentInfo(" +
-                                 "ID INT NOT NULL PRIMARY KEY AUTO_INCREMENT," +
-                                 "NoSubmissions INT, " +
-                                 "NoQuestions INT, " +
-                                 "DeadlineDate DATE, " +
-                                 "DeadlineTime TIME);";
- 
-        //insert into table statement:
-        String insertStatement =  "INSERT INTO AssignmentInfo VALUES (1, " +
-                                   assignmentInfo.getNoSubmissions()+ ", "+
-                                   assignmentInfo.getNoQuestions() + ", \""+
-                                   assignmentInfo.getDate() + "\", \"" +
-                                   assignmentInfo.getTime() + "\");";
-        
-        System.out.println("Drop statement:\n"+dropStatement);
-        System.out.println("Create statement:\n"+createStatement);
-        System.out.println("Insert statement:\n"+insertStatement);
-        
-        Statement st;
-        
-        try {
-            st = conn.createStatement();
-            
-            //drop table:
-            st.executeUpdate(dropStatement);
-            System.out.println("Dropped table if exists: " + tblName);
-            
-            //create table:
-            st.executeUpdate(createStatement);
-            System.out.println("Created table: "+tblName);
-            
-            st.executeUpdate(insertStatement);
-            
-            //save schema:
-            if (assignmentInfo.getSchemaImg() != null) {
-                FileOutputStream fos = new FileOutputStream(DB_PATH + "schema.jpg");
-                fos.write(assignmentInfo.getSchemaImg());
-            }
-        } catch (SQLException | IOException ex) {
-            writer.writeObject(new LecturerMessage(LecturerMessage.CMD_ASSIGNMENT_INFO, null, LecturerMessage.RESP_FAIL));
-        }
-    }
-    
     /**
      * Uploads student information contained in the given csv file to the
      * students table in the database on the server.
@@ -244,14 +192,8 @@ final class LecturerHandler extends Thread{
      * studentNo,highestGrade,noSubmissionsCompleted
      * @param csv The csv file containing student information.
      */
-    public void uploadStudents(byte [] csv) throws IOException {
-        String response = createTable("students", csv);
-        if(response.equals(SUCCESS)){
-            writer.writeObject(new LecturerMessage(LecturerMessage.CMD_UPLOAD_STUDENTS, null, LecturerMessage.RESP_SUCCESS));
-        }
-        else{
-            writer.writeObject(new LecturerMessage(LecturerMessage.CMD_UPLOAD_STUDENTS, null, LecturerMessage.RESP_FAIL));
-        }
+    public void uploadStudents(byte [] csv) {
+        createTable("students", csv); 
     }
     
     /**
@@ -261,14 +203,8 @@ final class LecturerHandler extends Thread{
      * questionNo,question,answer,difficulty
      * @param csv The csv file containing question-answer pairs.
      */
-    public void uploadQuestions(byte [] csv) throws IOException {
-        String response = createTable("questions", csv);
-        if(response.equals(SUCCESS)){
-            writer.writeObject(new LecturerMessage(LecturerMessage.CMD_UPLOAD_QUESTIONS, null, LecturerMessage.RESP_SUCCESS));
-        }
-        else{
-            writer.writeObject(new LecturerMessage(LecturerMessage.CMD_UPLOAD_QUESTIONS, null, LecturerMessage.RESP_FAIL));
-        }
+    public void uploadQuestions(byte [] csv) {
+        createTable("questions", csv);
     }
     
     /**
@@ -283,15 +219,9 @@ final class LecturerHandler extends Thread{
      * and lines are terminated by '\r\n'.
      * @param csvs Array of csv files containing query data.
      */
-    public void uploadQueryData(ArrayList<byte []> csvs, String [] names) throws IOException {
+    public void uploadQueryData(ArrayList<byte []> csvs, String [] names) {
         for (int i=0; i<csvs.size(); i++) {
-            
-            String response = createTable(names[i], csvs.get(i));
-            if (response.equals(SUCCESS)) {
-                writer.writeObject(new LecturerMessage(LecturerMessage.CMD_UPLOAD_QUERY, null, LecturerMessage.RESP_SUCCESS));
-            } else {
-                writer.writeObject(new LecturerMessage(LecturerMessage.CMD_UPLOAD_QUERY, null, LecturerMessage.RESP_FAIL));
-            }
+            createTable(names[i], csvs.get(i));
         }
     }
     
@@ -303,13 +233,7 @@ final class LecturerHandler extends Thread{
      * ascending student number.
      */
     public void viewGradeAscStudent() throws IOException {
-        String response = getGrades(STUDENT_NO, ASCENDING);
-        if (response.equals(FAIL)) {
-            writer.writeObject(new LecturerMessage(LecturerMessage.CMD_GRADE_ALPH, null, LecturerMessage.RESP_FAIL));
-        } else {
-            writer.writeObject(new LecturerMessage(LecturerMessage.CMD_GRADE_ALPH, new Grades(response), LecturerMessage.RESP_FAIL));
-        }
-        
+        writer.writeObject(new LecturerMessage(null, null, getGrades(STUDENT_NO, ASCENDING), LecturerMessage.CMD_GRADE_ALPH, LecturerMessage.RES_SUCCESS));
     }
     
     /**
@@ -320,12 +244,7 @@ final class LecturerHandler extends Thread{
      * descending grade.
      */
     public void viewGradeDescGrade() throws IOException {
-        String response = getGrades(GRADE, DESCENDING);
-        if (response.equals(FAIL)) {
-            writer.writeObject(new LecturerMessage(LecturerMessage.CMD_GRADE_ALPH, null, LecturerMessage.RESP_FAIL));
-        } else {
-            writer.writeObject(new LecturerMessage(LecturerMessage.CMD_GRADE_ALPH, new Grades(response), LecturerMessage.RESP_FAIL));
-        }
+        writer.writeObject(new LecturerMessage(null, null, getGrades(GRADE, DESCENDING), LecturerMessage.CMD_GRADE_DESC, LecturerMessage.RES_SUCCESS));
     }
     
     /**
@@ -464,7 +383,7 @@ final class LecturerHandler extends Thread{
         catch (SQLException e) { 
             System.out.println("Error: Problem reading grades from database.");
             System.out.println(e);
-            return FAIL;
+            return "Error: Problem reading grades from database.";
         } 
     }
     

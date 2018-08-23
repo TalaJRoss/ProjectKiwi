@@ -6,54 +6,69 @@
 package kiwi.message;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 
 /**
  *
- * @author nikai
+ * @author Tala Ross(rsstal002)
  */
 public class LecturerMessage implements Serializable{
     
-    //Constants
-    public static final int CMD_ASSIGNMENT_INFO = 0;
+    //Constants from lecturer:
+    public static final String CMD_UPLOAD_STUDENTS = "UploadStudents";
+    public static final String CMD_UPLOAD_QUESTIONS = "UploadQuestions";
+    public static final String CMD_UPLOAD_QUERY = "UploadQuery";
+    public static final String CMD_GRADE_DESC = "Descending";
+    public static final String CMD_GRADE_ALPH = "Alphabetical";
+    public static final String CMD_CONNECT = "Connect";
     
-    public static final int CMD_UPLOAD_STUDENTS = 1;
-    public static final int CMD_UPLOAD_QUESTIONS = 2;
-    public static final int CMD_UPLOAD_QUERY = 3;
-    
-    public static final int CMD_GRADE_DESC = 4;
-    public static final int CMD_GRADE_ALPH = 5;
-    
-    public static final int CMD_CONNECT = 6;
-    
-    public static final int RESP_SUCCESS = 1;
-    public static final int RESP_FAIL = 0;
+    //Constants from server:
+    public static final String RES_SUCCESS = "Success";
+    public static final String RES_FAIL = "Fail";
     
     //Instance Variables:
-    private int cmd;
-    private Object body;
-    private int returnMessage;
+    private ArrayList<byte []> csvFiles;  
+    private String [] fileNames;
+    private String toReturn;
+    private String cmd;
+    private String response;    //success vs fail
 
-
-    public LecturerMessage(int cmd, Object body, int returnMessage) {
+    public LecturerMessage(ArrayList<byte []> csvFiles, String [] fileNames, String toReturn, String cmd, String response) {
+        this.csvFiles = csvFiles;
+        this.fileNames = fileNames;
+        this.toReturn = toReturn;
         this.cmd = cmd;
-        this.body = body;
-        this.returnMessage = returnMessage;
+        this.response = response;
     }
 
-    public LecturerMessage(int cmd, Object body) {
-        this.cmd = cmd;
-        this.body = body;
+    public String getToReturn() {
+        return toReturn;
     }
 
-    public int getCmd() {
+    public ArrayList<byte []> getCsvFiles() {
+        return csvFiles;
+    }
+    
+    public byte [] getCsvFile() {
+        return csvFiles.get(0);
+    }
+
+    public String[] getFileNames() {
+        return fileNames;
+    }
+    
+    public String getFileName() {
+        return fileNames[0];
+    }
+
+    public String getCmd() {
         return cmd;
     }
 
-    public Object getBody() {
-        return body;
+    public String getResponse() {
+        return response;
     }
     
-    public int getMessage() {
-        return returnMessage;
-    }
+    
+    
 }
