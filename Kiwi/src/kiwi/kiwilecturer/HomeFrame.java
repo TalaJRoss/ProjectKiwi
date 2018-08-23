@@ -1,7 +1,9 @@
 package kiwi.kiwilecturer;
 
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JFileChooser;
@@ -35,6 +37,10 @@ public class HomeFrame extends javax.swing.JFrame {
     private String [] dataFilePaths;
     private String [] dataFileNames;
     
+    /**
+     * Path of the schema image.
+     */
+    private String schemaPath;
     
     //Constructor:
     
@@ -73,7 +79,7 @@ public class HomeFrame extends javax.swing.JFrame {
         btnQueryData.setEnabled(false);
         btnQuestions.setEnabled(false);
         btnStudentCSV.setEnabled(false);
-        btnUpload.setEnabled(false);
+        btnUploadQueryData.setEnabled(false);
         btnView.setEnabled(false);
     }
     
@@ -82,7 +88,7 @@ public class HomeFrame extends javax.swing.JFrame {
         btnQueryData.setEnabled(true);
         btnQuestions.setEnabled(true);
         btnStudentCSV.setEnabled(true);
-        btnUpload.setEnabled(true);
+        btnUploadQueryData.setEnabled(true);
         btnView.setEnabled(true);
     }
     /**
@@ -102,7 +108,7 @@ public class HomeFrame extends javax.swing.JFrame {
         txtfQuestionsFilename = new javax.swing.JTextField();
         txtfQueryDataFilename = new javax.swing.JTextField();
         txtfStudentFilename = new javax.swing.JTextField();
-        btnUpload = new javax.swing.JButton();
+        btnUploadQueryData = new javax.swing.JButton();
         lblViewGrades = new javax.swing.JLabel();
         btnView = new javax.swing.JButton();
         jScrollPane1 = new javax.swing.JScrollPane();
@@ -119,6 +125,10 @@ public class HomeFrame extends javax.swing.JFrame {
         txtfTime = new javax.swing.JTextField();
         txtfNoSubmissions = new javax.swing.JTextField();
         btnOK = new javax.swing.JButton();
+        btnSchema = new javax.swing.JButton();
+        txtfSchemaPath = new javax.swing.JTextField();
+        btnUploadStudent = new javax.swing.JButton();
+        btnUploadQuestions = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -151,10 +161,10 @@ public class HomeFrame extends javax.swing.JFrame {
 
         txtfStudentFilename.setEditable(false);
 
-        btnUpload.setText("Upload");
-        btnUpload.addActionListener(new java.awt.event.ActionListener() {
+        btnUploadQueryData.setText("Upload");
+        btnUploadQueryData.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnUploadActionPerformed(evt);
+                btnUploadQueryDataActionPerformed(evt);
             }
         });
 
@@ -203,57 +213,87 @@ public class HomeFrame extends javax.swing.JFrame {
             }
         });
 
+        btnSchema.setText("Select schema image");
+        btnSchema.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnSchemaActionPerformed(evt);
+            }
+        });
+
+        txtfSchemaPath.setEditable(false);
+
+        btnUploadStudent.setText("Upload");
+        btnUploadStudent.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnUploadStudentActionPerformed(evt);
+            }
+        });
+
+        btnUploadQuestions.setText("Upload");
+        btnUploadQuestions.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnUploadQuestionsActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel1Layout.createSequentialGroup()
                 .addGap(70, 70, 70)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 720, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
+                        .addComponent(lblViewGrades)
+                        .addGap(206, 206, 206)
+                        .addComponent(btnGradeDescending)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(btnView))
+                    .addComponent(txtfStudentFilename, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 452, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
+                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                            .addComponent(btnQuestions, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(btnQueryData, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(btnStudentCSV, javax.swing.GroupLayout.PREFERRED_SIZE, 213, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(lblUpload, javax.swing.GroupLayout.Alignment.LEADING))
+                        .addGap(55, 55, 55)
+                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addComponent(txtfQueryDataFilename, javax.swing.GroupLayout.PREFERRED_SIZE, 452, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(txtfQuestionsFilename, javax.swing.GroupLayout.PREFERRED_SIZE, 452, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                            .addGroup(jPanel1Layout.createSequentialGroup()
+                                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                                    .addComponent(lblDate)
+                                    .addComponent(lblTime)
+                                    .addComponent(lblNoQuestions)
+                                    .addComponent(lblNoSubmissions)
+                                    .addComponent(btnSchema))
+                                .addGap(55, 55, 55)
+                                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(txtfSchemaPath)
+                                    .addGroup(jPanel1Layout.createSequentialGroup()
+                                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                            .addComponent(txtfNoQuestions, javax.swing.GroupLayout.PREFERRED_SIZE, 106, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                            .addComponent(txtfNoSubmissions, javax.swing.GroupLayout.PREFERRED_SIZE, 106, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                            .addComponent(txtfDate, javax.swing.GroupLayout.PREFERRED_SIZE, 106, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                            .addComponent(txtfTime, javax.swing.GroupLayout.PREFERRED_SIZE, 106, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                        .addGap(0, 0, Short.MAX_VALUE))))
+                            .addComponent(txtfFeedback, javax.swing.GroupLayout.PREFERRED_SIZE, 538, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(jPanel1Layout.createSequentialGroup()
+                                .addGap(77, 77, 77)
+                                .addComponent(btnReconnect))
+                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .addComponent(btnOK)))))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 43, Short.MAX_VALUE)
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(lblTime)
-                    .addComponent(lblDate)
-                    .addComponent(lblNoSubmissions)
-                    .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                        .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
-                            .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
-                                    .addComponent(lblViewGrades)
-                                    .addGap(83, 83, 83))
-                                .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
-                                    .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                        .addComponent(lblUpload)
-                                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                                            .addComponent(btnQuestions, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                            .addComponent(btnQueryData, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                            .addComponent(btnStudentCSV, javax.swing.GroupLayout.PREFERRED_SIZE, 213, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                                    .addGap(55, 55, 55)))
-                            .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                                .addComponent(txtfQueryDataFilename, javax.swing.GroupLayout.PREFERRED_SIZE, 452, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addComponent(txtfQuestionsFilename, javax.swing.GroupLayout.PREFERRED_SIZE, 452, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addComponent(btnUpload)
-                                .addGroup(jPanel1Layout.createSequentialGroup()
-                                    .addComponent(btnGradeDescending)
-                                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                    .addComponent(btnView))))
-                        .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 720, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGroup(jPanel1Layout.createSequentialGroup()
-                            .addComponent(txtfFeedback, javax.swing.GroupLayout.PREFERRED_SIZE, 538, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addGap(77, 77, 77)
-                            .addComponent(btnReconnect))
-                        .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
-                            .addComponent(lblNoQuestions)
-                            .addGap(91, 91, 91)
-                            .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                                .addComponent(txtfStudentFilename, javax.swing.GroupLayout.PREFERRED_SIZE, 452, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addGroup(jPanel1Layout.createSequentialGroup()
-                                    .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                                        .addComponent(txtfTime, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 106, Short.MAX_VALUE)
-                                        .addComponent(txtfDate, javax.swing.GroupLayout.Alignment.LEADING)
-                                        .addComponent(txtfNoQuestions, javax.swing.GroupLayout.Alignment.LEADING)
-                                        .addComponent(txtfNoSubmissions, javax.swing.GroupLayout.Alignment.LEADING))
-                                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                    .addComponent(btnOK))))))
-                .addContainerGap(90, Short.MAX_VALUE))
+                    .addComponent(btnUploadStudent)
+                    .addComponent(btnUploadQuestions)
+                    .addComponent(btnUploadQueryData))
+                .addGap(42, 42, 42))
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -266,7 +306,7 @@ public class HomeFrame extends javax.swing.JFrame {
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(lblNoSubmissions)
                     .addComponent(txtfNoSubmissions, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(18, 18, 18)
+                .addGap(11, 11, 11)
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(lblNoQuestions)
                     .addComponent(txtfNoQuestions, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
@@ -274,28 +314,33 @@ public class HomeFrame extends javax.swing.JFrame {
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(lblDate, javax.swing.GroupLayout.PREFERRED_SIZE, 20, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(txtfDate, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(lblTime)
-                    .addComponent(txtfTime, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(btnOK))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addComponent(lblUpload)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(lblTime)
+                    .addComponent(txtfTime, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(38, 38, 38)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(btnSchema)
+                    .addComponent(txtfSchemaPath, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(btnOK))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 55, Short.MAX_VALUE)
+                .addComponent(lblUpload)
+                .addGap(29, 29, 29)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(btnStudentCSV)
-                    .addComponent(txtfStudentFilename, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(txtfStudentFilename, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(btnUploadStudent))
                 .addGap(33, 33, 33)
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(btnQuestions)
-                    .addComponent(txtfQuestionsFilename, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(txtfQuestionsFilename, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(btnUploadQuestions))
                 .addGap(37, 37, 37)
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(btnQueryData)
-                    .addComponent(txtfQueryDataFilename, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(18, 18, 18)
-                .addComponent(btnUpload)
-                .addGap(49, 49, 49)
+                    .addComponent(txtfQueryDataFilename, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(btnUploadQueryData))
+                .addGap(61, 61, 61)
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(lblViewGrades)
                     .addComponent(btnView)
@@ -406,26 +451,25 @@ public class HomeFrame extends javax.swing.JFrame {
      * Uploads the selected csv files.
      * @param evt Click "Upload"
      */
-    private void btnUploadActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnUploadActionPerformed
+    private void btnUploadQueryDataActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnUploadQueryDataActionPerformed
         
-        if (studentPath!=null) {
-            lecturer.uploadStudents(studentPath);
-        }
-        if (questionsPath!=null) {
-            lecturer.uploadQuestions(questionsPath);
-        }
+        String response;
+        
         if (dataFilePaths!=null) {
-            lecturer.uploadQueryData(dataFilePaths, dataFileNames);
+            response = lecturer.uploadQueryData(dataFilePaths, dataFileNames);
+            if (response.equals(Lecturer.SUCCESS)) {
+                JOptionPane.showMessageDialog(null, "Uploaded .csv files succesfully.", "Upload successful", JOptionPane.PLAIN_MESSAGE);
+            }
+            else{
+                JOptionPane.showMessageDialog(null, "Files were not uploaded.", "Upload unsuccessful", JOptionPane.ERROR_MESSAGE);
+            }
         }
-        JOptionPane.showMessageDialog(null, "Uploaded .csv files succesfully.", "Done",JOptionPane.PLAIN_MESSAGE);
+        
         //clean up:
-        studentPath = null;
-        txtfStudentFilename.setText("");
-        questionsPath = null;
-        txtfQuestionsFilename.setText("");
         dataFilePaths = null;
         txtfQueryDataFilename.setText("");
-    }//GEN-LAST:event_btnUploadActionPerformed
+        
+    }//GEN-LAST:event_btnUploadQueryDataActionPerformed
     
     /**
      * Gets table of student grades in ascending student number order from the
@@ -433,7 +477,14 @@ public class HomeFrame extends javax.swing.JFrame {
      * @param evt Click "Student Number Ascending"
      */
     private void btnViewActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnViewActionPerformed
-        txtaMarks.setText(lecturer.viewGradeAscStudent());
+        
+        String response = lecturer.viewGradeAscStudent();
+        if (response.equals(Lecturer.FAIL)) {
+            txtaMarks.setText("Error reading grades from Students table");
+        } else {
+            txtaMarks.setText(response);
+        }
+        
     }//GEN-LAST:event_btnViewActionPerformed
     
     /**
@@ -442,29 +493,131 @@ public class HomeFrame extends javax.swing.JFrame {
      * @param evt Click "Grade Descending"
      */
     private void btnGradeDescendingActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnGradeDescendingActionPerformed
-        txtaMarks.setText(lecturer.viewGradeDescGrade());
+        
+        String response = lecturer.viewGradeDescGrade();
+        if (response.equals(Lecturer.FAIL)) {
+            txtaMarks.setText("Error reading grades from Students table");
+        } else {
+            txtaMarks.setText(response);
+        }
+        
     }//GEN-LAST:event_btnGradeDescendingActionPerformed
 
     private void btnReconnectActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnReconnectActionPerformed
         
         try {
-            lecturer.connectToDB();
-            connected = lecturer.isConnected();
+            System.out.println("Trying to reconnect...");
+            if (lecturer == null) { //An instance of Lecturer was not created on creation of the HomeFrame
+                try {
+                    lecturer = new Lecturer(); //Try make a new instance of lecturer and connect to DB
+                    lecturer.connectToDB();
+                    connected = lecturer.isConnected();
+                } catch (IOException | ClassNotFoundException e) {
+                    System.out.println("Error creating a new lecturer");
+                }
+            } else {
+                lecturer.connectToDB();
+                connected = lecturer.isConnected();
+            }
         } catch (IOException | ClassNotFoundException ex) {
             connected = false;
         }
+        
+        if (!connected) {
+            JOptionPane.showMessageDialog(null, "Connection to database failed.", "Connection Error", JOptionPane.ERROR_MESSAGE);
+        }        
         checkConnect();
         
     }//GEN-LAST:event_btnReconnectActionPerformed
 
     private void btnOKActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnOKActionPerformed
+        
+        //Send assignment information to save on server
+        
+        String response = "";
+        
         String noSubmissions = txtfNoSubmissions.getText();
         String noQuestions = txtfNoQuestions.getText();
         String date = txtfDate.getText();
         String time = txtfTime.getText();
-        //Sent and saved on text file on server
+        
+        if(noSubmissions.equals("") || noQuestions.equals("") || date.equals("") || time.equals("")){
+            JOptionPane.showMessageDialog(this, "Please fill in blank fields", "Error", JOptionPane.ERROR_MESSAGE);
+        }
+        else{
+            response = lecturer.uploadAssignmentInfo(noSubmissions, noQuestions, date, time, schemaPath);
+            if (response.equals(Lecturer.SUCCESS)) {
+                JOptionPane.showMessageDialog(null, "Uploaded assignment information succesfully.", "Upload successful", JOptionPane.PLAIN_MESSAGE);
+            } else {
+                JOptionPane.showMessageDialog(null, "Assignment information not uploaded.", "Upload unsuccessful", JOptionPane.ERROR_MESSAGE);
+            }
+            //clean up:
+            txtfNoSubmissions.setText("");
+            txtfNoQuestions.setText("");
+            txtfDate.setText("");
+            txtfTime.setText("");
+            txtfSchemaPath.setText("");            
+        }
         
     }//GEN-LAST:event_btnOKActionPerformed
+
+    private void btnSchemaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSchemaActionPerformed
+        
+        JFileChooser fc = new JFileChooser();
+        fc.setCurrentDirectory(new File(System.getProperty("user.home")));
+        int result = fc.showOpenDialog(this);
+        if (result==JFileChooser.APPROVE_OPTION) {
+            File image = fc.getSelectedFile();
+            if (!(image.getName().substring(image.getName().lastIndexOf("."))).equalsIgnoreCase(".jpg")) {
+                JOptionPane.showMessageDialog(null, "Incorrect file upload.\nPlease upload a .png image.", "Error", JOptionPane.ERROR_MESSAGE);
+            }
+            else {
+                schemaPath = image.getAbsolutePath();
+                txtfSchemaPath.setText(schemaPath);
+            }
+        }
+        
+    }//GEN-LAST:event_btnSchemaActionPerformed
+
+    private void btnUploadStudentActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnUploadStudentActionPerformed
+        
+        String response;
+        
+        if (studentPath!=null) {
+            response = lecturer.uploadStudents(studentPath);
+            if(response.equals(Lecturer.SUCCESS)){
+                JOptionPane.showMessageDialog(null, "Uploaded 'Students' csv file succesfully.", "Upload successful",JOptionPane.PLAIN_MESSAGE);
+            }
+            else{
+                JOptionPane.showMessageDialog(null, "'Students' file was not uploaded.", "Upload unsuccessful", JOptionPane.ERROR_MESSAGE);
+            }
+        }
+        
+        //clean up:
+        studentPath = null;
+        txtfStudentFilename.setText("");
+        
+    }//GEN-LAST:event_btnUploadStudentActionPerformed
+
+    private void btnUploadQuestionsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnUploadQuestionsActionPerformed
+        
+        String response;
+        
+        if (questionsPath!=null) {
+            response = lecturer.uploadQuestions(questionsPath);
+            if(response.equals(Lecturer.SUCCESS)){
+                JOptionPane.showMessageDialog(null, "Uploaded 'Questions' csv file succesfully.", "Upload successful",JOptionPane.PLAIN_MESSAGE);
+            }
+            else{
+                JOptionPane.showMessageDialog(null, "'Questions' file was not uploaded.", "Upload unsuccessful", JOptionPane.ERROR_MESSAGE);
+            }
+        }
+        
+        //clean up:
+        questionsPath = null;
+        txtfQuestionsFilename.setText("");
+        
+    }//GEN-LAST:event_btnUploadQuestionsActionPerformed
     
     
     //Main method:
@@ -521,8 +674,11 @@ public class HomeFrame extends javax.swing.JFrame {
     private javax.swing.JButton btnQueryData;
     private javax.swing.JButton btnQuestions;
     private javax.swing.JButton btnReconnect;
+    private javax.swing.JButton btnSchema;
     private javax.swing.JButton btnStudentCSV;
-    private javax.swing.JButton btnUpload;
+    private javax.swing.JButton btnUploadQueryData;
+    private javax.swing.JButton btnUploadQuestions;
+    private javax.swing.JButton btnUploadStudent;
     private javax.swing.JButton btnView;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JScrollPane jScrollPane1;
@@ -539,6 +695,7 @@ public class HomeFrame extends javax.swing.JFrame {
     private javax.swing.JTextField txtfNoSubmissions;
     private javax.swing.JTextField txtfQueryDataFilename;
     private javax.swing.JTextField txtfQuestionsFilename;
+    private javax.swing.JTextField txtfSchemaPath;
     private javax.swing.JTextField txtfStudentFilename;
     private javax.swing.JTextField txtfTime;
     // End of variables declaration//GEN-END:variables
