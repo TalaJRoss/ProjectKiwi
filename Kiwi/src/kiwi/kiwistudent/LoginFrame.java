@@ -104,13 +104,7 @@ public class LoginFrame extends javax.swing.JFrame {
      * @param evt Click "Login" button.
      */
     private void btnLoginActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnLoginActionPerformed
-        try {
-            login();
-        } catch (IOException ex) {
-            Logger.getLogger(LoginFrame.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (ClassNotFoundException ex) {
-            Logger.getLogger(LoginFrame.class.getName()).log(Level.SEVERE, null, ex);
-        }
+        login();
     }//GEN-LAST:event_btnLoginActionPerformed
 
     /**
@@ -118,13 +112,7 @@ public class LoginFrame extends javax.swing.JFrame {
      * @param evt Press enter in text field.
      */
     private void txtfStudentNoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtfStudentNoActionPerformed
-        try {
-            login();
-        } catch (IOException ex) {
-            Logger.getLogger(LoginFrame.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (ClassNotFoundException ex) {
-            Logger.getLogger(LoginFrame.class.getName()).log(Level.SEVERE, null, ex);
-        }
+        login();
     }//GEN-LAST:event_txtfStudentNoActionPerformed
     
     
@@ -133,9 +121,16 @@ public class LoginFrame extends javax.swing.JFrame {
     /**
      * Processes login using student number from text field.
      */
-    private void login() throws IOException, ClassNotFoundException {
+    private void login() {
         String studentNo = txtfStudentNo.getText();
-        Student student = new Student();
+        Student student;
+        try {
+            student = new Student();
+        } catch (IOException | ClassNotFoundException ex) {
+            JOptionPane.showMessageDialog(this, "An error occurred during login. Please try again.", "Login Failed", JOptionPane.PLAIN_MESSAGE);
+            txtfStudentNo.setText("");
+            return;
+        }
         int reply = student.login(studentNo);
         if (reply==Student.SUCCESS) {
             this.setVisible(false);
@@ -143,11 +138,11 @@ public class LoginFrame extends javax.swing.JFrame {
             home.setVisible(true);
         }
         else if (reply==Student.FAIL_LOGIN) {
-            JOptionPane.showMessageDialog(this, "Incorrect student number!");
+            JOptionPane.showMessageDialog(this, "Incorrect student number. Please try again.", "Login Failed", JOptionPane.PLAIN_MESSAGE);
             txtfStudentNo.setText("");
         }
         else{
-            JOptionPane.showMessageDialog(this, "Unable to connect to database!");
+            JOptionPane.showMessageDialog(this, "Unable to connect to database. Please retry.", "Login Error", JOptionPane.ERROR_MESSAGE);
             txtfStudentNo.setText("");
         }
     }
