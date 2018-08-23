@@ -36,11 +36,17 @@ public class Assignment {
      * Current question being used.
      */
     private int currentPos;
+    
+    /**
+     * Student number of the current student doing the assignment
+     */
+    private String studentNo;
 
-    public Assignment(Connection conn) throws SQLException {
+    public Assignment(Connection conn, String studentNo) throws SQLException {
         this.conn = conn;
         this.questionList = new ArrayList<>();
         this.currentPos = -1;
+        this.studentNo = studentNo;
         generateQuestions();
     }
     
@@ -67,7 +73,7 @@ public class Assignment {
         //Setup:
         boolean [] usedQuestions = new boolean [noRows];    //true if used otherwise false (used to avoid duplicates)
         int random = 0;
-        Random rnd = new Random();
+        Random rnd = new Random(studentNo.hashCode());
         
         //Get list of questions:
         for (int i=0; i<noQuestions; i++) {
