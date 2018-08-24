@@ -158,8 +158,8 @@ public class Assignment {
         int outOf = 0;
         int received = 0;
         for (Question q: questionList) {
-            //if lecturers code does not compile then don't include question in calculation:
-            if (q.getMark()!=-1)    {   
+            //if lecturers code does not compile or can't compare results then don't include question in calculation:
+            if (q.getMark()>=0)    {   
                 outOf+= q.getMaxMark();
                 received+= q.getMark();
             }
