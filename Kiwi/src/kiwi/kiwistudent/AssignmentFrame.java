@@ -1,5 +1,6 @@
 package kiwi.kiwistudent;
 
+import java.io.IOException;
 import java.text.DecimalFormat;
 import javax.swing.ImageIcon;
 import javax.swing.JOptionPane;
@@ -106,6 +107,11 @@ public class AssignmentFrame extends javax.swing.JFrame {
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setPreferredSize(new java.awt.Dimension(1024, 768));
+        addWindowListener(new java.awt.event.WindowAdapter() {
+            public void windowClosing(java.awt.event.WindowEvent evt) {
+                windowCloser(evt);
+            }
+        });
 
         jPanel1.setPreferredSize(new java.awt.Dimension(1024, 768));
 
@@ -366,6 +372,16 @@ public class AssignmentFrame extends javax.swing.JFrame {
         }
     }//GEN-LAST:event_btnCheckActionPerformed
 
+    private void windowCloser(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_windowCloser
+        try {
+                student.closeConnection();
+            } 
+        catch (IOException | ClassNotFoundException ex) {
+                JOptionPane.showMessageDialog(this, "Error closing sockets.", "Socket Error", JOptionPane.ERROR_MESSAGE);
+            }
+            System.exit(0);
+    }//GEN-LAST:event_windowCloser
+
     
     //Main method:
     
@@ -412,7 +428,6 @@ public class AssignmentFrame extends javax.swing.JFrame {
         //</editor-fold>
         //</editor-fold>
 
-        /* Create and display the form */
         java.awt.EventQueue.invokeLater(new Runnable() {
             @Override
             public void run() {

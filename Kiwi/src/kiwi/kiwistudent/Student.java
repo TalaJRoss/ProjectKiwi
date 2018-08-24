@@ -1,6 +1,5 @@
 package kiwi.kiwistudent;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
@@ -93,15 +92,25 @@ public class Student {
     public Student() throws IOException, ClassNotFoundException {
             //make socket:
             studentSocket = new Socket(ServerStartup.SERVER_NAME, ServerStartup.STUDENT_PORT_NUM);
-            System.out.println("Client port is: " + studentSocket.getLocalPort());
+            //System.out.println("Client port is: " + studentSocket.getLocalPort());
             //Set up streams:
-            InputStream is= studentSocket.getInputStream();
-            reader= new ObjectInputStream(is); //MESSAGE
-            OutputStream os= studentSocket.getOutputStream();
-            writer= new ObjectOutputStream(os);   //MESSAGE
+            reader= new ObjectInputStream(studentSocket.getInputStream());
+            writer= new ObjectOutputStream(studentSocket.getOutputStream());
             //check connection:
             StudentMessage response = (StudentMessage) reader.readObject();
             connected = (int)(response.getResponse())==StudentMessage.SUCCESS;
+    }
+    
+    /**
+     * Informs server of close and then closes socket connections.
+     * @throws IOException
+     */
+    public void closeConnection() throws IOException, ClassNotFoundException {
+        writer.writeObject(new StudentMessage(StudentMessage.CMD_CLOSE, null));
+        reader.close();
+        writer.close();
+        studentSocket.close();
+        connected = false;
     }
     
     
@@ -109,7 +118,7 @@ public class Student {
          /**
      * This student's socket which is used to communicate with the server.
      * @param studentNumber
-     * @return 
+     * @return indication of whether login was successful or why it failed
      */
     public int login(String studentNumber) {
         try {
@@ -146,19 +155,18 @@ public class Student {
             
             //get feedback and mark:
             StudentMessage m = (StudentMessage) reader.readObject();
-            if (m.getResponse()==StudentMessage.SUCCESS) {
-                QuestionInfo qi = (QuestionInfo) m.getBody();
-                noQuestions = qi.getTotalNoQuestions();
-                nextQuestionNo = qi.getQuestionNo();
-                nextQuestion = qi.getQuestion();
-                schemaImg = qi.getSchemaImg();
-                return SUCCESS;
-            }
-            else if (m.getResponse()==StudentMessage.FAIL_DENY){
-                return FAIL_DENY;
-            }
-            else {
-                return FAIL_CONNECT;
+            switch (m.getResponse()) {
+                case StudentMessage.SUCCESS:
+                    QuestionInfo qi = (QuestionInfo) m.getBody();
+                    noQuestions = qi.getTotalNoQuestions();
+                    nextQuestionNo = qi.getQuestionNo();
+                    nextQuestion = qi.getQuestion();
+                    schemaImg = qi.getSchemaImg();
+                    return SUCCESS;
+                case StudentMessage.FAIL_DENY:
+                    return FAIL_DENY;
+                default:
+                    return FAIL_CONNECT;
             }
         } catch (IOException | ClassNotFoundException e) {
             System.out.println("Error: Problem sending/receiving tcp socket messages in startMessage() method.");
@@ -172,8 +180,6 @@ public class Student {
      * String output.
      * @param studentStatement
      * @return true if successfully executed otherwise false (ie. couldn't mark)
-     * @throws IOException
-     * @throws ClassNotFoundException 
      */
     public boolean check(String studentStatement) {
         try {
@@ -199,8 +205,6 @@ public class Student {
      * Takes in student answer gets feedback and marks and saves them.
      * @param studentAns
      * @return true if successfully executed otherwise false (ie. couldn't mark)
-     * @throws IOException
-     * @throws ClassNotFoundException 
      */
     public boolean submit(String studentAns) {
         try {    
@@ -234,12 +238,7 @@ public class Student {
 
             //get feedback and mark:
             StudentMessage m = (StudentMessage) reader.readObject();
-            if (m.getResponse()==StudentMessage.SUCCESS) {  //saved grades
-                return true;
-            }
-            else {  //didn't save grades
-                return false;
-            }
+            return m.getResponse()==StudentMessage.SUCCESS; //saved or didn't save grades
         } catch (IOException | ClassNotFoundException e) {
             System.out.println("Error: Problem sending/receiving tcp socket messages in leaveAssignment() method.");
             System.out.println(e);

@@ -27,6 +27,7 @@ public class StudentMessage implements Serializable{
     public static final int CMD_LOGIN = 4;
     public static final int CMD_CONNECT = 5;
     public static final int CMD_QUIT = 6;
+    public static final int CMD_CLOSE = 7;
     
     
     /**

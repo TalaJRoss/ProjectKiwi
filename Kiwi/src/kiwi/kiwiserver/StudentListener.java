@@ -3,9 +3,6 @@ package kiwi.kiwiserver;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 
 /**
@@ -20,11 +17,6 @@ public class StudentListener extends Thread{
      */
     private ServerSocket serverSocket;
     
-    /**
-     * List of student handler threads running.
-     */
-    private CopyOnWriteArrayList<StudentHandler> handlerList;
-    
     
     //Constructors:
     /**
@@ -36,9 +28,9 @@ public class StudentListener extends Thread{
     public StudentListener() {
         try {
             this.serverSocket= new ServerSocket(ServerStartup.STUDENT_PORT_NUM);
-            this.handlerList= new CopyOnWriteArrayList<>();
-        } catch (IOException ex) {
-            Logger.getLogger(StudentListener.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (IOException e) {
+            System.out.println("Problem setting up student socket.");
+            System.out.println(e);
         }
     }
     
@@ -56,11 +48,11 @@ public class StudentListener extends Thread{
                 Socket studentSocket= serverSocket.accept();
                 System.out.println("Accepted connection: student " + studentSocket + ".");
                 StudentHandler studentHandler= new StudentHandler(studentSocket);
-                handlerList.add(studentHandler);    //may not be necessary
                 studentHandler.start();
             } 
-            catch (IOException ex) {
-                Logger.getLogger(StudentListener.class.getName()).log(Level.SEVERE, null, ex);
+            catch (IOException e) {
+                System.out.println("Problem processing student connection.");
+                System.out.println(e);
             }
         }
     }

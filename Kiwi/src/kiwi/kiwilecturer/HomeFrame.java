@@ -131,6 +131,11 @@ public class HomeFrame extends javax.swing.JFrame {
         btnUploadQuestions = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+        addWindowListener(new java.awt.event.WindowAdapter() {
+            public void windowClosing(java.awt.event.WindowEvent evt) {
+                windowCloser(evt);
+            }
+        });
 
         lblUpload.setText("Upload CSV Files:");
 
@@ -618,6 +623,16 @@ public class HomeFrame extends javax.swing.JFrame {
         txtfQuestionsFilename.setText("");
         
     }//GEN-LAST:event_btnUploadQuestionsActionPerformed
+
+    private void windowCloser(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_windowCloser
+        try {
+                lecturer.closeConnection();
+            }
+        catch (IOException | ClassNotFoundException ex) {
+                JOptionPane.showMessageDialog(this, "Error closing sockets.", "Socket Error", JOptionPane.ERROR_MESSAGE);
+            }
+        System.exit(0);
+    }//GEN-LAST:event_windowCloser
     
     
     //Main method:
@@ -657,9 +672,6 @@ public class HomeFrame extends javax.swing.JFrame {
         java.awt.EventQueue.invokeLater(new Runnable() {
             @Override
             public void run() {
-                //create lecturer
-                
-                //lecturer.connectToDB();
                 new HomeFrame().setVisible(true);
             }
         });

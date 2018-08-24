@@ -5,7 +5,6 @@ package kiwi.kiwiserver;
 
 import com.opencsv.CSVReader;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
@@ -96,6 +95,7 @@ final class LecturerHandler extends Thread{
      * Connection to DB.
      */
     private Connection conn;
+    private boolean connected;
     
     //Constructor:
     
@@ -113,8 +113,9 @@ final class LecturerHandler extends Thread{
             InputStream is = lecturerSocket.getInputStream();
             reader = new ObjectInputStream(is); //MESSAGE
         } 
-        catch (IOException ex) {
-            Logger.getLogger(LecturerHandler.class.getName()).log(Level.SEVERE, null, ex);
+        catch (IOException e) {
+            System.out.println("Problem setting up lecturer socket.");
+            System.out.println(e);
         }
     }
     
@@ -125,7 +126,6 @@ final class LecturerHandler extends Thread{
         try {
             Class.forName("com.mysql.cj.jdbc.Driver");
             this.conn = DriverManager.getConnection("jdbc:mysql://localhost/KiwiDB", USER_NAME, PASSWORD);
-            System.out.println("conn: " + conn);
             writer.writeObject(new LecturerMessage(LecturerMessage.CMD_CONNECT, null, LecturerMessage.RESP_SUCCESS));
         } catch (SQLException | ClassNotFoundException ex) {
             writer.writeObject(new LecturerMessage(LecturerMessage.CMD_CONNECT, null, LecturerMessage.RESP_FAIL));
@@ -134,19 +134,21 @@ final class LecturerHandler extends Thread{
     
     @Override
     public void run() {
-        
         try {
             connectToDB();
-        } catch (IOException ex) {
-            Logger.getLogger(LecturerHandler.class.getName()).log(Level.SEVERE, null, ex);
+            connected = false;
+        } 
+        catch (IOException e) {
+            connected = false;
+            System.out.println("Problem creating to database on intial student login.");
+            System.out.println(e);
         }
-        
         try {
-            
-            LecturerMessage m = (LecturerMessage) reader.readObject();   //MESSAGE
+            LecturerMessage m;
             int command;
             
-            while (m!= null)
+            ONLINE:
+            while ((m = (LecturerMessage) reader.readObject())!= null)
             {
                 command = m.getCmd();
                 switch (command) 
@@ -171,15 +173,18 @@ final class LecturerHandler extends Thread{
                     case LecturerMessage.CMD_UPLOAD_QUERY: //upload file
                         uploadQueryData(((CSVFiles)m.getBody()).getCsvFiles(), ((CSVFiles)m.getBody()).getFileNames());
                         break;
+                    case LecturerMessage.CMD_CLOSE: //close sockets
+                        closeConnection();
+                        break ONLINE;
                     default:    //nothing else
                         break;
                 }
-                writer.flush();
-                m = (LecturerMessage) reader.readObject();
             }
             lecturerSocket.close();
-        } catch (IOException | ClassNotFoundException ex) {
-            Logger.getLogger(LecturerHandler.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        catch (IOException | ClassNotFoundException e) {
+            System.out.println("Problem processing student message.");
+            System.out.println(e);
         }
     }
     
@@ -466,6 +471,14 @@ final class LecturerHandler extends Thread{
             System.out.println(e);
             return FAIL;
         } 
+    }
+    
+    private void closeConnection() throws IOException {
+        reader.close();
+        writer.close();
+        lecturerSocket.close();
+        connected = false;
+        System.out.println("Lecturer connection closed.");
     }
     
 }

@@ -75,6 +75,17 @@ public class Lecturer {
         return connected;
     }
     
+    /**
+     * Informs server of close and then closes socket connections.
+     * @throws IOException
+     */
+    public void closeConnection() throws IOException, ClassNotFoundException {
+        writer.writeObject(new LecturerMessage(StudentMessage.CMD_CLOSE, null));
+        reader.close();
+        writer.close();
+        lecturerSocket.close();
+        connected = false;
+    }
     
      /**
      * Converts file path in string form to byte array representing file.

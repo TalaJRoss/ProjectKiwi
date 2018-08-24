@@ -30,8 +30,10 @@ public class LecturerListener extends Thread{
     public LecturerListener() {
         try {
             serverSocket= new ServerSocket(ServerStartup.LECTURER_PORT_NUM);
-        } catch (IOException ex) {
-            Logger.getLogger(LecturerListener.class.getName()).log(Level.SEVERE, null, ex);
+        } 
+        catch (IOException e) {
+            System.out.println("Problem setting up lecturer socket.");
+            System.out.println(e);
         }
         }
     
@@ -46,14 +48,14 @@ public class LecturerListener extends Thread{
         while(true) {
             try {
                 System.out.println("Waiting for lecturer connection.");
-                System.out.println("DEBUG2: " + serverSocket);
                 Socket lecturerSocket = serverSocket.accept();
                 System.out.println("Accepted connection: lecturer " + lecturerSocket + ".");
                 LecturerHandler lecturerHandler = new LecturerHandler(lecturerSocket);
                 lecturerHandler.start();
             } 
-            catch (IOException ex) {
-                Logger.getLogger(LecturerListener.class.getName()).log(Level.SEVERE, null, ex);
+            catch (IOException e) {
+                System.out.println("Problem processing lecturer connection.");
+                System.out.println(e);
             }
         }
     }

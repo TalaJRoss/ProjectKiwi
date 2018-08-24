@@ -24,6 +24,7 @@ public class LecturerMessage implements Serializable{
     public static final int CMD_GRADE_ALPH = 5;
     
     public static final int CMD_CONNECT = 6;
+    public static final int CMD_CLOSE = 7;
     
     public static final int RESP_SUCCESS = 1;
     public static final int RESP_FAIL = 0;
