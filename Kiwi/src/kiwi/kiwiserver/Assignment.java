@@ -6,6 +6,8 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Random;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Creates assignment interface.
@@ -24,7 +26,7 @@ public class Assignment {
     /**
      * Number of questions in an assignment.
      */
-    private int noQuestions = 3;
+    private int noQuestions = 9;
     
     //TODO: load questions into list when multiple question assignment functionality created
     /**
@@ -38,16 +40,16 @@ public class Assignment {
     private int currentPos;
     
     /**
-     * Student number of the current student doing the assignment
+     * Static Array of types of questions
      */
-    private String studentNo;
-
-    public Assignment(Connection conn, String studentNo) throws SQLException {
+    public static final String [] Types = {"select","arithmetic","update"};
+    
+    
+    public Assignment(Connection conn, String studentNo, int noSubmissionsCompleted) throws SQLException {
         this.conn = conn;
         this.questionList = new ArrayList<>();
         this.currentPos = -1;
-        this.studentNo = studentNo;
-        generateQuestions();
+        generateQuestions(studentNo,noSubmissionsCompleted);
     }
     
    
@@ -57,58 +59,148 @@ public class Assignment {
      * Generates list of questions that make up the assignment.
      * @return The list of questions.
      */
-    private void generateQuestions() throws SQLException {
+    private void generateQuestions(String studentNo, int noSubmissionsCompleted) {
         
-        //Check no submissions remaining:
-        //String query = "SELECT MaxNoSubmissions";
-        Statement st = conn.createStatement();
-        //ResultSet rs = st.executeQuery(query);
-        
-        //Get the number of questions in the questions table:
-        String query = "SELECT COUNT(*) AS noRows FROM Questions";
-        ResultSet rs = st.executeQuery(query);
-        rs.next();  //take cursor to first row
-        int noRows = rs.getInt("noRows");
-
-        //Setup:
-        boolean [] usedQuestions = new boolean [noRows];    //true if used otherwise false (used to avoid duplicates)
-        int random = 0;
-        Random rnd = new Random(studentNo.hashCode());
-        
-        //Get list of questions:
-        for (int i=0; i<noQuestions; i++) {
-            //Get question number to query:
-            boolean used = true;
-            while (used) {  //loop until unused question number found
-                random =  rnd.nextInt(noRows) + 1;
-                if (!usedQuestions[random-1]) {
-                    usedQuestions[random-1] = true;
-                    used = false;
+        try {
+            //Check no submissions remaining:
+            //String query = "SELECT MaxNoSubmissions";
+            Statement st = conn.createStatement();
+            
+            //Get the total number of questions in the questions table:
+            String query = "SELECT COUNT(*) AS noRows FROM Questions";
+            ResultSet rs = st.executeQuery(query);
+            rs.next();  //take cursor to first row
+            int noRows = rs.getInt("noRows");
+            
+            //Get number of different types of questions there are
+            /*query = "SELECT COUNT(DISTINCT type) AS numType FROM Questions";
+            rs = st.executeQuery(query);
+            rs.next();
+            int numType = rs.getInt("numType");*/
+            int numType =3;
+            
+            //Calculate number of question per type and difficulty
+            int numQperTypeDiff = noQuestions/(3*numType);
+            int numQRemaining = noQuestions-(numQperTypeDiff*(3*numType));
+            boolean [] TotalUsed = new boolean [noRows];
+            
+            //Setup:
+            String seed = studentNo + noSubmissionsCompleted;
+            System.out.println("DEbug: "+seed);
+            Random rnd = new Random(seed.hashCode());
+            
+            System.out.println(""+numQperTypeDiff);
+            //Get list of questions:
+            //For each difficulty of the questions
+            for (int i=1; i<4; i++) {
+                //For each types of this question type
+                System.out.println("for 1");
+                for (int j=0; j<numType; j++)
+                {
+                    System.out.println("for 2");
+                    //Get the number of questions that has difficulty i and type j
+                    query = "SELECT COUNT(*) AS numQ FROM questions WHERE difficulty="
+                            + i
+                            +" and type like '"
+                            + Types[j]
+                            +"'";
+                    System.out.println(query);
+                    rs = st.executeQuery(query);
+                    rs.next();
+                    int numQ = rs.getInt("numQ");
+                    
+                    System.out.println("executed query");
+                    //For number of questions we need for each of these type and difficulty
+                    System.out.println(""+numQperTypeDiff);
+                    for (int k=0; k<numQperTypeDiff; k++) 
+                    {
+                        
+                        System.out.println("*");
+                        boolean [] usedQuestions = new boolean [numQ];    //true if used otherwise false (used to avoid duplicates)
+                        int random = 0;
+                        
+                        boolean used = true;
+                        while (used) {  //loop until unused question number found
+                            System.out.println(""+numQ);
+                            random = rnd.nextInt(numQ)+1;
+                            if (!usedQuestions[random-1])
+                            {
+                                usedQuestions[random-1] = true;
+                                used = false;
+                            }
+                        }
+                        
+                        //Get the question from the table
+                        query = "SELECT * FROM (SELECT * FROM questions WHERE difficulty="
+                                + i
+                                + " AND type LIKE '"
+                                + Types[j]
+                                + "') as t limit "
+                                + (random-1)
+                                + ",1";
+                        rs = st.executeQuery(query);
+                        
+                        //Create question object from the result set
+                        Question question = new Question (conn);
+                        int Qid = 0;
+                        while(rs.next())
+                        {
+                            Qid = rs.getInt("QuestionNo");
+                            String tempQ = rs.getString("Question");
+                            String answer = rs.getString("Answer");
+                            int difficulty = rs.getInt("Difficulty");
+                            String type = rs.getString("Type");
+                            question = new Question(tempQ, answer, difficulty, type, conn);
+                        }
+                        
+                        questionList.add(question);
+                        System.out.println("added");
+                        
+                        // set the availibilty of this question to false
+                        TotalUsed[Qid-1] = true;
+                    }
                 }
             }
-
-            //Get question from questions table:
-            query = "SELECT * FROM Questions WHERE QuestionNo LIKE '" + random + "'";
-            rs = st.executeQuery(query);
-
-            //Create question object:
-            Question question = new Question(conn);
-            while (rs.next()) {
-                String tempQuestion = rs.getString("Question");
-                String answer = rs.getString("Answer");
-                int difficulty = rs.getInt("Difficulty");
-                String type = rs.getString("Type");
-                question = new Question(tempQuestion, answer, difficulty, type, conn);
+            
+            int random =0;
+            //For the questions left over
+            for (int i=0; i<numQRemaining; i++)
+            {
+                //Get question number to query:
+                boolean used = true;
+                while (used)
+                {
+                    random =  rnd.nextInt(noRows) + 1;
+                    if (!TotalUsed[random-1]) {
+                        TotalUsed[random-1] = true;
+                        used = false;
+                    }
+                }
+                
+                //Get question from questions table:
+                query = "SELECT * FROM Questions WHERE QuestionNo LIKE '" + random + "'";
+                rs = st.executeQuery(query);
+                
+                //Create question object:
+                Question question = new Question(conn);
+                while (rs.next()) {
+                    String tempQuestion = rs.getString("Question");
+                    String answer = rs.getString("Answer");
+                    int difficulty = rs.getInt("Difficulty");
+                    String type = rs.getString("Type");
+                    question = new Question(tempQuestion, answer, difficulty, type, conn);
+                }
+                
+                //Add question to list:
+                questionList.add(question);
             }
-
-            //Add question to list:
-            questionList.add(question);
-
+            System.out.println(""+questionList.size());
+            //Clean up:
+            rs.close();
+            st.close();
+        } catch (SQLException ex) {
+            Logger.getLogger(Assignment.class.getName()).log(Level.SEVERE, null, ex);
         }
-
-        //Clean up:
-        rs.close();
-        st.close();
             
     }
     

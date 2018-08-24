@@ -245,7 +245,7 @@ class StudentHandler extends Thread {
             }
             
             //Submissions still allowed:
-            assignment = new Assignment(conn, studentNo);  //create assignment 
+            assignment = new Assignment(conn, studentNo, noSubmissionsCompleted);  //create assignment 
         
             //decrease submissions allowed on server:
             //increase noSubmissions by 1:
