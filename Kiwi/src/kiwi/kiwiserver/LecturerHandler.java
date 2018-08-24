@@ -17,10 +17,9 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Savepoint;
 import java.sql.Statement;
 import java.util.ArrayList;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import kiwi.message.*;
 
 /**
@@ -230,7 +229,19 @@ final class LecturerHandler extends Thread{
             st.executeUpdate(createStatement);
             System.out.println("Created table: "+tblName);
             
-            st.executeUpdate(insertStatement);
+            conn.setAutoCommit(false);  //start transaction
+            Savepoint sp = conn.setSavepoint();
+            try {
+                st.executeUpdate(insertStatement);
+            }
+            catch (SQLException e) {
+                conn.rollback(sp);
+                conn.setAutoCommit(true);
+                writer.writeObject(new LecturerMessage(LecturerMessage.CMD_ASSIGNMENT_INFO, null, LecturerMessage.RESP_FAIL));
+                return;
+            }
+            conn.commit();
+            conn.setAutoCommit(true);   //end transaction
             
             //save schema:
             if (assignmentInfo.getSchemaImg() != null) {
@@ -416,7 +427,20 @@ final class LecturerHandler extends Thread{
             //load csv:
             //file must be in mysql database root directory (local not enabeled in ini)
             //System.out.println(uploadStatement);  //DEBUG
-            st.executeUpdate(uploadStatement);
+            conn.setAutoCommit(false);  //start transaction
+            Savepoint sp = conn.setSavepoint();
+            try { 
+                st.executeUpdate(uploadStatement);
+            }
+            catch (SQLException e) {
+                conn.rollback(sp);
+                conn.setAutoCommit(true);
+                System.out.println("Error: Problem loading csv to database: " + tblName + ".");
+                System.out.println(e);
+                return FAIL + ": Problem loading csv to database: " + tblName + ".";
+            }
+            conn.commit();
+            conn.setAutoCommit(true);   //end transaction
             System.out.println("Uploaded data from csv to table: " + tblName);
             
             return SUCCESS;     //successful upload
@@ -427,9 +451,9 @@ final class LecturerHandler extends Thread{
             return FAIL + ": Problem reading file: " + tblName + ".";
         }
         catch (SQLException  e) {
-            System.out.println("Error: Problem creating table/loading csv to database: " + tblName + ".");
+            System.out.println("Error: Problem creating table in database: " + tblName + ".");
             System.out.println(e);
-            return FAIL + ": Problem creating table/loading csv to database: " + tblName + ".";
+            return FAIL + ": Problem creating table in database: " + tblName + ".";
         }
     }
     
