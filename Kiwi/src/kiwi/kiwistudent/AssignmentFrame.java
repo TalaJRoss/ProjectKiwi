@@ -283,12 +283,18 @@ public class AssignmentFrame extends javax.swing.JFrame {
                     + "Please contact your lecturer about this."
                     + "\nImportant note: This question will not be included in your assignment grade calculation.",
                     "Submission Error", JOptionPane.ERROR_MESSAGE);
+            btnSubmit.setEnabled(false);
+            btnNext.setEnabled(true);
+            jpbQuestionProgress.setValue(student.getNextQuestionNo()-1);
         }
         else {
             JOptionPane.showMessageDialog(this, "There was an error connecting to the database."
                     + "Please contact your lecturer about this, if the problem persists."
                     + "\nImportant note: This question will not be included in your assignment grade calculation.",
                     "Submission Error", JOptionPane.ERROR_MESSAGE);
+            btnSubmit.setEnabled(false);
+            btnNext.setEnabled(true);
+            jpbQuestionProgress.setValue(student.getNextQuestionNo()-1);
         }
     }//GEN-LAST:event_btnSubmitActionPerformed
     

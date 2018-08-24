@@ -15,6 +15,7 @@ import java.util.Random;
  */
 public class Assignment {
     
+    
     /**
      * Database connection.
      */
@@ -150,7 +151,7 @@ public class Assignment {
     }
     
     public String getFeedback(String studentAns) {
-        return questionList.get(currentPos).getFeedback(studentAns);
+        return questionList.get(currentPos).getFeedback();
     }
     
     //TODO: update grade on server
@@ -176,6 +177,7 @@ public class Assignment {
         return noQuestions;
     }
     
+    //TOD): update questions + transacts
     /**
      * Runs given student sql statement and returns string representation of
      * the output.

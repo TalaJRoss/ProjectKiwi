@@ -19,8 +19,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import kiwi.message.*;
 
 /**
@@ -230,7 +228,10 @@ final class LecturerHandler extends Thread{
             st.executeUpdate(createStatement);
             System.out.println("Created table: "+tblName);
             
+            conn.setAutoCommit(false);  //start transaction
             st.executeUpdate(insertStatement);
+            conn.commit();
+            conn.setAutoCommit(true);   //end transaction
             
             //save schema:
             if (assignmentInfo.getSchemaImg() != null) {
@@ -416,7 +417,10 @@ final class LecturerHandler extends Thread{
             //load csv:
             //file must be in mysql database root directory (local not enabeled in ini)
             //System.out.println(uploadStatement);  //DEBUG
+            conn.setAutoCommit(false);  //start transaction
             st.executeUpdate(uploadStatement);
+            conn.commit();
+            conn.setAutoCommit(true);   //end transaction
             System.out.println("Uploaded data from csv to table: " + tblName);
             
             return SUCCESS;     //successful upload

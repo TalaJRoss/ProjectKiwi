@@ -331,13 +331,16 @@ class StudentHandler extends Thread {
     private void updateGrade() throws IOException {
         try {
             double grade = 0;
-            Statement st = conn.createStatement();
             //update grade if higher:
             if (!assignment.hasNext()) {    //finished assignment
                 grade = assignment.getGrade();
             }
+            conn.setAutoCommit(false);  //start transaction
+            Statement st = conn.createStatement();
             String statement = "UPDATE students SET HighestGrade = " + grade + " WHERE StudentNo LIKE '" + studentNo + "' AND HighestGrade < " + grade + ";";  
             int updateResp = st.executeUpdate(statement);
+            conn.commit();
+            conn.setAutoCommit(true);   //end transaction
             if (updateResp!=1 && updateResp!=0) {   //error updating
                 writer.writeObject(new StudentMessage(StudentMessage.CMD_QUIT, null, StudentMessage.FAIL_CONNECT));
                 //TODO: revert with transacts
