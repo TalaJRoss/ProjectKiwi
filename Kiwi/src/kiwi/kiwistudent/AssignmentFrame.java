@@ -281,12 +281,14 @@ public class AssignmentFrame extends javax.swing.JFrame {
         else if (student.getCurrentMark()==-1) {    //lecturer answer was wrong
             JOptionPane.showMessageDialog(this, "Couldn't run lecturer's sql statement.\n"
                     + "Please contact your lecturer about this."
-                    + "\nImportant note: This question will not be included in your assignment grade calculation..",
+                    + "\nImportant note: This question will not be included in your assignment grade calculation.",
                     "Submission Error", JOptionPane.ERROR_MESSAGE);
         }
         else {
             JOptionPane.showMessageDialog(this, "There was an error connecting to the database."
-                    + "\nPlease resubmit your answer.", "Submission Error", JOptionPane.ERROR_MESSAGE);
+                    + "Please contact your lecturer about this, if the problem persists."
+                    + "\nImportant note: This question will not be included in your assignment grade calculation.",
+                    "Submission Error", JOptionPane.ERROR_MESSAGE);
         }
     }//GEN-LAST:event_btnSubmitActionPerformed
     
