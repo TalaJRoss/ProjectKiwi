@@ -3,6 +3,7 @@ package kiwi.kiwiserver;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Savepoint;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Random;
@@ -185,44 +186,129 @@ public class Assignment {
      * @return returns string representing output or null if connection error occurs
      */
     public String check(String statement) {
-        
-        try {   
-            //Get student output:
-            Statement st = conn.createStatement();
-            ResultSet rs;
-            try {   //check it compiles 
-                rs = st.executeQuery(statement);
-            }
-            catch (SQLException e) {//didn't compile
-                //Process error message:
-                String errMessage = e.toString().substring("java.sql.".length()); //remove "java.sql." from error name
-                if (errMessage.contains("kiwidb.")) {
-                    errMessage= errMessage.replace("kiwidb.","");    //remove "kiwidb." from table name
+        String toReturn = "";
+        try { 
+            //Get table being updated in expected sql update:
+            String tblName = "";
+            if (statement.toUpperCase().startsWith("INSERT")) {
+                if (statement.split(" ").length>2) {
+                    tblName = statement.split(" ")[2];  //insert into <table>    
                 }
-                //System.out.println(e);   //DEBUG
-                return "SQL Statement did not compile.\n" + errMessage + "\n";
             }
-            
-            //Put output in string:
-            String toReturn = "";
-            
-            //Get column names:
-            int noColumns = rs.getMetaData().getColumnCount();
-            for (int i=1; i<=noColumns; i++) {   //each column
-                toReturn+= rs.getMetaData().getColumnName(i) + "\t";
-            }
-            toReturn+="\n";
-            
-            //Get row entries
-            while(rs.next()) {  //each row
-                for (int i=1; i<=noColumns; i++) {  //each field in row
-                    toReturn+= rs.getObject(i) + "\t";
+            else if (statement.toUpperCase().startsWith("UPDATE")) {
+                if (statement.split(" ").length>1) {
+                    tblName = statement.split(" ")[1];  //update <table>
                 }
-                toReturn+="\n";     //end of row
-            } 
-            toReturn+="\n";     //end of output
+            }
+            else if (statement.toUpperCase().startsWith("DELETE")) {
+                if (statement.split(" ").length>2) {
+                    tblName = statement.split(" ")[2];  //delete from <table>
+                }
+            }
+            else if (statement.toUpperCase().startsWith("SELECT")) {
+                tblName = null;
+            }
+            else {   //not permitted statement
+                System.out.println("Error: statement from lecturer is not executing a permitted SQL DML statement!");
+                return "Statement provided is not executing a permitted SQL DML statement.\n"
+                        + "That is, SELECT, INSERT, UPDATE or DELETE.";
+            }
             
-            return toReturn;   
+            if (tblName==null) { //select statement
+               //Get student output:
+                Statement st = conn.createStatement();
+                ResultSet rs;
+                try {   //check it compiles 
+                    rs = st.executeQuery(statement);
+                }
+                catch (SQLException e) {//didn't compile
+                    //Process error message:
+                    String errMessage = e.toString().substring("java.sql.".length()); //remove "java.sql." from error name
+                    if (errMessage.contains("kiwidb.")) {
+                        errMessage= errMessage.replace("kiwidb.","");    //remove "kiwidb." from table name
+                    }
+                    //System.out.println(e);   //DEBUG
+                    return "SQL Statement did not compile.\n" + errMessage + "\n";
+                }
+
+                //Put output in string:
+                //Get column names:
+                int noColumns = rs.getMetaData().getColumnCount();
+                for (int i=1; i<=noColumns; i++) {   //each column
+                    toReturn+= rs.getMetaData().getColumnName(i) + "\t";
+                }
+                toReturn+="\n";
+
+                //Get row entries
+                while(rs.next()) {  //each row
+                    for (int i=1; i<=noColumns; i++) {  //each field in row
+                        toReturn+= rs.getObject(i) + "\t";
+                    }
+                    toReturn+="\n";     //end of row
+                } 
+                toReturn+="\n";     //end of output
+
+                return toReturn;
+            }
+            else { //update statement 
+                Statement st = conn.createStatement();
+                ResultSet rs;
+                int ra;
+                conn.setAutoCommit(false);
+                Savepoint sp = conn.setSavepoint();
+
+                //Update:
+                try {
+                     ra = st.executeUpdate(statement);   //execute expected sql update and get rows affeted
+                }
+                catch (SQLException e) { //didn't compile
+                    conn.rollback(sp);
+                    conn.setAutoCommit(true);
+                    String errMessage = e.toString().substring("java.sql.".length()); //remove "java.sql." from error name
+                    if (errMessage.contains("kiwidb.")) {
+                        errMessage= errMessage.replace("kiwidb.","");    //remove "kiwidb." from table name
+                    }
+                    //System.out.println(e);   //DEBUG
+                    return "SQL Statement did not compile.\n" + errMessage + "\n";
+                }
+
+                //Expected new table:
+                try {
+                    rs = st.executeQuery("SELECT * FROM " + tblName + ";");
+                }
+                catch (SQLException e) {
+                    conn.rollback(sp);
+                    conn.setAutoCommit(true);
+                    System.out.println("Error: Problem reading students updated table for check.");
+                    System.out.println(e);
+                    return null;
+                }
+
+                //End transaction:
+                conn.rollback(sp);
+                conn.setAutoCommit(true);
+                
+                //Put output in string:
+                //Get column names:
+                toReturn+= ra + " row(s) affected";
+                toReturn+= "Table, " + tblName + ", after statement execution:\n";
+                int noColumns = rs.getMetaData().getColumnCount();
+                for (int i=1; i<=noColumns; i++) {   //each column
+                    toReturn+= rs.getMetaData().getColumnName(i) + "\t";
+                }
+                toReturn+="\n";
+
+                //Get row entries
+                while(rs.next()) {  //each row
+                    for (int i=1; i<=noColumns; i++) {  //each field in row
+                        toReturn+= rs.getObject(i) + "\t";
+                    }
+                    toReturn+="\n";     //end of row
+                } 
+                toReturn+="\n";     //end of output
+
+                return toReturn;
+            }  
         }
         catch (SQLException e) {    //connection error
             System.out.println("Error: Problem reading output.");

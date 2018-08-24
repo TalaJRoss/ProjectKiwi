@@ -250,25 +250,31 @@ public class Question {
     
     private int markUpdateQuestion(String studentAns) {
         try {
-           //Get expected output:
-           Statement stExpected = conn.createStatement();
+            //Get expected output:
+            Statement stExpected = conn.createStatement();
            
-           //Get table being updated in expected sql update:
-           String tblNameExp;
-           if (answer.toUpperCase().startsWith("INSERT INTO")) {
-               tblNameExp = answer.split(" ")[2];
-           }
-           else if (answer.toUpperCase().startsWith("UPDATE")) {
-               tblNameExp = answer.split(" ")[1];
-           }
-           else if (answer.toUpperCase().startsWith("DELETE FROM")) {
-               tblNameExp = answer.split(" ")[2];
-           }
-           else {   //lecturer answer does not execute as expected
-               System.out.println("Error: answer from lecturer is not executing a permitted SQL DML statement!");
-               mark = -1;
-               return mark;
-           }
+            //Get table being updated in expected sql update:
+            String tblNameExp = "";
+            if (answer.toUpperCase().startsWith("INSERT")) {
+                if (answer.split(" ").length>2) {   //will catch error later
+                    tblNameExp = answer.split(" ")[2];  //insert into <table>
+                }
+            }
+            else if (answer.toUpperCase().startsWith("UPDATE")) {
+                if (answer.split(" ").length>1) {
+                    tblNameExp = answer.split(" ")[1];  //update <table>
+                }
+            }
+            else if (answer.toUpperCase().startsWith("DELETE")) {
+                if (answer.split(" ").length>2) {
+                    tblNameExp = answer.split(" ")[2];  //delete from <table>
+                }
+            }
+            else {   //lecturer answer does not execute as expected
+                System.out.println("Error: answer from lecturer is not executing a permitted SQL DML statement!");
+                mark = -1;
+                return mark;
+            }
            
            //Start transaction:
            conn.setAutoCommit(false);
@@ -279,14 +285,27 @@ public class Question {
                 raExpected = stExpected.executeUpdate(answer);   //execute expected sql update and get rows affeted
            }
            catch (SQLException e) { //didn't compile
+               conn.rollback(spExp);
+               conn.setAutoCommit(true);
                System.out.println("Error: answer from lecturer wrong!");
                System.out.println(e);
+               System.out.println("corr error");
                mark = -1;
                return mark;
            }
            
            //Expected new table:
-           rsExpected = stExpected.executeQuery("SELECT * FROM " + tblNameExp + ";");
+           try {
+                rsExpected = stExpected.executeQuery("SELECT * FROM " + tblNameExp + ";");
+           }
+           catch (SQLException e) { //didn't compile
+               conn.rollback(spExp);
+               conn.setAutoCommit(true);
+               System.out.println("Error: couldn't get lecturer output!");
+               System.out.println(e);
+               mark = -2;
+               return mark;
+           }
            
            //End transaction:
            conn.rollback(spExp);
@@ -300,21 +319,27 @@ public class Question {
            Statement stStudent = conn.createStatement();
            
            //Get table being updated in student sql update:
-           String tblNameStu;
-           if (answer.toUpperCase().startsWith("INSERT INTO")) {
-               tblNameStu = answer.split(" ")[2];
-           }
-           else if (answer.toUpperCase().startsWith("UPDATE")) {
-               tblNameStu = answer.split(" ")[1];
-           }
-           else if (answer.toUpperCase().startsWith("DELETE FROM")) {
-               tblNameStu = answer.split(" ")[2];
-           }
+           String tblNameStu = "";
+            if (studentAns.toUpperCase().startsWith("INSERT")) {
+                if (studentAns.split(" ").length>2) {   //will catch error later
+                    tblNameStu = studentAns.split(" ")[2];  //insert into <table>
+                }
+            }
+            else if (studentAns.toUpperCase().startsWith("UPDATE")) {
+                if (studentAns.split(" ").length>1) {
+                    tblNameStu = studentAns.split(" ")[1];  //update <table>
+                }
+            }
+            else if (studentAns.toUpperCase().startsWith("DELETE")) {
+                if (studentAns.split(" ").length>2) {
+                    tblNameStu = studentAns.split(" ")[2];  //delete from <table>
+                }
+            }
            else {   //lecturer answer does not execute as expected
                errorMessage = "Statement provided is not executing a permitted SQL DML statement!\n"
                        + "i.e. UPDATE, INSERT or DELETE";
                mark = MARK_RANGE[0];
-               return 0;
+               return mark;
            }
            
            //Start transaction:
@@ -326,16 +351,29 @@ public class Question {
                 raStudent = stStudent.executeUpdate(studentAns); //execute student's sql statement
            }
            catch (SQLException e) { //didn't compile
-               mark = MARK_RANGE[0];
+                conn.rollback(spStu);
+                conn.setAutoCommit(true);
                
-               //Process error message:
-               errorMessage = "SQL Statement did not compile.\n"
+                //Process error message:
+                errorMessage = "SQL Statement did not compile.\n"
                        + e.toString().substring("java.sql.".length()).replace("kiwidb.",""); //remove "java.sql." from error name and "kiwidb." from table name
-               return mark;
+               
+                mark = MARK_RANGE[0];
+                return mark;
            }
            
            //Expected new table:
-           rsStudent = stStudent.executeQuery("SELECT * FROM " + tblNameStu + ";");
+           try {
+               rsStudent = stStudent.executeQuery("SELECT * FROM " + tblNameStu + ";");
+           }
+           catch (SQLException e) {
+               conn.rollback(spStu);
+               conn.setAutoCommit(true);
+               System.out.println("Error: couldn't get student output!");
+               System.out.println(e);
+               mark = -2;
+               return mark;
+           }
            
            //End transaction:
            conn.rollback(spStu);

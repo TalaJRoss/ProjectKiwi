@@ -1,10 +1,8 @@
 package kiwi.kiwistudent;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.io.OutputStream;
 import java.net.Socket;
 import java.sql.Date;
 import java.sql.Time;
@@ -206,29 +204,38 @@ public class Student {
      * @param studentAns
      * @return true if successfully executed otherwise false (ie. couldn't mark)
      */
-    public boolean submit(String studentAns) {
+    public int submit(String studentAns) {
         try {    
             writer.writeObject(new StudentMessage(StudentMessage.CMD_SUBMIT, studentAns));
 
             //get feedback and mark:
             StudentMessage m = (StudentMessage) reader.readObject();
-            if (m.getResponse()==StudentMessage.SUCCESS) {
-                QuestionInfo qi = (QuestionInfo) m.getBody();
-                currentFeedback = qi.getFeedback();
-                currentMark = qi.getMark();
-                currentOutOf = qi.getOutOf();
-                nextQuestion = qi.getQuestion();
-                nextQuestionNo = qi.getQuestionNo();
-                currentFinalGrade = qi.getFinalGrade();
-                return true;
-            }
-            else {
-                return false;
+            QuestionInfo qi;
+            switch (m.getResponse()) {
+                case StudentMessage.SUCCESS:
+                    qi = (QuestionInfo) m.getBody();
+                    currentFeedback = qi.getFeedback();
+                    currentMark = qi.getMark();
+                    currentOutOf = qi.getOutOf();
+                    nextQuestion = qi.getQuestion();
+                    nextQuestionNo = qi.getQuestionNo();
+                    currentFinalGrade = qi.getFinalGrade();
+                    return SUCCESS;
+                case StudentMessage.FAIL_INPUT: //lecturer error
+                    qi = (QuestionInfo) m.getBody();
+                    currentFeedback = qi.getFeedback();
+                    currentOutOf = qi.getOutOf();
+                    nextQuestion = qi.getQuestion();
+                    nextQuestionNo = qi.getQuestionNo();
+                    currentFinalGrade = qi.getFinalGrade();
+                    return FAIL_DENY;
+                default:    //DB connection error
+                    return FAIL_CONNECT;
             }
         } catch (IOException | ClassNotFoundException e) {
             System.out.println("Error: Problem sending/receiving tcp socket messages in submit() method.");
             System.out.println(e);
-            return false;
+            return FAIL_CONNECT;
         }
     }
     
