@@ -19,6 +19,7 @@ public class Assignment {
      * Database connection.
      */
     private Connection conn;
+    private Connection connLimited;
     
     //TODO: update to get from server:
     /**
@@ -42,8 +43,9 @@ public class Assignment {
      */
     private String studentNo;
 
-    public Assignment(Connection conn, String studentNo) throws SQLException {
+    public Assignment(Connection conn, Connection connLimited, String studentNo) throws SQLException {
         this.conn = conn;
+        this.connLimited = connLimited;
         this.questionList = new ArrayList<>();
         this.currentPos = -1;
         this.studentNo = studentNo;
@@ -92,13 +94,13 @@ public class Assignment {
             rs = st.executeQuery(query);
 
             //Create question object:
-            Question question = new Question(conn);
+            Question question = new Question(conn, connLimited);
             while (rs.next()) {
                 String tempQuestion = rs.getString("Question");
                 String answer = rs.getString("Answer");
                 int difficulty = rs.getInt("Difficulty");
                 String type = rs.getString("Type");
-                question = new Question(tempQuestion, answer, difficulty, type, conn);
+                question = new Question(tempQuestion, answer, difficulty, type, conn, connLimited);
             }
 
             //Add question to list:
@@ -186,7 +188,7 @@ public class Assignment {
         
         try {   
             //Get student output:
-            Statement st = conn.createStatement();
+            Statement st = connLimited.createStatement();
             ResultSet rs;
             try {   //check it compiles 
                 rs = st.executeQuery(statement);
