@@ -383,13 +383,52 @@ public class AssignmentFrame extends javax.swing.JFrame {
     }//GEN-LAST:event_btnCheckActionPerformed
 
     private void windowCloser(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_windowCloser
-        try {
-                student.closeConnection();
+        boolean done;
+        if (!(done = student.isAssignmentDone())) {  //assignment isn't complete
+            int confirm = JOptionPane.showConfirmDialog(this, "You did not complete the assignment."
+                    + "\nIf you quit now, you will receive 0 for this submission.\n"
+                    + "Are you sure you want to quit?", "Quit Confirmation", JOptionPane.YES_NO_OPTION);
+            if (confirm!=JOptionPane.YES_OPTION) {  //don't quit
+                return;
+            }
+        }
+        if (student.leaveAssignment()) {    //successful processing
+            try {
+                    student.closeConnection();
             } 
-        catch (IOException | ClassNotFoundException ex) {
-                JOptionPane.showMessageDialog(this, "Error closing sockets.", "Socket Error", JOptionPane.ERROR_MESSAGE);
+            catch (IOException | ClassNotFoundException ex) {
+                    JOptionPane.showMessageDialog(this, "Error closing sockets.", "Socket Error", JOptionPane.ERROR_MESSAGE);
             }
             System.exit(0);
+        }
+        else {  //unsuccessful processing
+            if (done) { //finished assignment
+                int confirm = JOptionPane.showConfirmDialog(this, "There was an error saving your grade. If you leave now, your grade may not be saved.\n"
+                    + "We suggest you re-attempt to leave the assignment so that your grade is properly saved."
+                    + "Would you like to reattempt?", "Grade Saving Error", JOptionPane.YES_NO_OPTION);
+                if (confirm==JOptionPane.YES_OPTION) {  //don't quit
+                    return;
+                }
+                else {  //quit anyway
+                    try {
+                            student.closeConnection();
+                    } 
+                    catch (IOException | ClassNotFoundException ex) {
+                            JOptionPane.showMessageDialog(this, "Error closing sockets.", "Socket Error", JOptionPane.ERROR_MESSAGE);
+                    }
+                    System.exit(0);
+                }
+            }
+            else {  //not finished assignment
+                try {
+                        student.closeConnection();
+                } 
+                catch (IOException | ClassNotFoundException ex) {
+                        JOptionPane.showMessageDialog(this, "Error closing sockets.", "Socket Error", JOptionPane.ERROR_MESSAGE);
+                }
+                System.exit(0);
+            }
+        }
     }//GEN-LAST:event_windowCloser
 
     

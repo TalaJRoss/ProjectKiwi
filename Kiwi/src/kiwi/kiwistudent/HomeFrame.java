@@ -182,10 +182,15 @@ public class HomeFrame extends javax.swing.JFrame {
      * @param evt Click "Start Assignment" button.
      */
     private void btnStartActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnStartActionPerformed
-        this.setVisible(false);
-        AssignmentFrame question = new AssignmentFrame(student);
-        question.setVisible(true);
-        this.dispose();
+        AssignmentFrame assignment = new AssignmentFrame(student);
+        if (assignment.createdFlag) {
+            this.setVisible(false);
+            assignment.setVisible(true);
+            this.dispose();
+        }
+        else {
+            assignment.dispose();
+        }
     }//GEN-LAST:event_btnStartActionPerformed
 
     private void txtSubRemainActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtSubRemainActionPerformed
