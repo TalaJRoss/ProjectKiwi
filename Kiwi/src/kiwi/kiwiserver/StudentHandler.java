@@ -108,6 +108,7 @@ class StudentHandler extends Thread {
             Class.forName("com.mysql.cj.jdbc.Driver");
             this.conn = DriverManager.getConnection("jdbc:mysql://localhost/KiwiDB", ServerStartup.ROOT_NAME, ServerStartup.ROOT_PWD);
             this.connLimited = DriverManager.getConnection("jdbc:mysql://localhost/KiwiDB", ServerStartup.STUDENT_NAME, ServerStartup.STUDENT_PWD);
+            System.out.println(connLimited);
             writer.writeObject(new StudentMessage(StudentMessage.CMD_CONNECT, null));
         } catch (SQLException | ClassNotFoundException ex) {
             writer.writeObject(new StudentMessage(StudentMessage.CMD_CONNECT, null, StudentMessage.FAIL_CONNECT));

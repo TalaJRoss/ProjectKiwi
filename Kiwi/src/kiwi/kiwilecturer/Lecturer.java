@@ -66,6 +66,7 @@ public class Lecturer {
         writer= new ObjectOutputStream(os);   //MESSAGE
         
         LecturerMessage response = (LecturerMessage) reader.readObject();
+        System.out.println("response start: "+response.getCmd()+ " "+response.getBody()+" "+response.getMessage());
         connected = (response.getMessage() == LecturerMessage.RESP_SUCCESS);
     }
     
@@ -204,15 +205,21 @@ public class Lecturer {
                 csvFiles.add(getFileBytes(path));
             }
             writer.writeObject(new LecturerMessage(LecturerMessage.CMD_UPLOAD_QUERY, new CSVFiles(csvFiles, names)));
-            
-            LecturerMessage resp = (LecturerMessage) reader.readObject();
-            if (resp.getMessage()==LecturerMessage.RESP_SUCCESS) {
+            boolean success = true;
+            String fails = "";
+            for (String name: names) {
+                LecturerMessage resp = (LecturerMessage) reader.readObject();
+                if (resp.getMessage()!=LecturerMessage.RESP_SUCCESS) {
+                    fails+= name + ", ";
+                    success = false;
+                }
+            }
+            if (success) {
                 return SUCCESS;
             }
             else {
-                return FAIL;
+                return fails.substring(0, fails.length()-2);
             }
-            
         } catch (IOException | ClassNotFoundException ex) {
             System.out.println("Error: problem uploading info.");
             System.out.println(ex);

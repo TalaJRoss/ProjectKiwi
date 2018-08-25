@@ -119,7 +119,6 @@ final class LecturerHandler extends Thread{
     @Override
     public void run() {
         try {
-            System.out.println("hello");
             connectToDB();
         } 
         catch (IOException e) {
@@ -134,7 +133,6 @@ final class LecturerHandler extends Thread{
             while ((m = (LecturerMessage) reader.readObject())!= null)
             {
                 command = m.getCmd();
-                System.out.println(command);
                 switch (command) 
                 {
                     case LecturerMessage.CMD_ASSIGNMENT_INFO: //upload assignment info (noSubmissions, deadline etc.)
@@ -290,16 +288,6 @@ final class LecturerHandler extends Thread{
      * @param csvs Array of csv files containing query data.
      */
     public void uploadQueryData(ArrayList<byte []> csvs, String [] names) throws IOException {
-        /*
-        for (int i=0; i<csvs.size(); i++) {
-            
-            String response = createTable(names[i], csvs.get(i));
-            if (response.equals(SUCCESS)) {
-                writer.writeObject(new LecturerMessage(LecturerMessage.CMD_UPLOAD_QUERY, null, LecturerMessage.RESP_SUCCESS));
-            } else {
-                writer.writeObject(new LecturerMessage(LecturerMessage.CMD_UPLOAD_QUERY, null, LecturerMessage.RESP_FAIL));
-            }
-        }*/
         try {
             Statement st = conn.createStatement();
             String flush = "FLUSH PRIVILEGES;";

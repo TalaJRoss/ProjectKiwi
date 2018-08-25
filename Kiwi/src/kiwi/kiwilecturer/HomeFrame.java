@@ -466,7 +466,7 @@ public class HomeFrame extends javax.swing.JFrame {
                 JOptionPane.showMessageDialog(null, "Uploaded .csv files succesfully.", "Upload successful", JOptionPane.PLAIN_MESSAGE);
             }
             else{
-                JOptionPane.showMessageDialog(null, "Files were not uploaded.", "Upload unsuccessful", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(null, "The following files were not uploaded.\nFiles: "+response, "Upload unsuccessful", JOptionPane.ERROR_MESSAGE);
             }
         }
         
