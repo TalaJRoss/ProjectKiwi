@@ -18,6 +18,7 @@ import java.sql.Date;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Savepoint;
 import java.sql.Statement;
 import java.sql.Time;
 import kiwi.message.QuestionInfo;
@@ -249,14 +250,29 @@ class StudentHandler extends Thread {
         
             //decrease submissions allowed on server:
             //increase noSubmissions by 1:
+            conn.setAutoCommit(false);  //start transaction
+            Savepoint sp = conn.setSavepoint();
             statement = "UPDATE Students SET NoSubmissionsCompleted = NoSubmissionsCompleted + 1 WHERE StudentNo LIKE '" + studentNo + "';";  
-            int updateResp = st.executeUpdate(statement);
+            int updateResp = 0;
+            try {
+                updateResp = st.executeUpdate(statement);
+            }
+            catch (SQLException e) {
+                conn.rollback(sp);
+                conn.setAutoCommit(true);
+                System.out.println("Error: Problem updating number of submissions.");
+                System.out.println(e); 
+                writer.writeObject(new StudentMessage(StudentMessage.CMD_START, null, StudentMessage.FAIL_CONNECT));
+                return;
+            }
+            conn.commit();
+            conn.setAutoCommit(true);   //end transaction
+            
             if (updateResp!=1) {    //error updating
                 writer.writeObject(new StudentMessage(StudentMessage.CMD_START, null, StudentMessage.FAIL_CONNECT));
-                //TODO: revert with transacts
             }
         } catch (SQLException e) {
-            System.out.println("Error: Problem updating number of submissions and creating assignment.");
+            System.out.println("Error: Problem creating assignment.");
             System.out.println(e); 
             writer.writeObject(new StudentMessage(StudentMessage.CMD_START, null, StudentMessage.FAIL_CONNECT));
         }
@@ -331,16 +347,30 @@ class StudentHandler extends Thread {
     private void updateGrade() throws IOException {
         try {
             double grade = 0;
-            Statement st = conn.createStatement();
             //update grade if higher:
             if (!assignment.hasNext()) {    //finished assignment
                 grade = assignment.getGrade();
             }
+            Statement st = conn.createStatement();
+            conn.setAutoCommit(false);  //start transaction
+            Savepoint sp = conn.setSavepoint();
             String statement = "UPDATE students SET HighestGrade = " + grade + " WHERE StudentNo LIKE '" + studentNo + "' AND HighestGrade < " + grade + ";";  
-            int updateResp = st.executeUpdate(statement);
-            if (updateResp!=1 && updateResp!=0) {   //error updating
+            int updateResp = -1;
+            try {
+                updateResp = st.executeUpdate(statement);
+            }
+            catch (SQLException e) {
+                conn.rollback(sp);
+                conn.setAutoCommit(true);   //end transaction
+                System.out.println("Error: Problem updating table.");
+                System.out.println(e); 
                 writer.writeObject(new StudentMessage(StudentMessage.CMD_QUIT, null, StudentMessage.FAIL_CONNECT));
-                //TODO: revert with transacts
+                return;
+            }
+            conn.commit();
+            conn.setAutoCommit(true);   //end transaction
+            if (!(updateResp==1 || updateResp==0)) {   //error updating
+                writer.writeObject(new StudentMessage(StudentMessage.CMD_QUIT, null, StudentMessage.FAIL_CONNECT));
             }
             else {
                 writer.writeObject(new StudentMessage(StudentMessage.CMD_QUIT, null));
