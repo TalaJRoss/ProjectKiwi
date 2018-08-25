@@ -1,9 +1,9 @@
 package kiwi.kiwiserver;
 
 import java.sql.Connection;
+import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Savepoint;
 import java.sql.Statement;
 
 /**
@@ -15,10 +15,6 @@ import java.sql.Statement;
  */
 public class Question {
     
-    public static final String TYPE_SELECT = "Select";
-    public static final String TYPE_ARITHMETIC = "Arithmetic";
-    public static final String TYPE_JOIN = "Join";
-    public static final String TYPE_UPDATE = "Update";
     
     //Constants:
     
@@ -61,7 +57,6 @@ public class Question {
      * Result set from expected sql statement output.
      */
     ResultSet rsExpected;
-    int raExpected;
     
     /**
      * Number of columns in expected sql statement output.
@@ -72,7 +67,6 @@ public class Question {
      * Result set from student's sql statement output.
      */
     ResultSet rsStudent;
-    int raStudent;
     
     /**
      * Number of columns in student's sql statement output.
@@ -142,6 +136,7 @@ public class Question {
     
     //Main functionality methods:
     
+    //TODO: check student not trying data manipulation (ie.not select command)
     /**
      * Marks the given student answer. The student answer statement and
      * expected answer statement are run and the outputs compared. Then a mark
@@ -151,15 +146,7 @@ public class Question {
      * answer err or -2 for db conn/processing err
      */
     public int mark(String studentAns) {
-        if (!type.toLowerCase().equals(TYPE_UPDATE.toLowerCase())) { //query question
-            return markQueryQuestion(studentAns); 
-        }
-        else {  //update question
-            return markUpdateQuestion(studentAns);
-        }
-    }
-    
-    private int markQueryQuestion(String studentAns) {
+        
         try {
            //Get expected output:
            Statement stExpected = conn.createStatement();
@@ -169,8 +156,7 @@ public class Question {
            catch (SQLException e) { //didn't compile
                System.out.println("Error: answer from lecturer wrong!");
                System.out.println(e);
-               mark = -1;
-               return mark;
+               return -1;
            }
            expectedColCount = rsExpected.getMetaData().getColumnCount();
            
@@ -183,8 +169,10 @@ public class Question {
                mark = MARK_RANGE[0];
                
                //Process error message:
-               errorMessage = "SQL Statement did not compile.\n"
-                       + e.toString().substring("java.sql.".length()).replace("kiwidb.",""); //remove "java.sql." from error name and "kiwidb." from table name
+               errorMessage = e.toString().substring("java.sql.".length()); //remove "java.sql." from error name
+               if (errorMessage.contains("kiwidb.")) {
+                   errorMessage= errorMessage.replace("kiwidb.","");    //remove "kiwidb." from table name
+               }
                
                return mark;
            }
@@ -242,198 +230,9 @@ public class Question {
         catch (SQLException e) {
             System.out.println("Error: Problem comparing sql result set outputs.");
             System.out.println(e);
-            mark = -2;
-            return mark;
+            return -2;
         }
     }
-    
-    
-    private int markUpdateQuestion(String studentAns) {
-        try {
-            //Get expected output:
-            Statement stExpected = conn.createStatement();
-           
-            //Get table being updated in expected sql update:
-            String tblNameExp = "";
-            if (answer.toUpperCase().startsWith("INSERT")) {
-                if (answer.split(" ").length>2) {   //will catch error later
-                    tblNameExp = answer.split(" ")[2];  //insert into <table>
-                }
-            }
-            else if (answer.toUpperCase().startsWith("UPDATE")) {
-                if (answer.split(" ").length>1) {
-                    tblNameExp = answer.split(" ")[1];  //update <table>
-                }
-            }
-            else if (answer.toUpperCase().startsWith("DELETE")) {
-                if (answer.split(" ").length>2) {
-                    tblNameExp = answer.split(" ")[2];  //delete from <table>
-                }
-            }
-            else {   //lecturer answer does not execute as expected
-                System.out.println("Error: answer from lecturer is not executing a permitted SQL DML statement!");
-                mark = -1;
-                return mark;
-            }
-           
-           //Start transaction:
-           conn.setAutoCommit(false);
-           Savepoint spExp = conn.setSavepoint();
-           
-           //Expected update:
-           try {
-                raExpected = stExpected.executeUpdate(answer);   //execute expected sql update and get rows affeted
-           }
-           catch (SQLException e) { //didn't compile
-               conn.rollback(spExp);
-               conn.setAutoCommit(true);
-               System.out.println("Error: answer from lecturer wrong!");
-               System.out.println(e);
-               System.out.println("corr error");
-               mark = -1;
-               return mark;
-           }
-           
-           //Expected new table:
-           try {
-                rsExpected = stExpected.executeQuery("SELECT * FROM " + tblNameExp + ";");
-           }
-           catch (SQLException e) { //didn't compile
-               conn.rollback(spExp);
-               conn.setAutoCommit(true);
-               System.out.println("Error: couldn't get lecturer output!");
-               System.out.println(e);
-               mark = -2;
-               return mark;
-           }
-           
-           //End transaction:
-           conn.rollback(spExp);
-           conn.setAutoCommit(true);
-           
-           expectedColCount = rsExpected.getMetaData().getColumnCount();
-           
-           /////////////////////////
-          
-           //Get student output:
-           Statement stStudent = conn.createStatement();
-           
-           //Get table being updated in student sql update:
-           String tblNameStu = "";
-            if (studentAns.toUpperCase().startsWith("INSERT")) {
-                if (studentAns.split(" ").length>2) {   //will catch error later
-                    tblNameStu = studentAns.split(" ")[2];  //insert into <table>
-                }
-            }
-            else if (studentAns.toUpperCase().startsWith("UPDATE")) {
-                if (studentAns.split(" ").length>1) {
-                    tblNameStu = studentAns.split(" ")[1];  //update <table>
-                }
-            }
-            else if (studentAns.toUpperCase().startsWith("DELETE")) {
-                if (studentAns.split(" ").length>2) {
-                    tblNameStu = studentAns.split(" ")[2];  //delete from <table>
-                }
-            }
-           else {   //lecturer answer does not execute as expected
-               errorMessage = "Statement provided is not executing a permitted SQL DML statement!\n"
-                       + "i.e. UPDATE, INSERT or DELETE";
-               mark = MARK_RANGE[0];
-               return mark;
-           }
-           
-           //Start transaction:
-           conn.setAutoCommit(false);
-           Savepoint spStu = conn.setSavepoint();
-           
-           //Expected update:
-           try {
-                raStudent = stStudent.executeUpdate(studentAns); //execute student's sql statement
-           }
-           catch (SQLException e) { //didn't compile
-                conn.rollback(spStu);
-                conn.setAutoCommit(true);
-               
-                //Process error message:
-                errorMessage = "SQL Statement did not compile.\n"
-                       + e.toString().substring("java.sql.".length()).replace("kiwidb.",""); //remove "java.sql." from error name and "kiwidb." from table name
-               
-                mark = MARK_RANGE[0];
-                return mark;
-           }
-           
-           //Expected new table:
-           try {
-               rsStudent = stStudent.executeQuery("SELECT * FROM " + tblNameStu + ";");
-           }
-           catch (SQLException e) {
-               conn.rollback(spStu);
-               conn.setAutoCommit(true);
-               System.out.println("Error: couldn't get student output!");
-               System.out.println(e);
-               mark = -2;
-               return mark;
-           }
-           
-           //End transaction:
-           conn.rollback(spStu);
-           conn.setAutoCommit(true);
-           
-           studentColCount= rsStudent.getMetaData().getColumnCount();
-           
-           /////////////////////////
-           
-           //Wrong if didn't update same table:
-           if (!tblNameExp.toLowerCase().equals(tblNameStu.toLowerCase())) { 
-               mark = MARK_RANGE[1];
-               return mark;
-           }
-           
-           //For same tables:
-           else {
-                //Compare rows of expected and received output:
-                while(rsExpected.next()) {  //all expected rows
-                    if (rsStudent.next()) { //there is another student row
-                        
-                        //Compare each column value in rows:
-                        for (int i=1; i<=expectedColCount; i++) {   //fields in given expected row
-                            if (rsStudent.getObject(i)==null || rsExpected.getObject(i)==null) {    //at least one field null
-                                if (rsStudent.getObject(i)!=null || rsExpected.getObject(i)!=null) {    //not both null
-                                    mark = MARK_RANGE[1];
-                                    return mark;
-                                }
-                            }
-                            else if (!rsStudent.getObject(i).equals(rsExpected.getObject(i))) {   //fields not equal
-                                mark = MARK_RANGE[1];
-                                return mark;
-                            }
-                        }
-                    }
-                    else {   //student output has too few rows
-                        mark = MARK_RANGE[1];
-                        return mark;
-                    }
-                }
-                if (rsStudent.next()) {  //student output too many rows
-                    mark = MARK_RANGE[1];
-                    return mark;
-                }
-                
-                //Output is exactly the same:
-                mark = MARK_RANGE[2]*difficulty;
-                return mark;
-            }
-        }
-        catch (SQLException e) {
-            System.out.println("Error: Problem comparing sql result set outputs.");
-            System.out.println(e);
-            mark = -2;
-            return mark;
-        }
-    }
-    
-    
-    
     
     //TODO: Show what the differences in output are?
     /**
@@ -443,25 +242,20 @@ public class Question {
      * @return Formatted String showing expected and received sql statements
      * and output or null if db conneection/processing error occurs
      */
-    public String getFeedback() {
+    public String getFeedback(String studentAns) {
+        
         //Check that lecturer sql statement executed:
         if (rsExpected==null) {
             return "Error: Couldn't run lecturer's sql statement. Please contact your lecturer about this.";
         }
         
-        //Get feedback:
-        if (!type.equals(TYPE_UPDATE)) { //query question
-            return getQueryFeedback(); 
-        }
-        else {  //update question
-            return getUpdateFeedback();
-        }
+        //Show expected and received answer statements:
+        String toReturn= "Expected SQL: " + answer + "\n"
+            + "Your SQL: " + studentAns + "\n"
+            + "\n";
         
-    }
-    
-    private String getQueryFeedback() {
         //Show expected output:
-        String toReturn = "Expected Output:\n";
+        toReturn+= "Expected Output:\n";
         try {
             rsExpected.beforeFirst();   //move cursor to start of result set
             
@@ -481,7 +275,7 @@ public class Question {
             toReturn+="\n"; //end of expected output
         } 
         catch (SQLException e) {
-            System.out.println("Error: Couldn't read lecturer output.");
+            System.out.println("Error: Couldn't read student output.");
             System.out.println(e);
             return null;
         }
@@ -490,67 +284,7 @@ public class Question {
         toReturn+= "Your Output:\n";
         
         if (mark==Question.MARK_RANGE[0]) {  //answer statement didn't compile
-            toReturn+= errorMessage+"\n";
-        }
-        else {  //answer statement did compile
-            try {
-                rsStudent.beforeFirst();    //move cursor to start of result set
-                
-                //Get column names:
-                for (int i=1; i<=studentColCount; i++) {   
-                        toReturn+= rsStudent.getMetaData().getColumnName(i) + "\t";
-                    }
-                toReturn+="\n";
-                
-                //Get row entries:
-                while(rsStudent.next()) {  //each row
-                    for (int i=1; i<=studentColCount; i++) {    //each field in row
-                        toReturn+= rsStudent.getObject(i) + "\t";
-                    }
-                    toReturn+="\n";
-                }
-                toReturn+="\n"; //end of student's output
-            } 
-            catch (SQLException e) {
-                System.out.println("Error: Couldn't read student output.");
-                System.out.println(e);
-                return null;
-            }
-        }
-        return toReturn;    //all feedback
-    }
-    
-    private String getUpdateFeedback() {
-        //Show expected output:
-        String toReturn = "Expected table contents after update:\n";
-        try {
-            rsExpected.beforeFirst();   //move cursor to start of result set
-            
-            //Get column names:
-            for (int i=1; i<=expectedColCount; i++) {   
-                    toReturn+= rsExpected.getMetaData().getColumnName(i) + "\t";
-                }
-            toReturn+="\n";
-            
-            //Get row entries:
-            while(rsExpected.next()) {  //each row 
-                for (int i=1; i<=expectedColCount; i++) {   //each field in row
-                    toReturn+= rsExpected.getObject(i) + "\t";
-                }
-                toReturn+="\n";
-            }
-            toReturn+="\n"; //end of expected output
-        } 
-        catch (SQLException e) {
-            System.out.println("Error: Couldn't read lecturer output.");
-            System.out.println(e);
-            return null;
-        }
-        
-        //Show student output:
-        toReturn+= "Your table contents after update:\n";
-        
-        if (mark==Question.MARK_RANGE[0]) {  //answer statement didn't compile
+            toReturn+= "SQL Statement did not compile.\n";
             toReturn+= errorMessage+"\n";
         }
         else {  //answer statement did compile
