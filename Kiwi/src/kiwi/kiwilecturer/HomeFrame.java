@@ -513,7 +513,7 @@ public class HomeFrame extends javax.swing.JFrame {
     private void btnViewActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnViewActionPerformed
         
         String response = lecturer.viewGradeAscStudent();
-        if (response.equals(Lecturer.FAIL)) {
+        if (response.equals(Lecturer.FAIL_CONNECT)) {
             txtaMarks.setText("Error reading grades from Students table");
         } else {
             txtaMarks.setText(response);
@@ -529,7 +529,7 @@ public class HomeFrame extends javax.swing.JFrame {
     private void btnGradeDescendingActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnGradeDescendingActionPerformed
         
         String response = lecturer.viewGradeDescGrade();
-        if (response.equals(Lecturer.FAIL)) {
+        if (response.equals(Lecturer.FAIL_CONNECT)) {
             txtaMarks.setText("Error reading grades from Students table");
         } else {
             txtaMarks.setText(response);
@@ -647,11 +647,36 @@ public class HomeFrame extends javax.swing.JFrame {
         
         if (studentPath!=null) {
             response = lecturer.uploadStudents(studentPath);
-            if(response.equals(Lecturer.SUCCESS)){
-                JOptionPane.showMessageDialog(null, "Uploaded 'Students' csv file succesfully.", "Upload successful",JOptionPane.PLAIN_MESSAGE);
-            }
-            else{
-                JOptionPane.showMessageDialog(null, "'Students' file was not uploaded.", "Upload unsuccessful", JOptionPane.ERROR_MESSAGE);
+            switch (response) {
+                case Lecturer.SUCCESS:
+                    JOptionPane.showMessageDialog(null, 
+                            "Uploaded students csv file succesfully.", 
+                            "Upload Successful",JOptionPane.PLAIN_MESSAGE);
+                    break;
+                case Lecturer.FAIL_INPUT:
+                    JOptionPane.showMessageDialog(null, 
+                            "Students file was not uploaded.\n"
+                            + "Provided csv file format is incorrect.\n\n"
+                            + "Expected Format:\n"
+                            + "StudentNo\\r\\n\n"
+                            + "<student_number_1>\\r\\n\n"
+                            + "<student_number_2>\\r\\n\n"
+                            + "...", 
+                            "Upload Unsuccessful", JOptionPane.ERROR_MESSAGE);
+                    break;
+                case Lecturer.FAIL_NULL:
+                    JOptionPane.showMessageDialog(null, 
+                            "Students file was not uploaded.\n"
+                            + "Assignment information needs to be entered before\n"
+                            + "the students csv file can be saved.", 
+                            "Upload Unsuccessful", JOptionPane.ERROR_MESSAGE);
+                    break;
+                default:
+                    JOptionPane.showMessageDialog(null, 
+                            "Students file was not uploaded.\n"
+                            + "Problem connecting to database.", 
+                            "Upload Unsuccessful", JOptionPane.ERROR_MESSAGE);
+                    break;
             }
         }
         
@@ -667,11 +692,30 @@ public class HomeFrame extends javax.swing.JFrame {
         
         if (questionsPath!=null) {
             response = lecturer.uploadQuestions(questionsPath);
-            if(response.equals(Lecturer.SUCCESS)){
-                JOptionPane.showMessageDialog(null, "Uploaded 'Questions' csv file succesfully.", "Upload successful",JOptionPane.PLAIN_MESSAGE);
-            }
-            else{
-                JOptionPane.showMessageDialog(null, "'Questions' file was not uploaded.", "Upload unsuccessful", JOptionPane.ERROR_MESSAGE);
+            switch (response) {
+                case Lecturer.SUCCESS:
+                    JOptionPane.showMessageDialog(null, 
+                            "Uploaded questions csv file succesfully.", 
+                            "Upload Successful",JOptionPane.PLAIN_MESSAGE);
+                    break;
+                case Lecturer.FAIL_INPUT:
+                    JOptionPane.showMessageDialog(null, 
+                            "Questions file was not uploaded.\n"
+                            + "Provided csv file format is incorrect.\n\n"
+                            + "Expected Format:\n"
+                            + "Question,Answer,Difficulty,Type\\r\\n\n"
+                            + "\"<question1>\",\"<answer1>\",<difficulty1>,<type1>\\r\\n\n"
+                            + "\"<question2>\",\"<answer2>\",<difficulty2>,<type2>\\r\\n\n"
+                            + "...," 
+                            + "where Type in {select, arithmetic, update}.",
+                            "Upload Unsuccessful", JOptionPane.ERROR_MESSAGE);
+                    break;
+                default:
+                    JOptionPane.showMessageDialog(null, 
+                            "Questions file was not uploaded."
+                            + "Problem connecting to database.", 
+                            "Upload Unsuccessful", JOptionPane.ERROR_MESSAGE);
+                    break;
             }
         }
         

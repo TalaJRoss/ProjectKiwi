@@ -46,14 +46,24 @@ public class Lecturer {
     private boolean connected;
     
     /**
-     * Success message
+     * Success message.
      */
     public static final String SUCCESS = "Success";
     
     /**
-     * Fail message
+     * Fail message for DB connection errors.
      */
-    public static final String FAIL = "Error";
+    public static final String FAIL_CONNECT = "ErrorConn";
+    
+    /**
+     * Fail message for input error.
+     */
+    public static final String FAIL_INPUT = "ErrorInput";
+    
+    /**
+     * Fail message for missing info that is required before action can be executed.
+     */
+    public static final String FAIL_NULL = "ErrorNull";
 
     public Lecturer() throws IOException, ClassNotFoundException {
         //make socket:
@@ -114,13 +124,13 @@ public class Lecturer {
                 return SUCCESS;
             }
             else {
-                return FAIL;
+                return FAIL_CONNECT;
             }
             
         } catch (IOException | ClassNotFoundException ex) {
             System.out.println("Error: problem uploading info.");
             System.out.println(ex);
-            return FAIL;
+            return FAIL_CONNECT;
         }
     }
     
@@ -139,17 +149,21 @@ public class Lecturer {
             writer.writeObject(new LecturerMessage(LecturerMessage.CMD_UPLOAD_STUDENTS, new CSVFiles(csvFiles, null)));
         
             LecturerMessage resp = (LecturerMessage) reader.readObject();
-            if (resp.getMessage()==LecturerMessage.RESP_SUCCESS) {
-                return SUCCESS;
-            }
-            else {
-                return FAIL;
+            switch (resp.getMessage()) {
+                case LecturerMessage.RESP_SUCCESS:
+                    return SUCCESS;
+                case LecturerMessage.RESP_FAIL_NULL:
+                    return FAIL_NULL;
+                case LecturerMessage.RESP_FAIL_INPUT:
+                    return FAIL_INPUT;
+                default:
+                    return FAIL_CONNECT;
             }
             
         } catch (IOException | ClassNotFoundException ex) {
             System.out.println("Error: problem uploading info.");
             System.out.println(ex);
-            return FAIL;
+            return FAIL_CONNECT;
         }
     }
     
@@ -168,17 +182,19 @@ public class Lecturer {
             writer.writeObject(new LecturerMessage(LecturerMessage.CMD_UPLOAD_QUESTIONS, new CSVFiles(csvFiles, null)));
             
             LecturerMessage resp = (LecturerMessage) reader.readObject();
-            if (resp.getMessage()==LecturerMessage.RESP_SUCCESS) {
-                return SUCCESS;
-            }
-            else {
-                return FAIL;
+            switch (resp.getMessage()) {
+                case LecturerMessage.RESP_SUCCESS:
+                    return SUCCESS;
+                case LecturerMessage.RESP_FAIL_INPUT:
+                    return FAIL_INPUT;
+                default:
+                    return FAIL_CONNECT;
             }
             
         } catch (IOException | ClassNotFoundException ex) {
             System.out.println("Error: problem uploading info.");
             System.out.println(ex);
-            return FAIL;
+            return FAIL_CONNECT;
         }
     }
     
@@ -221,7 +237,7 @@ public class Lecturer {
         } catch (IOException | ClassNotFoundException ex) {
             System.out.println("Error: problem uploading info.");
             System.out.println(ex);
-            return FAIL;
+            return FAIL_CONNECT;
         }
     }
     
@@ -240,13 +256,13 @@ public class Lecturer {
                 return ((Grades) response.getBody()).getGrades();
             }
             else {
-                return FAIL;
+                return FAIL_CONNECT;
             }
             
         } catch (IOException | ClassNotFoundException ex) {
             System.out.println("Error: problem getting grades.");
             System.out.println(ex);
-            return FAIL;
+            return FAIL_CONNECT;
         }
     }
     
@@ -265,12 +281,12 @@ public class Lecturer {
                 return ((Grades) response.getBody()).getGrades();
             }
             else {
-                return FAIL;
+                return FAIL_CONNECT;
             }
         } catch (IOException | ClassNotFoundException ex) {
             System.out.println("Error: problem getting grades.");
             System.out.println(ex);
-            return FAIL;
+            return FAIL_CONNECT;
         }
     }
 

@@ -3,7 +3,6 @@
  */
 package kiwi.kiwiserver;
 
-import com.mysql.cj.protocol.Resultset;
 import com.opencsv.CSVReader;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -115,7 +114,7 @@ final class LecturerHandler extends Thread{
             this.conn = DriverManager.getConnection("jdbc:mysql://localhost/KiwiDB", ServerStartup.ROOT_NAME, ServerStartup.ROOT_PWD);
             writer.writeObject(new LecturerMessage(LecturerMessage.CMD_CONNECT, null, LecturerMessage.RESP_SUCCESS));
         } catch (SQLException | ClassNotFoundException ex) {
-            writer.writeObject(new LecturerMessage(LecturerMessage.CMD_CONNECT, null, LecturerMessage.RESP_FAIL));
+            writer.writeObject(new LecturerMessage(LecturerMessage.CMD_CONNECT, null, LecturerMessage.RESP_FAIL_CONNECT));
         }
     }
     
@@ -224,7 +223,7 @@ final class LecturerHandler extends Thread{
             catch (SQLException e) {
                 conn.rollback(sp);
                 conn.setAutoCommit(true);
-                writer.writeObject(new LecturerMessage(LecturerMessage.CMD_ASSIGNMENT_INFO, null, LecturerMessage.RESP_FAIL));
+                writer.writeObject(new LecturerMessage(LecturerMessage.CMD_ASSIGNMENT_INFO, null, LecturerMessage.RESP_FAIL_CONNECT));
                 return;
             }
             conn.commit();
@@ -240,10 +239,11 @@ final class LecturerHandler extends Thread{
                 
             
         } catch (SQLException | IOException ex) {
-            writer.writeObject(new LecturerMessage(LecturerMessage.CMD_ASSIGNMENT_INFO, null, LecturerMessage.RESP_FAIL));
+            writer.writeObject(new LecturerMessage(LecturerMessage.CMD_ASSIGNMENT_INFO, null, LecturerMessage.RESP_FAIL_CONNECT));
         }
     }
     
+    //TODO:check studentNumber of format aaaaaa000
     /**
      * Uploads student information contained in the given csv file to the
      * students table in the database on the server.
@@ -274,7 +274,15 @@ final class LecturerHandler extends Thread{
             
             //Get deadline date and time:
             String deadlineStatement = "SELECT DeadlineDate, DeadlineTime FROM AssignmentInfo WHERE ID=1;";
-            rs = st.executeQuery(deadlineStatement);
+            try {
+                rs = st.executeQuery(deadlineStatement);
+            }
+            catch (SQLException e) {    //lecturer hasn't loaded assignment info yet (including deadline info)
+                System.out.println("Error: Couldn't load students csv. Assignment info hasn't been loaded.");
+                System.out.println(e);
+                writer.writeObject(new LecturerMessage(LecturerMessage.CMD_UPLOAD_STUDENTS, null, LecturerMessage.RESP_FAIL_NULL));
+                return;
+            }
             rs.next();
             Date deadlineDate = rs.getDate("DeadlineDate");
             Time deadlineTime = rs.getTime("DeadlineTime");
@@ -283,27 +291,27 @@ final class LecturerHandler extends Thread{
             completed and highest grade and with deadline fields from assignment info table:
             */
             String uploadStatement = "LOAD DATA INFILE 'students.csv' INTO TABLE students " +
-                    "FIELDS OPTIONALLY ENCLOSED BY '\"' " +
-                    "TERMINATED BY ',' " +
-                    "LINES TERMINATED BY '\\r\\n' " +
-                    "IGNORE 1 ROWS " +
-                    "(studentNo) " +
-                    "SET HighestGrade=0, " +
-                    "NoSubmissionsCompleted=0, " +
-                    "DeadlineDate='" + deadlineDate.toString() + "', " +
-                    "DeadlineTime='" + deadlineTime.toString() + "';";
+                                        "FIELDS OPTIONALLY ENCLOSED BY '\"' " +
+                                        "TERMINATED BY ',' " +
+                                        "LINES TERMINATED BY '\\r\\n' " +
+                                        "IGNORE 1 ROWS " +
+                                        "(studentNo) " +
+                                        "SET HighestGrade=0, " +
+                                        "NoSubmissionsCompleted=0, " +
+                                        "DeadlineDate='" + deadlineDate.toString() + "', " +
+                                        "DeadlineTime='" + deadlineTime.toString() + "';";
             
             conn.setAutoCommit(false);  //start transaction
             Savepoint sp = conn.setSavepoint();
             try { 
                 st.executeUpdate(uploadStatement);
             }
-            catch (SQLException e) {
+            catch (SQLException e) {    //csv file format wrong
                 conn.rollback(sp);
                 conn.setAutoCommit(true);
                 System.out.println("Error: Problem loading csv to database: students.");
                 System.out.println(e);
-                writer.writeObject(new LecturerMessage(LecturerMessage.CMD_UPLOAD_STUDENTS, null, LecturerMessage.RESP_FAIL));
+                writer.writeObject(new LecturerMessage(LecturerMessage.CMD_UPLOAD_STUDENTS, null, LecturerMessage.RESP_FAIL_INPUT));
                 return;
             }
             conn.commit();
@@ -316,11 +324,12 @@ final class LecturerHandler extends Thread{
         catch (SQLException e) {
             System.out.println("Error: Problem loading csv to database: students.");
             System.out.println(e);
-            writer.writeObject(new LecturerMessage(LecturerMessage.CMD_UPLOAD_STUDENTS, null, LecturerMessage.RESP_FAIL));
+            writer.writeObject(new LecturerMessage(LecturerMessage.CMD_UPLOAD_STUDENTS, null, LecturerMessage.RESP_FAIL_CONNECT));
         }
     }
     
     
+    //TODO: check difficulty=1,2 or 3 and type=select, arithmetic or update
     /**
      * Uploads question-answer pairs contained in the given csv file to the
      * questions table in the database on the server.
@@ -338,8 +347,8 @@ final class LecturerHandler extends Thread{
             Statement st = conn.createStatement();
             
             //Create questions table:
-            String createStatement = "CREATE TABLE questions (" +
-                                        "QuestionNo int(11) NOT NULL AUTO_INCREMENT, " +
+            String createStatement = "CREATE TABLE IF NOT EXISTS questions (" +
+                                        "QuestionNo int(11) NOT NULL, " +
                                         "Question varchar(500) DEFAULT NULL, " +
                                         "Answer varchar(500) DEFAULT NULL, " +
                                         "Difficulty int(11) DEFAULT NULL, " +
@@ -353,28 +362,35 @@ final class LecturerHandler extends Thread{
             the problem field and question number auto incrementing:
             */
             String uploadStatement = "LOAD DATA INFILE 'questions.csv' INTO TABLE questions " +
-                    "FIELDS OPTIONALLY ENCLOSED BY '\"' " +
-                    "TERMINATED BY ',' " +
-                    "LINES TERMINATED BY '\\r\\n' " +
-                    "IGNORE 1 ROWS " +
-                    "(Question, Answer, Difficulty, Type) " +
-                    "SET Problem=null;";
+                                        "FIELDS OPTIONALLY ENCLOSED BY '\"' " +
+                                        "TERMINATED BY ',' " +
+                                        "LINES TERMINATED BY '\\r\\n' " +
+                                        "IGNORE 1 ROWS " +
+                                        "(Question, Answer, Difficulty, Type) " +
+                                        "SET Problem=null, " +
+                                        "QuestionNo=0;";
             
             conn.setAutoCommit(false);  //start transaction
             Savepoint sp = conn.setSavepoint();
             try { 
                 st.executeUpdate(uploadStatement);
             }
-            catch (SQLException e) {
+            catch (SQLException e) {    //csv file format wrong
                 conn.rollback(sp);
                 conn.setAutoCommit(true);
                 System.out.println("Error: Problem loading csv to database: questionss.");
                 System.out.println(e);
-                writer.writeObject(new LecturerMessage(LecturerMessage.CMD_UPLOAD_QUESTIONS, null, LecturerMessage.RESP_FAIL));
+                writer.writeObject(new LecturerMessage(LecturerMessage.CMD_UPLOAD_QUESTIONS, null, LecturerMessage.RESP_FAIL_INPUT));
                 return;
             }
             conn.commit();
             conn.setAutoCommit(true);   //end transaction
+            
+            /*Increment question numbers(not auto incremented since this
+            causes incorrect numbers if incorrect input is given first):
+            */
+            String incrementStatement = "ALTER TABLE questions MODIFY COLUMN QuestionNo INT AUTO_INCREMENT;";
+            st.executeUpdate(incrementStatement);
             
             //Successfully loaded table:
             writer.writeObject(new LecturerMessage(LecturerMessage.CMD_UPLOAD_QUESTIONS, null, LecturerMessage.RESP_SUCCESS));
@@ -383,7 +399,7 @@ final class LecturerHandler extends Thread{
         catch (SQLException e) {
             System.out.println("Error: Problem loading csv to database: students.");
             System.out.println(e);
-            writer.writeObject(new LecturerMessage(LecturerMessage.CMD_UPLOAD_QUESTIONS, null, LecturerMessage.RESP_FAIL));
+            writer.writeObject(new LecturerMessage(LecturerMessage.CMD_UPLOAD_QUESTIONS, null, LecturerMessage.RESP_FAIL_CONNECT));
         }
     }
     
@@ -417,7 +433,7 @@ final class LecturerHandler extends Thread{
                     System.out.println("Granted student permissions for "+names[i]);
                     
                 } else {
-                    writer.writeObject(new LecturerMessage(LecturerMessage.CMD_UPLOAD_QUERY, null, LecturerMessage.RESP_FAIL));
+                    writer.writeObject(new LecturerMessage(LecturerMessage.CMD_UPLOAD_QUERY, null, LecturerMessage.RESP_FAIL_CONNECT));
                 }
             }            
         } catch (SQLException ex) {
@@ -436,7 +452,7 @@ final class LecturerHandler extends Thread{
     public void viewGradeAscStudent() throws IOException {
         String response = getGrades(STUDENT_NO, ASCENDING);
         if (response.equals(FAIL)) {
-            writer.writeObject(new LecturerMessage(LecturerMessage.CMD_GRADE_ALPH, null, LecturerMessage.RESP_FAIL));
+            writer.writeObject(new LecturerMessage(LecturerMessage.CMD_GRADE_ALPH, null, LecturerMessage.RESP_FAIL_CONNECT));
         } else {
             writer.writeObject(new LecturerMessage(LecturerMessage.CMD_GRADE_ALPH, new Grades(response), LecturerMessage.RESP_SUCCESS));
         }
@@ -453,7 +469,7 @@ final class LecturerHandler extends Thread{
     public void viewGradeDescGrade() throws IOException {
         String response = getGrades(GRADE, DESCENDING);
         if (response.equals(FAIL)) {
-            writer.writeObject(new LecturerMessage(LecturerMessage.CMD_GRADE_DESC, null, LecturerMessage.RESP_FAIL));
+            writer.writeObject(new LecturerMessage(LecturerMessage.CMD_GRADE_DESC, null, LecturerMessage.RESP_FAIL_CONNECT));
         } else {
             writer.writeObject(new LecturerMessage(LecturerMessage.CMD_GRADE_DESC, new Grades(response), LecturerMessage.RESP_SUCCESS));
         }
