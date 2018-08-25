@@ -5,6 +5,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Savepoint;
 import java.sql.Statement;
+import kiwi.message.StudentMessage;
 
 /**
  * Stores information relevant to a question and processes marking and
@@ -87,6 +88,7 @@ public class Question {
     String errorMessage;
     
     private Connection connLimited;
+    private Connection conn;
     
     //Constructor:
     
@@ -96,13 +98,14 @@ public class Question {
      * @param answer SQL statement expected answer.
      * @param difficulty Difficulty value (1, 2 or 3)
      */
-    public Question(String question, String answer, int difficulty, String type, int questionDBNo, Connection connLimited){
+    public Question(String question, String answer, int difficulty, String type, int questionDBNo, Connection connLimited, Connection conn){
         this.question = question;
         this.answer = answer;
         this.difficulty = difficulty;
         this.type = type;
         this.mark = 0;
         this.connLimited = connLimited;
+        this.conn = conn;
         this.questionDBNo = questionDBNo;
     }
     
@@ -163,44 +166,103 @@ public class Question {
     
     private int markQueryQuestion(String studentAns) {
         try {
-           //Get expected output:
-           Statement stExpected = connLimited.createStatement();
-           try {
+            //Get expected output:
+            
+            //Check expected query statement command:
+            String tblNameExp = "";
+            if (!answer.toUpperCase().startsWith("SELECT")) {//lecturer answer does not execute as expected
+                //Mark question as Not Permitted:
+                String reportStatement = "UPDATE questions "
+                        + "SET Problem='Not Permitted' "
+                        + "WHERE QuestionNo=" + questionDBNo + ";";
+                
+                Statement st = conn.createStatement();
+                conn.setAutoCommit(false);  //start transaction
+                Savepoint sp = conn.setSavepoint();
+                try {
+                    st.executeUpdate(reportStatement);
+                }
+                catch (SQLException ex) {
+                    conn.rollback(sp);
+                    conn.setAutoCommit(true);   //end transaction
+                    System.out.println("Error: Problem adding not permitted marker.");
+                    System.out.println(ex); 
+                }
+                conn.commit();
+                conn.setAutoCommit(true);
+                
+                System.out.println("Error: answer from lecturer is not executing a permitted SQL DML statement!");
+                mark = -1;
+                return mark;
+            }
+            
+            Statement stExpected = connLimited.createStatement();
+            try {
                 rsExpected = stExpected.executeQuery(answer);   //execute expected sql statement
-           }
-           catch (SQLException e) { //didn't compile
-               System.out.println("Error: answer from lecturer wrong!");
-               System.out.println(e);
-               mark = -1;
-               return mark;
-           }
-           expectedColCount = rsExpected.getMetaData().getColumnCount();
+            }
+            catch (SQLException e) { //lecturer statement didn't compile
+                //Mark question as Not Compile:
+                String reportStatement = "UPDATE questions "
+                        + "SET Problem='Not Compile' "
+                        + "WHERE QuestionNo=" + questionDBNo + ";";
+                
+                Statement st = conn.createStatement();
+                conn.setAutoCommit(false);  //start transaction
+                Savepoint sp = conn.setSavepoint();
+                try {
+                    st.executeUpdate(reportStatement);
+                }
+                catch (SQLException ex) {
+                    conn.rollback(sp);
+                    conn.setAutoCommit(true);   //end transaction
+                    System.out.println("Error: Problem adding not compile marker.");
+                    System.out.println(ex); 
+                }
+                conn.commit();
+                conn.setAutoCommit(true);
+               
+                System.out.println("Error: answer from lecturer wrong!");
+                System.out.println(e);
+                mark = -1;
+                return mark;
+            }
+            
+            expectedColCount = rsExpected.getMetaData().getColumnCount();
            
-           //Get student output:
-           Statement stStudent = connLimited.createStatement();
-           try {
+            //Get student output:
+            
+            //Check expected query statement command:
+            if (studentAns.toUpperCase().startsWith("SELECT")) {   //student answer does not execute as expected
+                errorMessage = "Statement provided is not executing a permitted SQL query statement!\n"
+                        + "i.e. SELECT";
+                mark = MARK_RANGE[0];
+                return mark;
+            }
+            
+            Statement stStudent = connLimited.createStatement();
+            try {
                 rsStudent = stStudent.executeQuery(studentAns); //execute student's sql statement
-           }
-           catch (SQLException e) { //didn't compile
-               mark = MARK_RANGE[0];
+            }
+            catch (SQLException e) { //didn't compile
+                mark = MARK_RANGE[0];
                
-               //Process error message:
-               errorMessage = "SQL Statement did not compile.\n"
-                       + e.toString().substring("java.sql.".length()).replace("kiwidb.",""); //remove "java.sql." from error name and "kiwidb." from table name
+                //Process error message:
+                errorMessage = "SQL Statement did not compile.\n"
+                        + e.toString().substring("java.sql.".length()).replace("kiwidb.",""); //remove "java.sql." from error name and "kiwidb." from table name
                
-               return mark;
-           }
-           studentColCount= rsStudent.getMetaData().getColumnCount();
+                return mark;
+            }
+            studentColCount= rsStudent.getMetaData().getColumnCount();
            
-           //Wrong if not same no. columns:
-           if (studentColCount!= expectedColCount) {
-               mark = MARK_RANGE[1];
-               return mark;
-           }
+            //Wrong if not same no. columns:
+            if (studentColCount!= expectedColCount) {
+                mark = MARK_RANGE[1];
+                return mark;
+            }
            
-           //For same no. columns:
-           else {
-               //Wrong if different column sql types:
+            //For same no. columns:
+            else {
+                //Wrong if different column sql types:
                 for (int i=1; i<=expectedColCount; i++) {    //all expected columns
                     if (rsStudent.getMetaData().getColumnType(i)!= rsExpected.getMetaData().getColumnType(i)){  //not same type
                         mark = MARK_RANGE[1];
@@ -273,55 +335,92 @@ public class Question {
                 }
             }
             else {   //lecturer answer does not execute as expected
+                //Mark question as Not Permitted:
+                String reportStatement = "UPDATE questions "
+                        + "SET Problem='Not Permitted' "
+                        + "WHERE QuestionNo=" + questionDBNo + ";";
+                
+                Statement st = conn.createStatement();
+                conn.setAutoCommit(false);  //start transaction
+                Savepoint sp = conn.setSavepoint();
+                try {
+                    st.executeUpdate(reportStatement);
+                }
+                catch (SQLException ex) {
+                    conn.rollback(sp);
+                    conn.setAutoCommit(true);   //end transaction
+                    System.out.println("Error: Problem adding not permitted marker.");
+                    System.out.println(ex); 
+                }
+                conn.commit();
+                conn.setAutoCommit(true);
+                
                 System.out.println("Error: answer from lecturer is not executing a permitted SQL DML statement!");
                 mark = -1;
                 return mark;
             }
            
-           //Start transaction:
-           connLimited.setAutoCommit(false);
-           Savepoint spExp = connLimited.setSavepoint();
+            //Start transaction:
+            connLimited.setAutoCommit(false);
+            Savepoint spExp = connLimited.setSavepoint();
+
+            //Expected update:
+            try {
+                 raExpected = stExpected.executeUpdate(answer);   //execute expected sql update and get rows affeted
+            }
+            catch (SQLException e) { //lecturer statement didn't compile
+                //Mark question as Not Compile:
+                String reportStatement = "UPDATE questions "
+                        + "SET Problem='Not Compile' "
+                        + "WHERE QuestionNo=" + questionDBNo + ";";
+                
+                Statement st = conn.createStatement();
+                conn.setAutoCommit(false);  //start transaction
+                Savepoint sp = conn.setSavepoint();
+                try {
+                    st.executeUpdate(reportStatement);
+                }
+                catch (SQLException ex) {
+                    conn.rollback(sp);
+                    conn.setAutoCommit(true);   //end transaction
+                    System.out.println("Error: Problem adding not compile marker.");
+                    System.out.println(ex); 
+                }
+                conn.commit();
+                conn.setAutoCommit(true);
+               
+                System.out.println("Error: answer from lecturer wrong!");
+                System.out.println(e);
+                mark = -1;
+                return mark;
+            }
            
-           //Expected update:
-           try {
-                raExpected = stExpected.executeUpdate(answer);   //execute expected sql update and get rows affeted
-           }
-           catch (SQLException e) { //didn't compile
-               connLimited.rollback(spExp);
-               connLimited.setAutoCommit(true);
-               System.out.println("Error: answer from lecturer wrong!");
-               System.out.println(e);
-               System.out.println("corr error");
-               mark = -1;
-               return mark;
-           }
+            //Expected new table:
+            try {
+                 rsExpected = stExpected.executeQuery("SELECT * FROM " + tblNameExp + ";");
+            }
+            catch (SQLException e) { //didn't compile
+                connLimited.rollback(spExp);
+                connLimited.setAutoCommit(true);
+                System.out.println("Error: couldn't get lecturer output!");
+                System.out.println(e);
+                mark = -2;
+                return mark;
+            }
            
-           //Expected new table:
-           try {
-                rsExpected = stExpected.executeQuery("SELECT * FROM " + tblNameExp + ";");
-           }
-           catch (SQLException e) { //didn't compile
-               connLimited.rollback(spExp);
-               connLimited.setAutoCommit(true);
-               System.out.println("Error: couldn't get lecturer output!");
-               System.out.println(e);
-               mark = -2;
-               return mark;
-           }
-           
-           //End transaction:
-           connLimited.rollback(spExp);
-           connLimited.setAutoCommit(true);
-           
-           expectedColCount = rsExpected.getMetaData().getColumnCount();
-           
-           /////////////////////////
-          
-           //Get student output:
-           Statement stStudent = connLimited.createStatement();
-           
-           //Get table being updated in student sql update:
-           String tblNameStu = "";
+            //End transaction:
+            connLimited.rollback(spExp);
+            connLimited.setAutoCommit(true);
+
+            expectedColCount = rsExpected.getMetaData().getColumnCount();
+
+            /////////////////////////
+
+            //Get student output:
+            Statement stStudent = connLimited.createStatement();
+
+            //Get table being updated in student sql update:
+            String tblNameStu = "";
             if (studentAns.toUpperCase().startsWith("INSERT")) {
                 if (studentAns.split(" ").length>2) {   //will catch error later
                     tblNameStu = studentAns.split(" ")[2];  //insert into <table>
@@ -337,62 +436,62 @@ public class Question {
                     tblNameStu = studentAns.split(" ")[2];  //delete from <table>
                 }
             }
-           else {   //lecturer answer does not execute as expected
-               errorMessage = "Statement provided is not executing a permitted SQL DML statement!\n"
-                       + "i.e. UPDATE, INSERT or DELETE";
-               mark = MARK_RANGE[0];
-               return mark;
-           }
-           
-           //Start transaction:
-           connLimited.setAutoCommit(false);
-           Savepoint spStu = connLimited.setSavepoint();
-           
-           //Expected update:
-           try {
-                raStudent = stStudent.executeUpdate(studentAns); //execute student's sql statement
-           }
-           catch (SQLException e) { //didn't compile
-                connLimited.rollback(spStu);
-                connLimited.setAutoCommit(true);
-               
-                //Process error message:
-                errorMessage = "SQL Statement did not compile.\n"
-                       + e.toString().substring("java.sql.".length()).replace("kiwidb.",""); //remove "java.sql." from error name and "kiwidb." from table name
-               
+            else {   //lecturer answer does not execute as expected
+                errorMessage = "Statement provided is not executing a permitted SQL DML statement!\n"
+                        + "i.e. UPDATE, INSERT or DELETE";
                 mark = MARK_RANGE[0];
                 return mark;
-           }
-           
-           //Expected new table:
-           try {
-               rsStudent = stStudent.executeQuery("SELECT * FROM " + tblNameStu + ";");
-           }
-           catch (SQLException e) {
-               connLimited.rollback(spStu);
-               connLimited.setAutoCommit(true);
-               System.out.println("Error: couldn't get student output!");
-               System.out.println(e);
-               mark = -2;
-               return mark;
-           }
-           
-           //End transaction:
-           connLimited.rollback(spStu);
-           connLimited.setAutoCommit(true);
-           
-           studentColCount= rsStudent.getMetaData().getColumnCount();
-           
-           /////////////////////////
-           
-           //Wrong if didn't update same table:
-           if (!tblNameExp.toLowerCase().equals(tblNameStu.toLowerCase())) { 
-               mark = MARK_RANGE[1];
-               return mark;
-           }
-           
-           //For same tables:
-           else {
+            }
+
+            //Start transaction:
+            connLimited.setAutoCommit(false);
+            Savepoint spStu = connLimited.setSavepoint();
+
+            //Expected update:
+            try {
+                 raStudent = stStudent.executeUpdate(studentAns); //execute student's sql statement
+            }
+            catch (SQLException e) { //didn't compile
+                 connLimited.rollback(spStu);
+                 connLimited.setAutoCommit(true);
+
+                 //Process error message:
+                 errorMessage = "SQL Statement did not compile.\n"
+                        + e.toString().substring("java.sql.".length()).replace("kiwidb.",""); //remove "java.sql." from error name and "kiwidb." from table name
+
+                 mark = MARK_RANGE[0];
+                 return mark;
+            }
+
+            //Expected new table:
+            try {
+                rsStudent = stStudent.executeQuery("SELECT * FROM " + tblNameStu + ";");
+            }
+            catch (SQLException e) {
+                connLimited.rollback(spStu);
+                connLimited.setAutoCommit(true);
+                System.out.println("Error: couldn't get student output!");
+                System.out.println(e);
+                mark = -2;
+                return mark;
+            }
+
+            //End transaction:
+            connLimited.rollback(spStu);
+            connLimited.setAutoCommit(true);
+
+            studentColCount= rsStudent.getMetaData().getColumnCount();
+
+            /////////////////////////
+
+            //Wrong if didn't update same table:
+            if (!tblNameExp.toLowerCase().equals(tblNameStu.toLowerCase())) { 
+                mark = MARK_RANGE[1];
+                return mark;
+            }
+
+            //For same tables:
+            else {
                 //Compare rows of expected and received output:
                 while(rsExpected.next()) {  //all expected rows
                     if (rsStudent.next()) { //there is another student row

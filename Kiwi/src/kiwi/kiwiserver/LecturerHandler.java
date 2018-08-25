@@ -348,7 +348,7 @@ final class LecturerHandler extends Thread{
             
             //Create questions table:
             String createStatement = "CREATE TABLE IF NOT EXISTS questions (" +
-                                        "QuestionNo int(11) NOT NULL, " +
+                                        "QuestionNo int(11) NOT NULL AUTO_INCREMENT, " +
                                         "Question varchar(500) DEFAULT NULL, " +
                                         "Answer varchar(500) DEFAULT NULL, " +
                                         "Difficulty int(11) DEFAULT NULL, " +
@@ -367,8 +367,7 @@ final class LecturerHandler extends Thread{
                                         "LINES TERMINATED BY '\\r\\n' " +
                                         "IGNORE 1 ROWS " +
                                         "(Question, Answer, Difficulty, Type) " +
-                                        "SET Problem=null, " +
-                                        "QuestionNo=0;";
+                                        "SET Problem=null;";
             
             conn.setAutoCommit(false);  //start transaction
             Savepoint sp = conn.setSavepoint();

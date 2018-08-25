@@ -413,7 +413,6 @@ class StudentHandler extends Thread {
             reportStatement = "UPDATE questions "
                     + "SET Problem='Reported' "
                     + "WHERE QuestionNo=" + assignment.getQuestionID() + ";";
-            System.out.println(reportStatement);
             conn.setAutoCommit(false);  //start transaction
             sp = conn.setSavepoint();
             try {

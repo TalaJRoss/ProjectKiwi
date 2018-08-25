@@ -49,6 +49,7 @@ public class AssignmentFrame extends javax.swing.JFrame {
             jpbQuestionProgress.setStringPainted(true);
             txtaQuestion.setText("Question:\n" + student.getNextQuestion());
             btnNext.setEnabled(false);
+            btnReport.setEnabled(false);
             createdFlag = true;
         }
         else if (resp==Student.FAIL_DENY) {
@@ -289,15 +290,17 @@ public class AssignmentFrame extends javax.swing.JFrame {
             txtaFeedback.setText(student.getCurrentFeedback());
             btnSubmit.setEnabled(false);
             btnNext.setEnabled(true);
+            btnReport.setEnabled(true);
             jpbQuestionProgress.setValue(student.getNextQuestionNo()-1);
         }
         else if (resp==Student.FAIL_DENY) {    //lecturer answer was wrong
             JOptionPane.showMessageDialog(this, "Couldn't run lecturer's sql statement.\n"
-                    + "Please contact your lecturer about this."
+                    + "The lecturer has been informed of this."
                     + "\nImportant note: This question will not be included in your assignment grade calculation.",
                     "Submission Error", JOptionPane.ERROR_MESSAGE);
             btnSubmit.setEnabled(false);
             btnNext.setEnabled(true);
+            btnReport.setEnabled(true);
             jpbQuestionProgress.setValue(student.getNextQuestionNo()-1);
         }
         else {  //DB connection error
@@ -307,6 +310,7 @@ public class AssignmentFrame extends javax.swing.JFrame {
                     "Submission Error", JOptionPane.ERROR_MESSAGE);
             btnSubmit.setEnabled(false);
             btnNext.setEnabled(true);
+            btnReport.setEnabled(true);
             jpbQuestionProgress.setValue(student.getNextQuestionNo()-1);
         }
     }//GEN-LAST:event_btnSubmitActionPerformed
@@ -354,6 +358,7 @@ public class AssignmentFrame extends javax.swing.JFrame {
     private void btnNextActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnNextActionPerformed
         if (student.isAssignmentDone()) {
             btnNext.setEnabled(false);
+            btnReport.setEnabled(false);
             JOptionPane.showMessageDialog(this, "Your final grade is: " + student.getFinalGrade(), "Assignment Grade", JOptionPane.PLAIN_MESSAGE);
         }
         else {
@@ -453,6 +458,7 @@ public class AssignmentFrame extends javax.swing.JFrame {
         
         if (suggested!=null) {  //suggestion given
             if(student.report(suggested)) {     //successfully reported
+                btnReport.setEnabled(false);
                 JOptionPane.showMessageDialog(this, "Question marking error was reported.", 
                     "Reported Successfully", JOptionPane.PLAIN_MESSAGE);
             }

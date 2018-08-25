@@ -74,8 +74,7 @@ public class Assignment {
     }
     
    
-        //TODO: make fair question selection
-        //TODO: make based on student no.
+        //TODO: don't select a reported/not compile/not permitted mark question (ie. problem field!=null)
         /**
          * Generates list of questions that make up the assignment.
          * @return The list of questions.
@@ -164,7 +163,7 @@ public class Assignment {
                             String answer = rs.getString("Answer");
                             int difficulty = rs.getInt("Difficulty");
                             String type = rs.getString("Type");
-                            question = new Question(tempQ, answer, difficulty, type, Qid, connLimited);
+                            question = new Question(tempQ, answer, difficulty, type, Qid, connLimited, conn);
                         }
                         questionList.add(question);
                         
@@ -201,7 +200,7 @@ public class Assignment {
                     String answer = rs.getString("Answer");
                     int difficulty = rs.getInt("Difficulty");
                     String type = rs.getString("Type");
-                    question = new Question(tempQuestion, answer, difficulty, type, Qid, connLimited);
+                    question = new Question(tempQuestion, answer, difficulty, type, Qid, connLimited, conn);
                 }
                 
                 //Add question to list:
