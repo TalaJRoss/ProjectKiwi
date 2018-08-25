@@ -21,6 +21,7 @@ public class Assignment {
      * Database connection.
      */
     private Connection conn;
+    private Connection connLimited;
     
     //TODO: update to get from server:
     /**
@@ -45,10 +46,11 @@ public class Assignment {
     public static final String [] Types = {"select","arithmetic","update"};
     
     
-    public Assignment(Connection conn, String studentNo, int noSubmissionsCompleted){
+    public Assignment(Connection conn, Connection connLimited, String studentNo, int noSubmissionsCompleted){
         try {
             //Initialise data 
             this.conn = conn;
+            this.connLimited = connLimited;
             this.questionList = new ArrayList<>();
             this.currentPos = -1;
             //Get number of questions in an assignment from assignmentInfo table in the database
@@ -66,7 +68,6 @@ public class Assignment {
         } catch (SQLException ex) {
             Logger.getLogger(Assignment.class.getName()).log(Level.SEVERE, null, ex);
         }
-        
     }
     
    
@@ -151,7 +152,7 @@ public class Assignment {
                         rs = st.executeQuery(query);
                         
                         //Create question object from the result set
-                        Question question = new Question (conn);
+                        Question question = new Question (conn, connLimited);
                         int Qid = 0;
                         while(rs.next())
                         {
@@ -160,7 +161,7 @@ public class Assignment {
                             String answer = rs.getString("Answer");
                             int difficulty = rs.getInt("Difficulty");
                             String type = rs.getString("Type");
-                            question = new Question(tempQ, answer, difficulty, type, conn);
+                            question = new Question(tempQ, answer, difficulty, type, conn, connLimited);
                         }
                         questionList.add(question);
                         
@@ -190,13 +191,13 @@ public class Assignment {
                 rs = st.executeQuery(query);
                 
                 //Create question object:
-                Question question = new Question(conn);
+                Question question = new Question(conn, connLimited);
                 while (rs.next()) {
                     String tempQuestion = rs.getString("Question");
                     String answer = rs.getString("Answer");
                     int difficulty = rs.getInt("Difficulty");
                     String type = rs.getString("Type");
-                    question = new Question(tempQuestion, answer, difficulty, type, conn);
+                    question = new Question(tempQuestion, answer, difficulty, type, conn, connLimited);
                 }
                 
                 //Add question to list:
@@ -285,7 +286,7 @@ public class Assignment {
         
         try {   
             //Get student output:
-            Statement st = conn.createStatement();
+            Statement st = connLimited.createStatement();
             ResultSet rs;
             try {   //check it compiles 
                 rs = st.executeQuery(statement);
