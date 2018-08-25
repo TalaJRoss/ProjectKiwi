@@ -1,0 +1,37 @@
+"QuestionNo","Question","Answer","Difficulty","Type"
+"Show all information in the offices relation.","select * from offices;",1,select
+"Show how many tuples there are in the orders relation, named as totalNumOrders.","select count(*) as totalNumOrders from orders;",2,arithmetic
+"Show all employees tuples where reportsTo is the same as employeeNumber.","select * from employees where employeeNumber=reportsTo;",2,select
+"Show all information in the payments relation for payments exceeding 100 000, in decreasing order(i.e. from highest payment downwards).","select * from payments where amount>100000 order by amount desc;",2,arithmetic
+"Show all information in the employees relation for employeeNumbers 1188 and 1504.","select * from employees where employeeNumber=1188 or employeeNumber=1504;",2,select
+"Show the productCode of all products having their quantityInStock below 100, along with their total price, named totalPrice. The total price is the buyPrice plus VAT (VAT is 14% of buyPrice).","select productCode, (buyPrice*114/100) as totalPrice from products where quantityInStock<100;",3,arithmetic
+"Get average payment amount, named average, in the database?","select avg(amount) as average from payments;",2,arithmetic
+"Show all information in the offices relation where the state is missing/unknown.","select * from offices where state is null;",2,select
+"Add an employee, John Smith, with ID 2000, to the employees table. All other information is unknown.","insert into employees (id,first,last) values(2000,'John','Smith');",2,update
+"Show how many tuples there are in the orders relation.","select count(*) as totalNumOrders from orders;",1,arithmetic
+"In how many cities are offices located (how many cities have offices in them) ?","select count(distinct city) as numCitiesWithOffices from offices;",2,arithmetic
+"What jobTitles exist in the database?","select distinct jobTitle from employees;",2,select
+"Show productName and buyPrice of the product(s) with the highest buyPrice.","select productName, buyPrice from products where buyPrice in (select max(buyPrice) from products);",3,select
+"Show the productCode of all products that have never been ordered.","select productCode from products where productCode not in (select productCode from orderdetails);",2,select
+"Show how many employees there are in each office (give officeCode and value each time).","select officeCode, count(employeeNumber) as numEmployees from employees group by officeCode;",3,select
+"What was the total value of orderNumber 10100 i.e. the total of (quantityOrdered * priceEach) over all its orderlines?","select sum(priceEach*quantityOrdered) as totalValue from orderdetails where orderNumber=10100;",3,select
+"Show the productName of the product/s with the largest quantityInStock","select productName from products where quantityInStock in (select max(quantityInStock) from products);",2,select
+"Add an employee, Steve Wang, with ID 8965, to the employees table. All other information is unknown.","insert into employees (id,first,last) values(8965,'Steve','Wang');",1,update
+"Add an employee, Tala Ross, with ID 7777, to the employees table. All other information is unknown.","insert into employees (id,first,last) values(7777,'Tala','Ross');",3,update
+"Add an employee, Nikai Jagganath, with ID 9317, to the employees table. All other information is unknown.","insert into employees (id,first,last) values(9317,'Nikai','Jagganath');",1,update
+"Add an employee, Mike Tyson, with ID 2856, to the employees table. All other information is unknown.","insert into employees (id,first,last) values(2856,'Mike','Tyson');",1,update
+"Add an employee, Jared Reuben, with ID 7412, to the employees table. All other information is unknown.","insert into employees (id,first,last) values(7412,'Jared','Reuben');",1,update
+"Add an employee, Nsi Majola, with ID 4685, to the employees table. All other information is unknown.","insert into employees (id,first,last) values(4685,'Nsi','Majola');",1,update
+"Add an employee, Ashligh Prinsloo, with ID 6985, to the employees table. All other information is unknown.","insert into employees (id,first,last) values(6985,'Ashligh','Prinsloo');",1,update
+"Add an employee, Viashin Govender, with ID 8564, to the employees table. All other information is unknown.","insert into employees (id,first,last) values(8564,'Viashin','Govender');",1,update
+"Show all information in the orders relation.","select * from orders;",1,select
+"Show all information in the products relation.","select * from products;",1,select
+"Show all information in the employees relation.","select * from employees;",1,select
+"Show all information in the customers relation.","select * from customers;",1,select
+"Show all information in the productlines relation.","select * from productlines;",1,select
+"Show all information in the payments relation.","select * from payments;",1,select
+"Show how many tuples there are in the products relation.","select count(*) as totalNumProducts from products;",1,arithmetic
+"Show how many tuples there are in the employees relation.","select count(*) as totalNumEmployees from employees;",1,arithmetic
+"Show how many tuples there are in the customers relation.","select count(*) as totalNumCustomers from customers;",1,arithmetic
+"Show how many tuples there are in the payments relation.","select count(*) as totalNumPayments from payments;",1,arithmetic
+"Show how many tuples there are in the productlines relation.","select count(*) as totalNumProductlines from productlines;",1,arithmetic

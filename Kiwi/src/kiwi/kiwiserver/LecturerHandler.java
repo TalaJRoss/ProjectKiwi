@@ -3,6 +3,7 @@
  */
 package kiwi.kiwiserver;
 
+import com.mysql.cj.protocol.Resultset;
 import com.opencsv.CSVReader;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -14,11 +15,13 @@ import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.net.Socket;
 import java.sql.Connection;
+import java.sql.Date;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Savepoint;
 import java.sql.Statement;
+import java.sql.Time;
 import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -249,14 +252,74 @@ final class LecturerHandler extends Thread{
      * @param csv The csv file containing student information.
      */
     public void uploadStudents(byte [] csv) throws IOException {
-        String response = createTable("students", csv);
-        if(response.equals(SUCCESS)){
+        try {
+            //Save students file to DB root:
+            try (FileOutputStream fos = new FileOutputStream(ServerStartup.DB_PATH + "students.csv")) {
+                fos.write(csv);
+            }
+            
+            Statement st = conn.createStatement();
+            ResultSet rs;
+            
+            //Create students table:
+            String createStatement = "CREATE TABLE IF NOT EXISTS students (" +
+                                        "StudentNo varchar(9) NOT NULL, " +
+                                        "HighestGrade double DEFAULT NULL, " +
+                                        "NoSubmissionsCompleted int(11) DEFAULT NULL, " +
+                                        "DeadlineDate date DEFAULT NULL, " +
+                                        "DeadlineTime time DEFAULT NULL, " +
+                                        "PRIMARY KEY (StudentNo) " +
+                                        ") ENGINE=InnoDB;";
+            st.executeUpdate(createStatement);
+            
+            //Get deadline date and time:
+            String deadlineStatement = "SELECT DeadlineDate, DeadlineTime FROM AssignmentInfo WHERE ID=1;";
+            rs = st.executeQuery(deadlineStatement);
+            rs.next();
+            Date deadlineDate = rs.getDate("DeadlineDate");
+            Time deadlineTime = rs.getTime("DeadlineTime");
+            
+            /*Upload students to table with initial field entries as 0 for submissions
+            completed and highest grade and with deadline fields from assignment info table:
+            */
+            String uploadStatement = "LOAD DATA INFILE 'students.csv' INTO TABLE students " +
+                    "FIELDS OPTIONALLY ENCLOSED BY '\"' " +
+                    "TERMINATED BY ',' " +
+                    "LINES TERMINATED BY '\\r\\n' " +
+                    "IGNORE 1 ROWS " +
+                    "(studentNo) " +
+                    "SET HighestGrade=0, " +
+                    "NoSubmissionsCompleted=0, " +
+                    "DeadlineDate='" + deadlineDate.toString() + "', " +
+                    "DeadlineTime='" + deadlineTime.toString() + "';";
+            
+            conn.setAutoCommit(false);  //start transaction
+            Savepoint sp = conn.setSavepoint();
+            try { 
+                st.executeUpdate(uploadStatement);
+            }
+            catch (SQLException e) {
+                conn.rollback(sp);
+                conn.setAutoCommit(true);
+                System.out.println("Error: Problem loading csv to database: students.");
+                System.out.println(e);
+                writer.writeObject(new LecturerMessage(LecturerMessage.CMD_UPLOAD_STUDENTS, null, LecturerMessage.RESP_FAIL));
+                return;
+            }
+            conn.commit();
+            conn.setAutoCommit(true);   //end transaction
+            
+            //Successfully loaded table:
             writer.writeObject(new LecturerMessage(LecturerMessage.CMD_UPLOAD_STUDENTS, null, LecturerMessage.RESP_SUCCESS));
+            
         }
-        else{
+        catch (SQLException e) {
+            System.out.println("Error: Problem loading csv to database: students.");
+            System.out.println(e);
             writer.writeObject(new LecturerMessage(LecturerMessage.CMD_UPLOAD_STUDENTS, null, LecturerMessage.RESP_FAIL));
         }
     }
+    
     
     /**
      * Uploads question-answer pairs contained in the given csv file to the
@@ -266,11 +329,60 @@ final class LecturerHandler extends Thread{
      * @param csv The csv file containing question-answer pairs.
      */
     public void uploadQuestions(byte [] csv) throws IOException {
-        String response = createTable("questions", csv);
-        if(response.equals(SUCCESS)){
+        try {
+            //Save questions file to DB root:
+            try (FileOutputStream fos = new FileOutputStream(ServerStartup.DB_PATH + "questions.csv")) {
+                fos.write(csv);
+            }
+            
+            Statement st = conn.createStatement();
+            
+            //Create questions table:
+            String createStatement = "CREATE TABLE questions (" +
+                                        "QuestionNo int(11) NOT NULL AUTO_INCREMENT, " +
+                                        "Question varchar(500) DEFAULT NULL, " +
+                                        "Answer varchar(500) DEFAULT NULL, " +
+                                        "Difficulty int(11) DEFAULT NULL, " +
+                                        "Type varchar(20) DEFAULT NULL, " +
+                                        "Problem varchar(20) DEFAULT NULL, " +
+                                        "PRIMARY KEY (QuestionNo) " +
+                                        ") ENGINE=InnoDB;";
+            st.executeUpdate(createStatement);
+            
+            /*Upload questions to table with initial field entries as null for
+            the problem field and question number auto incrementing:
+            */
+            String uploadStatement = "LOAD DATA INFILE 'questions.csv' INTO TABLE questions " +
+                    "FIELDS OPTIONALLY ENCLOSED BY '\"' " +
+                    "TERMINATED BY ',' " +
+                    "LINES TERMINATED BY '\\r\\n' " +
+                    "IGNORE 1 ROWS " +
+                    "(Question, Answer, Difficulty, Type) " +
+                    "SET Problem=null;";
+            
+            conn.setAutoCommit(false);  //start transaction
+            Savepoint sp = conn.setSavepoint();
+            try { 
+                st.executeUpdate(uploadStatement);
+            }
+            catch (SQLException e) {
+                conn.rollback(sp);
+                conn.setAutoCommit(true);
+                System.out.println("Error: Problem loading csv to database: questionss.");
+                System.out.println(e);
+                writer.writeObject(new LecturerMessage(LecturerMessage.CMD_UPLOAD_QUESTIONS, null, LecturerMessage.RESP_FAIL));
+                return;
+            }
+            conn.commit();
+            conn.setAutoCommit(true);   //end transaction
+            
+            //Successfully loaded table:
             writer.writeObject(new LecturerMessage(LecturerMessage.CMD_UPLOAD_QUESTIONS, null, LecturerMessage.RESP_SUCCESS));
+            
         }
-        else{
+        catch (SQLException e) {
+            System.out.println("Error: Problem loading csv to database: students.");
+            System.out.println(e);
             writer.writeObject(new LecturerMessage(LecturerMessage.CMD_UPLOAD_QUESTIONS, null, LecturerMessage.RESP_FAIL));
         }
     }
@@ -415,7 +527,7 @@ final class LecturerHandler extends Thread{
             
             //remove trailing ", " and add PKs to CREATE statement:
             pkString= pkString.substring(0,pkString.length()-2);
-            createStatement+= pkString+"))";
+            createStatement+= pkString+")) ENGINE=InnoDB;";
             
             //clean up:
             fileReader.close();

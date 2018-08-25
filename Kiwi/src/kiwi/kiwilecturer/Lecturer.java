@@ -64,9 +64,7 @@ public class Lecturer {
         reader= new ObjectInputStream(is); //MESSAGE
         OutputStream os= lecturerSocket.getOutputStream();
         writer= new ObjectOutputStream(os);   //MESSAGE
-        
         LecturerMessage response = (LecturerMessage) reader.readObject();
-        System.out.println("response start: "+response.getCmd()+ " "+response.getBody()+" "+response.getMessage());
         connected = (response.getMessage() == LecturerMessage.RESP_SUCCESS);
     }
     
