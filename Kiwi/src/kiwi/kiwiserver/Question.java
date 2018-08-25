@@ -79,7 +79,7 @@ public class Question {
     String errorMessage;
     
     private Connection conn;
-    private Connection connLimited;
+    
     
     //Constructor:
     
@@ -89,23 +89,21 @@ public class Question {
      * @param answer SQL statement expected answer.
      * @param difficulty Difficulty value (1, 2 or 3)
      */
-    public Question(String question, String answer, int difficulty, String type, Connection conn, Connection connLimited) {
+    public Question(String question, String answer, int difficulty, String type, Connection conn) {
         this.question = question;
         this.answer = answer;
         this.difficulty = difficulty;
         this.type = type;
         this.mark = 0;
         this.conn = conn;
-        this.connLimited = connLimited;
     }
     
     /**
      * Default constructor to create a question.
      */
-    public Question(Connection conn, Connection connLimited) {
+    public Question(Connection conn) {
         mark= 0;
         this.conn = conn;
-        this.connLimited = connLimited;
     }
     
     
@@ -163,7 +161,7 @@ public class Question {
            expectedColCount = rsExpected.getMetaData().getColumnCount();
            
            //Get student output:
-           Statement stStudent = connLimited.createStatement();
+           Statement stStudent = conn.createStatement();
            try {
                 rsStudent = stStudent.executeQuery(studentAns); //execute student's sql statement
            }
