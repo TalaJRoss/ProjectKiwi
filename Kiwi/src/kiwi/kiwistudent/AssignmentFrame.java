@@ -271,32 +271,24 @@ public class AssignmentFrame extends javax.swing.JFrame {
                 return;
             }
         }
-        
-        int resp = student.submit(answer);
-        if (resp==Student.SUCCESS) { //submitted correctly to server
+        if (student.submit(answer)) { //submitted correctly to server
             txtfMark.setText(student.getCurrentMarkString());
             txtaFeedback.setText(student.getCurrentFeedback());
             btnSubmit.setEnabled(false);
             btnNext.setEnabled(true);
             jpbQuestionProgress.setValue(student.getNextQuestionNo()-1);
         }
-        else if (resp==Student.FAIL_DENY) {    //lecturer answer was wrong
+        else if (student.getCurrentMark()==-1) {    //lecturer answer was wrong
             JOptionPane.showMessageDialog(this, "Couldn't run lecturer's sql statement.\n"
                     + "Please contact your lecturer about this."
                     + "\nImportant note: This question will not be included in your assignment grade calculation.",
                     "Submission Error", JOptionPane.ERROR_MESSAGE);
-            btnSubmit.setEnabled(false);
-            btnNext.setEnabled(true);
-            jpbQuestionProgress.setValue(student.getNextQuestionNo()-1);
         }
-        else {  //DB connection error
+        else {
             JOptionPane.showMessageDialog(this, "There was an error connecting to the database."
                     + "Please contact your lecturer about this, if the problem persists."
                     + "\nImportant note: This question will not be included in your assignment grade calculation.",
                     "Submission Error", JOptionPane.ERROR_MESSAGE);
-            btnSubmit.setEnabled(false);
-            btnNext.setEnabled(true);
-            jpbQuestionProgress.setValue(student.getNextQuestionNo()-1);
         }
     }//GEN-LAST:event_btnSubmitActionPerformed
     

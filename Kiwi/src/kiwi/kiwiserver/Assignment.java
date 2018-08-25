@@ -3,7 +3,6 @@ package kiwi.kiwiserver;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Savepoint;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Random;
@@ -18,7 +17,6 @@ import java.util.logging.Logger;
  */
 public class Assignment {
     
-    
     /**
      * Database connection.
      */
@@ -28,7 +26,7 @@ public class Assignment {
     /**
      * Number of questions in an assignment.
      */
-    private int noQuestions = 9;
+    private int noQuestions;
     
     //TODO: load questions into list when multiple question assignment functionality created
     /**
@@ -47,11 +45,28 @@ public class Assignment {
     public static final String [] Types = {"select","arithmetic","update"};
     
     
-    public Assignment(Connection conn, String studentNo, int noSubmissionsCompleted) throws SQLException {
-        this.conn = conn;
-        this.questionList = new ArrayList<>();
-        this.currentPos = -1;
-        generateQuestions(studentNo,noSubmissionsCompleted);
+    public Assignment(Connection conn, String studentNo, int noSubmissionsCompleted){
+        try {
+            //Initialise data 
+            this.conn = conn;
+            this.questionList = new ArrayList<>();
+            this.currentPos = -1;
+            //Get number of questions in an assignment from assignmentInfo table in the database
+            Statement st = conn.createStatement();
+            String query = "SELECT NoQuestions FROM assignmentinfo";
+            ResultSet rs = st.executeQuery(query);
+            rs.next();
+            noQuestions = rs.getInt("NoQuestions");
+            //Clean Up
+            rs.close();
+            st.close();
+            //Generate Questions
+            generateQuestions(studentNo,noSubmissionsCompleted);
+
+        } catch (SQLException ex) {
+            Logger.getLogger(Assignment.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        
     }
     
    
@@ -66,6 +81,8 @@ public class Assignment {
         try {
             //Check no submissions remaining:
             //String query = "SELECT MaxNoSubmissions";
+            
+            //Setup with database:
             Statement st = conn.createStatement();
             
             //Get the total number of questions in the questions table:
@@ -88,42 +105,33 @@ public class Assignment {
             
             //Setup:
             String seed = studentNo + noSubmissionsCompleted;
-            System.out.println("DEbug: "+seed);
             Random rnd = new Random(seed.hashCode());
             
-            System.out.println(""+numQperTypeDiff);
             //Get list of questions:
             //For each difficulty of the questions
             for (int i=1; i<4; i++) {
                 //For each types of this question type
-                System.out.println("for 1");
                 for (int j=0; j<numType; j++)
                 {
-                    System.out.println("for 2");
                     //Get the number of questions that has difficulty i and type j
                     query = "SELECT COUNT(*) AS numQ FROM questions WHERE difficulty="
                             + i
                             +" and type like '"
                             + Types[j]
                             +"'";
-                    System.out.println(query);
                     rs = st.executeQuery(query);
                     rs.next();
                     int numQ = rs.getInt("numQ");
                     
-                    System.out.println("executed query");
                     //For number of questions we need for each of these type and difficulty
-                    System.out.println(""+numQperTypeDiff);
                     for (int k=0; k<numQperTypeDiff; k++) 
                     {
                         
-                        System.out.println("*");
                         boolean [] usedQuestions = new boolean [numQ];    //true if used otherwise false (used to avoid duplicates)
                         int random = 0;
                         
                         boolean used = true;
                         while (used) {  //loop until unused question number found
-                            System.out.println(""+numQ);
                             random = rnd.nextInt(numQ)+1;
                             if (!usedQuestions[random-1])
                             {
@@ -154,9 +162,7 @@ public class Assignment {
                             String type = rs.getString("Type");
                             question = new Question(tempQ, answer, difficulty, type, conn);
                         }
-                        
                         questionList.add(question);
-                        System.out.println("added");
                         
                         // set the availibilty of this question to false
                         TotalUsed[Qid-1] = true;
@@ -196,7 +202,6 @@ public class Assignment {
                 //Add question to list:
                 questionList.add(question);
             }
-            System.out.println(""+questionList.size());
             //Clean up:
             rs.close();
             st.close();
@@ -244,7 +249,7 @@ public class Assignment {
     }
     
     public String getFeedback(String studentAns) {
-        return questionList.get(currentPos).getFeedback();
+        return questionList.get(currentPos).getFeedback(studentAns);
     }
     
     //TODO: update grade on server
@@ -270,7 +275,6 @@ public class Assignment {
         return noQuestions;
     }
     
-    //TOD): update questions + transacts
     /**
      * Runs given student sql statement and returns string representation of
      * the output.
@@ -278,129 +282,43 @@ public class Assignment {
      * @return returns string representing output or null if connection error occurs
      */
     public String check(String statement) {
-        String toReturn = "";
-        try { 
-            //Get table being updated in expected sql update:
-            String tblName = "";
-            if (statement.toUpperCase().startsWith("INSERT")) {
-                if (statement.split(" ").length>2) {
-                    tblName = statement.split(" ")[2];  //insert into <table>    
+        
+        try {   
+            //Get student output:
+            Statement st = conn.createStatement();
+            ResultSet rs;
+            try {   //check it compiles 
+                rs = st.executeQuery(statement);
+            }
+            catch (SQLException e) {//didn't compile
+                //Process error message:
+                String errMessage = e.toString().substring("java.sql.".length()); //remove "java.sql." from error name
+                if (errMessage.contains("kiwidb.")) {
+                    errMessage= errMessage.replace("kiwidb.","");    //remove "kiwidb." from table name
                 }
+                //System.out.println(e);   //DEBUG
+                return "SQL Statement did not compile.\n" + errMessage + "\n";
             }
-            else if (statement.toUpperCase().startsWith("UPDATE")) {
-                if (statement.split(" ").length>1) {
-                    tblName = statement.split(" ")[1];  //update <table>
-                }
-            }
-            else if (statement.toUpperCase().startsWith("DELETE")) {
-                if (statement.split(" ").length>2) {
-                    tblName = statement.split(" ")[2];  //delete from <table>
-                }
-            }
-            else if (statement.toUpperCase().startsWith("SELECT")) {
-                tblName = null;
-            }
-            else {   //not permitted statement
-                System.out.println("Error: statement from lecturer is not executing a permitted SQL DML statement!");
-                return "Statement provided is not executing a permitted SQL DML statement.\n"
-                        + "That is, SELECT, INSERT, UPDATE or DELETE.";
-            }
+            //Put output in string:
+            String toReturn = "";
             
-            if (tblName==null) { //select statement
-               //Get student output:
-                Statement st = conn.createStatement();
-                ResultSet rs;
-                try {   //check it compiles 
-                    rs = st.executeQuery(statement);
-                }
-                catch (SQLException e) {//didn't compile
-                    //Process error message:
-                    String errMessage = e.toString().substring("java.sql.".length()); //remove "java.sql." from error name
-                    if (errMessage.contains("kiwidb.")) {
-                        errMessage= errMessage.replace("kiwidb.","");    //remove "kiwidb." from table name
-                    }
-                    //System.out.println(e);   //DEBUG
-                    return "SQL Statement did not compile.\n" + errMessage + "\n";
-                }
-
-                //Put output in string:
-                //Get column names:
-                int noColumns = rs.getMetaData().getColumnCount();
-                for (int i=1; i<=noColumns; i++) {   //each column
-                    toReturn+= rs.getMetaData().getColumnName(i) + "\t";
-                }
-                toReturn+="\n";
-
-                //Get row entries
-                while(rs.next()) {  //each row
-                    for (int i=1; i<=noColumns; i++) {  //each field in row
-                        toReturn+= rs.getObject(i) + "\t";
-                    }
-                    toReturn+="\n";     //end of row
-                } 
-                toReturn+="\n";     //end of output
-
-                return toReturn;
+            //Get column names:
+            int noColumns = rs.getMetaData().getColumnCount();
+            for (int i=1; i<=noColumns; i++) {   //each column
+                toReturn+= rs.getMetaData().getColumnName(i) + "\t";
             }
-            else { //update statement 
-                Statement st = conn.createStatement();
-                ResultSet rs;
-                int ra;
-                conn.setAutoCommit(false);
-                Savepoint sp = conn.setSavepoint();
-
-                //Update:
-                try {
-                     ra = st.executeUpdate(statement);   //execute expected sql update and get rows affeted
+            toReturn+="\n";
+            
+            //Get row entries
+            while(rs.next()) {  //each row
+                for (int i=1; i<=noColumns; i++) {  //each field in row
+                    toReturn+= rs.getObject(i) + "\t";
                 }
-                catch (SQLException e) { //didn't compile
-                    conn.rollback(sp);
-                    conn.setAutoCommit(true);
-                    String errMessage = e.toString().substring("java.sql.".length()); //remove "java.sql." from error name
-                    if (errMessage.contains("kiwidb.")) {
-                        errMessage= errMessage.replace("kiwidb.","");    //remove "kiwidb." from table name
-                    }
-                    //System.out.println(e);   //DEBUG
-                    return "SQL Statement did not compile.\n" + errMessage + "\n";
-                }
-
-                //Expected new table:
-                try {
-                    rs = st.executeQuery("SELECT * FROM " + tblName + ";");
-                }
-                catch (SQLException e) {
-                    conn.rollback(sp);
-                    conn.setAutoCommit(true);
-                    System.out.println("Error: Problem reading students updated table for check.");
-                    System.out.println(e);
-                    return null;
-                }
-
-                //End transaction:
-                conn.rollback(sp);
-                conn.setAutoCommit(true);
-                
-                //Put output in string:
-                //Get column names:
-                toReturn+= ra + " row(s) affected";
-                toReturn+= "Table, " + tblName + ", after statement execution:\n";
-                int noColumns = rs.getMetaData().getColumnCount();
-                for (int i=1; i<=noColumns; i++) {   //each column
-                    toReturn+= rs.getMetaData().getColumnName(i) + "\t";
-                }
-                toReturn+="\n";
-
-                //Get row entries
-                while(rs.next()) {  //each row
-                    for (int i=1; i<=noColumns; i++) {  //each field in row
-                        toReturn+= rs.getObject(i) + "\t";
-                    }
-                    toReturn+="\n";     //end of row
-                } 
-                toReturn+="\n";     //end of output
-
-                return toReturn;
-            }  
+                toReturn+="\n";     //end of row
+            } 
+            toReturn+="\n";     //end of output
+            
+            return toReturn;   
         }
         catch (SQLException e) {    //connection error
             System.out.println("Error: Problem reading output.");
