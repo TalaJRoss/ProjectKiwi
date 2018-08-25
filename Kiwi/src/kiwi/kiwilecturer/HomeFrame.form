@@ -81,12 +81,24 @@
                                       <Component id="txtfSchemaPath" alignment="0" max="32767" attributes="0"/>
                                       <Group type="102" attributes="0">
                                           <Group type="103" groupAlignment="0" attributes="0">
-                                              <Component id="txtfNoQuestions" alignment="0" min="-2" pref="106" max="-2" attributes="0"/>
-                                              <Component id="txtfNoSubmissions" alignment="0" min="-2" pref="106" max="-2" attributes="0"/>
-                                              <Component id="txtfDate" alignment="0" min="-2" pref="106" max="-2" attributes="0"/>
-                                              <Component id="txtfTime" min="-2" pref="106" max="-2" attributes="0"/>
+                                              <Component id="jdcDate" min="-2" pref="127" max="-2" attributes="0"/>
+                                              <Group type="102" alignment="0" attributes="0">
+                                                  <Component id="txtfHH" min="-2" pref="30" max="-2" attributes="0"/>
+                                                  <EmptySpace max="-2" attributes="0"/>
+                                                  <Component id="lblColon1" min="-2" max="-2" attributes="0"/>
+                                                  <EmptySpace max="-2" attributes="0"/>
+                                                  <Component id="txtfMM" min="-2" pref="30" max="-2" attributes="0"/>
+                                                  <EmptySpace max="-2" attributes="0"/>
+                                                  <Component id="lblColon2" min="-2" max="-2" attributes="0"/>
+                                                  <EmptySpace max="-2" attributes="0"/>
+                                                  <Component id="txtfSS" min="-2" pref="30" max="-2" attributes="0"/>
+                                              </Group>
                                           </Group>
                                           <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
+                                      </Group>
+                                      <Group type="103" groupAlignment="0" max="-2" attributes="0">
+                                          <Component id="jSpinNoSubmission" pref="49" max="32767" attributes="0"/>
+                                          <Component id="jSpinNoQuestions" max="32767" attributes="0"/>
                                       </Group>
                                   </Group>
                               </Group>
@@ -122,25 +134,35 @@
                       <Component id="txtfFeedback" alignment="3" min="-2" max="-2" attributes="0"/>
                       <Component id="btnReconnect" alignment="3" min="-2" max="-2" attributes="0"/>
                   </Group>
-                  <EmptySpace min="-2" pref="31" max="-2" attributes="0"/>
+                  <EmptySpace min="-2" pref="34" max="-2" attributes="0"/>
                   <Group type="103" groupAlignment="3" attributes="0">
                       <Component id="lblNoSubmissions" alignment="3" min="-2" max="-2" attributes="0"/>
-                      <Component id="txtfNoSubmissions" alignment="3" min="-2" max="-2" attributes="0"/>
+                      <Component id="jSpinNoSubmission" alignment="3" min="-2" max="-2" attributes="0"/>
                   </Group>
-                  <EmptySpace min="-2" pref="11" max="-2" attributes="0"/>
+                  <EmptySpace min="-2" pref="9" max="-2" attributes="0"/>
                   <Group type="103" groupAlignment="3" attributes="0">
                       <Component id="lblNoQuestions" alignment="3" min="-2" max="-2" attributes="0"/>
-                      <Component id="txtfNoQuestions" alignment="3" min="-2" max="-2" attributes="0"/>
+                      <Component id="jSpinNoQuestions" alignment="3" min="-2" max="-2" attributes="0"/>
                   </Group>
                   <EmptySpace type="separate" max="-2" attributes="0"/>
-                  <Group type="103" groupAlignment="3" attributes="0">
-                      <Component id="lblDate" alignment="3" min="-2" pref="20" max="-2" attributes="0"/>
-                      <Component id="txtfDate" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Group type="103" groupAlignment="0" attributes="0">
+                      <Component id="lblDate" min="-2" pref="20" max="-2" attributes="0"/>
+                      <Component id="jdcDate" min="-2" max="-2" attributes="0"/>
                   </Group>
                   <EmptySpace type="unrelated" max="-2" attributes="0"/>
-                  <Group type="103" groupAlignment="3" attributes="0">
-                      <Component id="lblTime" alignment="3" min="-2" max="-2" attributes="0"/>
-                      <Component id="txtfTime" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Group type="103" groupAlignment="0" max="-2" attributes="0">
+                      <Group type="103" groupAlignment="3" attributes="0">
+                          <Component id="lblTime" alignment="3" min="-2" max="-2" attributes="0"/>
+                          <Component id="txtfHH" alignment="3" min="-2" max="-2" attributes="0"/>
+                      </Group>
+                      <Group type="103" groupAlignment="3" attributes="0">
+                          <Component id="lblColon1" alignment="3" max="32767" attributes="0"/>
+                          <Component id="txtfMM" alignment="3" min="-2" max="-2" attributes="0"/>
+                      </Group>
+                      <Group type="103" groupAlignment="3" attributes="0">
+                          <Component id="lblColon2" alignment="3" max="32767" attributes="0"/>
+                          <Component id="txtfSS" alignment="3" min="-2" max="-2" attributes="0"/>
+                      </Group>
                   </Group>
                   <EmptySpace min="-2" pref="38" max="-2" attributes="0"/>
                   <Group type="103" groupAlignment="3" attributes="0">
@@ -148,7 +170,7 @@
                       <Component id="txtfSchemaPath" alignment="3" min="-2" max="-2" attributes="0"/>
                       <Component id="btnOK" alignment="3" min="-2" max="-2" attributes="0"/>
                   </Group>
-                  <EmptySpace pref="55" max="32767" attributes="0"/>
+                  <EmptySpace pref="54" max="32767" attributes="0"/>
                   <Component id="lblUpload" min="-2" max="-2" attributes="0"/>
                   <EmptySpace min="-2" pref="29" max="-2" attributes="0"/>
                   <Group type="103" groupAlignment="3" attributes="0">
@@ -304,13 +326,7 @@
             <Property name="text" type="java.lang.String" value="Enter deadline time:"/>
           </Properties>
         </Component>
-        <Component class="javax.swing.JTextField" name="txtfNoQuestions">
-        </Component>
-        <Component class="javax.swing.JTextField" name="txtfDate">
-        </Component>
-        <Component class="javax.swing.JTextField" name="txtfTime">
-        </Component>
-        <Component class="javax.swing.JTextField" name="txtfNoSubmissions">
+        <Component class="javax.swing.JTextField" name="txtfHH">
         </Component>
         <Component class="javax.swing.JButton" name="btnOK">
           <Properties>
@@ -348,6 +364,29 @@
           <Events>
             <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btnUploadQuestionsActionPerformed"/>
           </Events>
+        </Component>
+        <Component class="com.toedter.calendar.JDateChooser" name="jdcDate">
+          <Properties>
+            <Property name="dateFormatString" type="java.lang.String" value="yyyy-MM-dd"/>
+          </Properties>
+        </Component>
+        <Component class="javax.swing.JLabel" name="lblColon1">
+          <Properties>
+            <Property name="text" type="java.lang.String" value=":"/>
+          </Properties>
+        </Component>
+        <Component class="javax.swing.JTextField" name="txtfMM">
+        </Component>
+        <Component class="javax.swing.JLabel" name="lblColon2">
+          <Properties>
+            <Property name="text" type="java.lang.String" value=":"/>
+          </Properties>
+        </Component>
+        <Component class="javax.swing.JTextField" name="txtfSS">
+        </Component>
+        <Component class="javax.swing.JSpinner" name="jSpinNoSubmission">
+        </Component>
+        <Component class="javax.swing.JSpinner" name="jSpinNoQuestions">
         </Component>
       </SubComponents>
     </Container>

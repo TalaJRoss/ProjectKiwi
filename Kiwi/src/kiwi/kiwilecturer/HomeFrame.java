@@ -4,10 +4,12 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.text.ParseException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
+import javax.swing.JTextField;
 
 /**
  * Interface for lecturer input.
@@ -120,15 +122,19 @@ public class HomeFrame extends javax.swing.JFrame {
         lblNoQuestions = new javax.swing.JLabel();
         lblDate = new javax.swing.JLabel();
         lblTime = new javax.swing.JLabel();
-        txtfNoQuestions = new javax.swing.JTextField();
-        txtfDate = new javax.swing.JTextField();
-        txtfTime = new javax.swing.JTextField();
-        txtfNoSubmissions = new javax.swing.JTextField();
+        txtfHH = new javax.swing.JTextField();
         btnOK = new javax.swing.JButton();
         btnSchema = new javax.swing.JButton();
         txtfSchemaPath = new javax.swing.JTextField();
         btnUploadStudent = new javax.swing.JButton();
         btnUploadQuestions = new javax.swing.JButton();
+        jdcDate = new com.toedter.calendar.JDateChooser();
+        lblColon1 = new javax.swing.JLabel();
+        txtfMM = new javax.swing.JTextField();
+        lblColon2 = new javax.swing.JLabel();
+        txtfSS = new javax.swing.JTextField();
+        jSpinNoSubmission = new javax.swing.JSpinner();
+        jSpinNoQuestions = new javax.swing.JSpinner();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         addWindowListener(new java.awt.event.WindowAdapter() {
@@ -241,6 +247,12 @@ public class HomeFrame extends javax.swing.JFrame {
             }
         });
 
+        jdcDate.setDateFormatString("yyyy-MM-dd");
+
+        lblColon1.setText(":");
+
+        lblColon2.setText(":");
+
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
@@ -280,11 +292,21 @@ public class HomeFrame extends javax.swing.JFrame {
                                     .addComponent(txtfSchemaPath)
                                     .addGroup(jPanel1Layout.createSequentialGroup()
                                         .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                            .addComponent(txtfNoQuestions, javax.swing.GroupLayout.PREFERRED_SIZE, 106, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                            .addComponent(txtfNoSubmissions, javax.swing.GroupLayout.PREFERRED_SIZE, 106, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                            .addComponent(txtfDate, javax.swing.GroupLayout.PREFERRED_SIZE, 106, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                            .addComponent(txtfTime, javax.swing.GroupLayout.PREFERRED_SIZE, 106, javax.swing.GroupLayout.PREFERRED_SIZE))
-                                        .addGap(0, 0, Short.MAX_VALUE))))
+                                            .addComponent(jdcDate, javax.swing.GroupLayout.PREFERRED_SIZE, 127, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                            .addGroup(jPanel1Layout.createSequentialGroup()
+                                                .addComponent(txtfHH, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                                .addComponent(lblColon1)
+                                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                                .addComponent(txtfMM, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                                .addComponent(lblColon2)
+                                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                                .addComponent(txtfSS, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                                        .addGap(0, 0, Short.MAX_VALUE))
+                                    .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                                        .addComponent(jSpinNoSubmission, javax.swing.GroupLayout.DEFAULT_SIZE, 49, Short.MAX_VALUE)
+                                        .addComponent(jSpinNoQuestions))))
                             .addComponent(txtfFeedback, javax.swing.GroupLayout.PREFERRED_SIZE, 538, javax.swing.GroupLayout.PREFERRED_SIZE))
                         .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addGroup(jPanel1Layout.createSequentialGroup()
@@ -307,28 +329,35 @@ public class HomeFrame extends javax.swing.JFrame {
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(txtfFeedback, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(btnReconnect))
-                .addGap(31, 31, 31)
+                .addGap(34, 34, 34)
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(lblNoSubmissions)
-                    .addComponent(txtfNoSubmissions, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(11, 11, 11)
+                    .addComponent(jSpinNoSubmission, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(9, 9, 9)
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(lblNoQuestions)
-                    .addComponent(txtfNoQuestions, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(jSpinNoQuestions, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(18, 18, 18)
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(lblDate, javax.swing.GroupLayout.PREFERRED_SIZE, 20, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(txtfDate, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(jdcDate, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(lblTime)
-                    .addComponent(txtfTime, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addComponent(lblTime)
+                        .addComponent(txtfHH, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addComponent(lblColon1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(txtfMM, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addComponent(lblColon2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(txtfSS, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addGap(38, 38, 38)
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(btnSchema)
                     .addComponent(txtfSchemaPath, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(btnOK))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 55, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 54, Short.MAX_VALUE)
                 .addComponent(lblUpload)
                 .addGap(29, 29, 29)
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
@@ -541,10 +570,36 @@ public class HomeFrame extends javax.swing.JFrame {
         
         String response = "";
         
-        String noSubmissions = txtfNoSubmissions.getText();
-        String noQuestions = txtfNoQuestions.getText();
-        String date = txtfDate.getText();
-        String time = txtfTime.getText();
+        try {
+            jSpinNoSubmission.commitEdit();
+            jSpinNoQuestions.commitEdit();
+        } catch (ParseException ex) {
+            Logger.getLogger(HomeFrame.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        
+        String noSubmissions = ""+(Integer) jSpinNoSubmission.getValue();
+        String noQuestions = ""+ (Integer) jSpinNoQuestions.getValue();
+        String date = ((JTextField)jdcDate.getDateEditor().getUiComponent()).getText();
+        String hour = txtfHH.getText();
+        String minute = txtfMM.getText();
+        String second = txtfSS.getText();
+        
+        String time = "";
+        if (Integer.parseInt(hour)<10){
+            time = "0" + hour + ":";
+        }else{
+            time = hour +":";
+        }
+        if (Integer.parseInt(minute)<10){
+            time = time + "0" + minute + ":";
+        }else{
+            time = time + minute + ":";
+        }
+        if (Integer.parseInt(second)<10){
+            time = time + "0" + second;
+        }else{
+            time = time + second;
+        }
         
         if(noSubmissions.equals("") || noQuestions.equals("") || date.equals("") || time.equals("")){
             JOptionPane.showMessageDialog(this, "Please fill in blank fields", "Error", JOptionPane.ERROR_MESSAGE);
@@ -557,10 +612,12 @@ public class HomeFrame extends javax.swing.JFrame {
                 JOptionPane.showMessageDialog(null, "Assignment information not uploaded.", "Upload unsuccessful", JOptionPane.ERROR_MESSAGE);
             }
             //clean up:
-            txtfNoSubmissions.setText("");
-            txtfNoQuestions.setText("");
-            txtfDate.setText("");
-            txtfTime.setText("");
+            jSpinNoQuestions.setValue(0);
+            jSpinNoSubmission.setValue(0);
+            jdcDate.setDate(null);
+            txtfHH.setText("");
+            txtfMM.setText("");
+            txtfSS.setText("");
             txtfSchemaPath.setText("");            
         }
         
@@ -694,6 +751,11 @@ public class HomeFrame extends javax.swing.JFrame {
     private javax.swing.JButton btnView;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JSpinner jSpinNoQuestions;
+    private javax.swing.JSpinner jSpinNoSubmission;
+    private com.toedter.calendar.JDateChooser jdcDate;
+    private javax.swing.JLabel lblColon1;
+    private javax.swing.JLabel lblColon2;
     private javax.swing.JLabel lblDate;
     private javax.swing.JLabel lblNoQuestions;
     private javax.swing.JLabel lblNoSubmissions;
@@ -701,15 +763,14 @@ public class HomeFrame extends javax.swing.JFrame {
     private javax.swing.JLabel lblUpload;
     private javax.swing.JLabel lblViewGrades;
     private javax.swing.JTextArea txtaMarks;
-    private javax.swing.JTextField txtfDate;
     private javax.swing.JTextField txtfFeedback;
-    private javax.swing.JTextField txtfNoQuestions;
-    private javax.swing.JTextField txtfNoSubmissions;
+    private javax.swing.JTextField txtfHH;
+    private javax.swing.JTextField txtfMM;
     private javax.swing.JTextField txtfQueryDataFilename;
     private javax.swing.JTextField txtfQuestionsFilename;
+    private javax.swing.JTextField txtfSS;
     private javax.swing.JTextField txtfSchemaPath;
     private javax.swing.JTextField txtfStudentFilename;
-    private javax.swing.JTextField txtfTime;
     // End of variables declaration//GEN-END:variables
 
 }
