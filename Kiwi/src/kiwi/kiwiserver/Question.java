@@ -84,8 +84,7 @@ public class Question {
      */
     String errorMessage;
     
-    private Connection conn;
-    
+    private Connection connLimited;
     
     //Constructor:
     
@@ -95,21 +94,21 @@ public class Question {
      * @param answer SQL statement expected answer.
      * @param difficulty Difficulty value (1, 2 or 3)
      */
-    public Question(String question, String answer, int difficulty, String type, Connection conn) {
+    public Question(String question, String answer, int difficulty, String type, Connection connLimited){
         this.question = question;
         this.answer = answer;
         this.difficulty = difficulty;
         this.type = type;
         this.mark = 0;
-        this.conn = conn;
+        this.connLimited = connLimited;
     }
     
     /**
      * Default constructor to create a question.
      */
-    public Question(Connection conn) {
+    public Question(Connection connLimited) {
         mark= 0;
-        this.conn = conn;
+        this.connLimited = connLimited;
     }
     
     
@@ -162,7 +161,7 @@ public class Question {
     private int markQueryQuestion(String studentAns) {
         try {
            //Get expected output:
-           Statement stExpected = conn.createStatement();
+           Statement stExpected = connLimited.createStatement();
            try {
                 rsExpected = stExpected.executeQuery(answer);   //execute expected sql statement
            }
@@ -175,7 +174,7 @@ public class Question {
            expectedColCount = rsExpected.getMetaData().getColumnCount();
            
            //Get student output:
-           Statement stStudent = conn.createStatement();
+           Statement stStudent = connLimited.createStatement();
            try {
                 rsStudent = stStudent.executeQuery(studentAns); //execute student's sql statement
            }
@@ -251,7 +250,7 @@ public class Question {
     private int markUpdateQuestion(String studentAns) {
         try {
             //Get expected output:
-            Statement stExpected = conn.createStatement();
+            Statement stExpected = connLimited.createStatement();
            
             //Get table being updated in expected sql update:
             String tblNameExp = "";
@@ -277,16 +276,16 @@ public class Question {
             }
            
            //Start transaction:
-           conn.setAutoCommit(false);
-           Savepoint spExp = conn.setSavepoint();
+           connLimited.setAutoCommit(false);
+           Savepoint spExp = connLimited.setSavepoint();
            
            //Expected update:
            try {
                 raExpected = stExpected.executeUpdate(answer);   //execute expected sql update and get rows affeted
            }
            catch (SQLException e) { //didn't compile
-               conn.rollback(spExp);
-               conn.setAutoCommit(true);
+               connLimited.rollback(spExp);
+               connLimited.setAutoCommit(true);
                System.out.println("Error: answer from lecturer wrong!");
                System.out.println(e);
                System.out.println("corr error");
@@ -299,8 +298,8 @@ public class Question {
                 rsExpected = stExpected.executeQuery("SELECT * FROM " + tblNameExp + ";");
            }
            catch (SQLException e) { //didn't compile
-               conn.rollback(spExp);
-               conn.setAutoCommit(true);
+               connLimited.rollback(spExp);
+               connLimited.setAutoCommit(true);
                System.out.println("Error: couldn't get lecturer output!");
                System.out.println(e);
                mark = -2;
@@ -308,15 +307,15 @@ public class Question {
            }
            
            //End transaction:
-           conn.rollback(spExp);
-           conn.setAutoCommit(true);
+           connLimited.rollback(spExp);
+           connLimited.setAutoCommit(true);
            
            expectedColCount = rsExpected.getMetaData().getColumnCount();
            
            /////////////////////////
           
            //Get student output:
-           Statement stStudent = conn.createStatement();
+           Statement stStudent = connLimited.createStatement();
            
            //Get table being updated in student sql update:
            String tblNameStu = "";
@@ -343,16 +342,16 @@ public class Question {
            }
            
            //Start transaction:
-           conn.setAutoCommit(false);
-           Savepoint spStu = conn.setSavepoint();
+           connLimited.setAutoCommit(false);
+           Savepoint spStu = connLimited.setSavepoint();
            
            //Expected update:
            try {
                 raStudent = stStudent.executeUpdate(studentAns); //execute student's sql statement
            }
            catch (SQLException e) { //didn't compile
-                conn.rollback(spStu);
-                conn.setAutoCommit(true);
+                connLimited.rollback(spStu);
+                connLimited.setAutoCommit(true);
                
                 //Process error message:
                 errorMessage = "SQL Statement did not compile.\n"
@@ -367,8 +366,8 @@ public class Question {
                rsStudent = stStudent.executeQuery("SELECT * FROM " + tblNameStu + ";");
            }
            catch (SQLException e) {
-               conn.rollback(spStu);
-               conn.setAutoCommit(true);
+               connLimited.rollback(spStu);
+               connLimited.setAutoCommit(true);
                System.out.println("Error: couldn't get student output!");
                System.out.println(e);
                mark = -2;
@@ -376,8 +375,8 @@ public class Question {
            }
            
            //End transaction:
-           conn.rollback(spStu);
-           conn.setAutoCommit(true);
+           connLimited.rollback(spStu);
+           connLimited.setAutoCommit(true);
            
            studentColCount= rsStudent.getMetaData().getColumnCount();
            

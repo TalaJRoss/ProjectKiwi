@@ -23,6 +23,7 @@ public class Assignment {
      * Database connection.
      */
     private Connection conn;
+    private Connection connLimited;
     
     //TODO: update to get from server:
     /**
@@ -47,10 +48,11 @@ public class Assignment {
     public static final String [] Types = {"select","arithmetic","update"};
     
     
-    public Assignment(Connection conn, String studentNo, int noSubmissionsCompleted){
+    public Assignment(Connection conn, Connection connLimited, String studentNo, int noSubmissionsCompleted){
         try {
             //Initialise data 
             this.conn = conn;
+            this.connLimited = connLimited;
             this.questionList = new ArrayList<>();
             this.currentPos = -1;
             //Get number of questions in an assignment from assignmentInfo table in the database
@@ -153,7 +155,7 @@ public class Assignment {
                         rs = st.executeQuery(query);
                         
                         //Create question object from the result set
-                        Question question = new Question (conn);
+                        Question question = new Question (connLimited);
                         int Qid = 0;
                         while(rs.next())
                         {
@@ -162,7 +164,7 @@ public class Assignment {
                             String answer = rs.getString("Answer");
                             int difficulty = rs.getInt("Difficulty");
                             String type = rs.getString("Type");
-                            question = new Question(tempQ, answer, difficulty, type, conn);
+                            question = new Question(tempQ, answer, difficulty, type, connLimited);
                         }
                         questionList.add(question);
                         
@@ -192,13 +194,13 @@ public class Assignment {
                 rs = st.executeQuery(query);
                 
                 //Create question object:
-                Question question = new Question(conn);
+                Question question = new Question(connLimited);
                 while (rs.next()) {
                     String tempQuestion = rs.getString("Question");
                     String answer = rs.getString("Answer");
                     int difficulty = rs.getInt("Difficulty");
                     String type = rs.getString("Type");
-                    question = new Question(tempQuestion, answer, difficulty, type, conn);
+                    question = new Question(tempQuestion, answer, difficulty, type, connLimited);
                 }
                 
                 //Add question to list:
@@ -315,7 +317,7 @@ public class Assignment {
             
             if (tblName==null) { //select statement
                //Get student output:
-                Statement st = conn.createStatement();
+                Statement st = connLimited.createStatement();
                 ResultSet rs;
                 try {   //check it compiles 
                     rs = st.executeQuery(statement);
@@ -350,19 +352,19 @@ public class Assignment {
                 return toReturn;
             }
             else { //update statement 
-                Statement st = conn.createStatement();
+                Statement st = connLimited.createStatement();
                 ResultSet rs;
                 int ra;
-                conn.setAutoCommit(false);
-                Savepoint sp = conn.setSavepoint();
+                connLimited.setAutoCommit(false);
+                Savepoint sp = connLimited.setSavepoint();
 
                 //Update:
                 try {
                      ra = st.executeUpdate(statement);   //execute expected sql update and get rows affeted
                 }
                 catch (SQLException e) { //didn't compile
-                    conn.rollback(sp);
-                    conn.setAutoCommit(true);
+                    connLimited.rollback(sp);
+                    connLimited.setAutoCommit(true);
                     String errMessage = e.toString().substring("java.sql.".length()); //remove "java.sql." from error name
                     if (errMessage.contains("kiwidb.")) {
                         errMessage= errMessage.replace("kiwidb.","");    //remove "kiwidb." from table name
@@ -376,16 +378,16 @@ public class Assignment {
                     rs = st.executeQuery("SELECT * FROM " + tblName + ";");
                 }
                 catch (SQLException e) {
-                    conn.rollback(sp);
-                    conn.setAutoCommit(true);
+                    connLimited.rollback(sp);
+                    connLimited.setAutoCommit(true);
                     System.out.println("Error: Problem reading students updated table for check.");
                     System.out.println(e);
                     return null;
                 }
 
                 //End transaction:
-                conn.rollback(sp);
-                conn.setAutoCommit(true);
+                connLimited.rollback(sp);
+                connLimited.setAutoCommit(true);
                 
                 //Put output in string:
                 //Get column names:

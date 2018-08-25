@@ -20,6 +20,8 @@ import java.sql.SQLException;
 import java.sql.Savepoint;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import kiwi.message.*;
 
 /**
@@ -28,8 +30,6 @@ import kiwi.message.*;
  */
 final class LecturerHandler extends Thread{
     //Constants for ordering grades table:
-    
-    private static final String DB_PATH = "C:\\ProgramData\\MySQL\\MySQL Server 8.0\\Data\\kiwidb\\";
     
     /**
      * Ascending order createStatement command.
@@ -61,20 +61,6 @@ final class LecturerHandler extends Thread{
      */
     private static final String FAIL = "Error";
     
-    
-    
-    /**
-     * User name for database connection.
-     */
-    //TODO: change to "lecturer"
-    public static final String USER_NAME = "root";
-    
-    /**
-     * Password for database connection.
-     */
-    //TODO: change to secure pwd
-    public static final String PASSWORD = "mysql";
-    
     /**
      * Socket on client who's communications this thread is managing.
      */
@@ -94,7 +80,6 @@ final class LecturerHandler extends Thread{
      * Connection to DB.
      */
     private Connection conn;
-    private boolean connected;
     
     //Constructor:
     
@@ -124,7 +109,7 @@ final class LecturerHandler extends Thread{
     public void connectToDB() throws IOException {
         try {
             Class.forName("com.mysql.cj.jdbc.Driver");
-            this.conn = DriverManager.getConnection("jdbc:mysql://localhost/KiwiDB", USER_NAME, PASSWORD);
+            this.conn = DriverManager.getConnection("jdbc:mysql://localhost/KiwiDB", ServerStartup.ROOT_NAME, ServerStartup.ROOT_PWD);
             writer.writeObject(new LecturerMessage(LecturerMessage.CMD_CONNECT, null, LecturerMessage.RESP_SUCCESS));
         } catch (SQLException | ClassNotFoundException ex) {
             writer.writeObject(new LecturerMessage(LecturerMessage.CMD_CONNECT, null, LecturerMessage.RESP_FAIL));
@@ -135,10 +120,8 @@ final class LecturerHandler extends Thread{
     public void run() {
         try {
             connectToDB();
-            connected = false;
         } 
         catch (IOException e) {
-            connected = false;
             System.out.println("Problem creating to database on intial student login.");
             System.out.println(e);
         }
@@ -245,7 +228,7 @@ final class LecturerHandler extends Thread{
             
             //save schema:
             if (assignmentInfo.getSchemaImg() != null) {
-                FileOutputStream fos = new FileOutputStream(DB_PATH + "schema.jpg");
+                FileOutputStream fos = new FileOutputStream(ServerStartup.DB_PATH + "schema.jpg");
                 fos.write(assignmentInfo.getSchemaImg());
             }
         } catch (SQLException | IOException ex) {
@@ -300,6 +283,7 @@ final class LecturerHandler extends Thread{
      * @param csvs Array of csv files containing query data.
      */
     public void uploadQueryData(ArrayList<byte []> csvs, String [] names) throws IOException {
+        /*
         for (int i=0; i<csvs.size(); i++) {
             
             String response = createTable(names[i], csvs.get(i));
@@ -308,7 +292,31 @@ final class LecturerHandler extends Thread{
             } else {
                 writer.writeObject(new LecturerMessage(LecturerMessage.CMD_UPLOAD_QUERY, null, LecturerMessage.RESP_FAIL));
             }
-        }
+        }*/
+        try {
+            Statement st = conn.createStatement();
+            String flush = "FLUSH PRIVILEGES;";
+            for (int i=0; i<csvs.size(); i++) {
+                String response = createTable(names[i], csvs.get(i));
+                if (response.equals(SUCCESS)) {
+                    writer.writeObject(new LecturerMessage(LecturerMessage.CMD_UPLOAD_QUERY, null, LecturerMessage.RESP_SUCCESS));
+                    
+                    //grant students access to all successfully uploaded query data tables
+                    String studentPermissions = "GRANT SELECT, INSERT, UPDATE, DELETE ON "+ServerStartup.DB_NAME+"."+names[i]+" TO '"+ServerStartup.STUDENT_NAME+"'@'localhost';";
+                    String[] cmd = new String[]{ServerStartup.MYSQL_PATH,ServerStartup.DB_NAME,"--user=" + ServerStartup.ROOT_NAME,"--password=" + ServerStartup.ROOT_PWD,"-e",studentPermissions};
+                    Runtime.getRuntime().exec(cmd);
+                    String[] cmdFlush = new String[]{ServerStartup.MYSQL_PATH,ServerStartup.DB_NAME,"--user=" + ServerStartup.ROOT_NAME,"--password=" + ServerStartup.ROOT_PWD,"-e",flush};
+                    Runtime.getRuntime().exec(cmdFlush);
+                    System.out.println("Granted student permissions for "+names[i]);
+                    
+                } else {
+                    writer.writeObject(new LecturerMessage(LecturerMessage.CMD_UPLOAD_QUERY, null, LecturerMessage.RESP_FAIL));
+                }
+            }            
+        } catch (SQLException ex) {
+            System.out.println("Error setting permissions for student");
+            Logger.getLogger(LecturerHandler.class.getName()).log(Level.SEVERE, null, ex);
+        }            
     }
     
     /**
@@ -366,12 +374,12 @@ final class LecturerHandler extends Thread{
         
         try {
             //save file:
-            try (FileOutputStream fos = new FileOutputStream(DB_PATH + tblName + ".csv")) {
+            try (FileOutputStream fos = new FileOutputStream(ServerStartup.DB_PATH + tblName + ".csv")) {
                 fos.write(bytes);
             }
         
             //read in csv column info:
-            FileReader fileReader = new FileReader(new File(DB_PATH + tblName + ".csv"));
+            FileReader fileReader = new FileReader(new File(ServerStartup.DB_PATH + tblName + ".csv"));
             CSVReader csvReader = new CSVReader(fileReader);
             String[] headings = csvReader.readNext();
             
@@ -501,7 +509,6 @@ final class LecturerHandler extends Thread{
         reader.close();
         writer.close();
         lecturerSocket.close();
-        connected = false;
         System.out.println("Lecturer connection closed.");
     }
     

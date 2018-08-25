@@ -31,23 +31,6 @@ import kiwi.message.StudentStatistics;
  */
 class StudentHandler extends Thread {
     
-    
-    private static final String DB_PATH = "C:\\ProgramData\\MySQL\\MySQL Server 8.0\\Data\\kiwidb\\";
-    
-    
-    /**
-     * User name for database connection.
-     */
-    //TODO: change to "lecturer"
-    public static final String USER_NAME = "root";
-    
-    /**
-     * Password for database connection.
-     */
-    //TODO: change to secure pwd
-    public static final String PASSWORD = "mysql";
-    
-    
     //Socket stuff:
     
     /**
@@ -80,11 +63,9 @@ class StudentHandler extends Thread {
     
     Connection conn;
     
+    Connection connLimited;
+    
     private byte [] schemaImg;
-    
-    private boolean connected;
-    
-    
     //Constructor:
     
     /**
@@ -94,7 +75,7 @@ class StudentHandler extends Thread {
      * @param clientSocket socket on client side linking server to client
      */
     public StudentHandler(Socket studentSocket) {
-        File file = new File(DB_PATH + "schema.jpg");
+        File file = new File(ServerStartup.DB_PATH + "schema.jpg");
         byte[] bytesArray = new byte[(int) file.length()]; 
         FileInputStream fis;
         try {
@@ -125,7 +106,8 @@ class StudentHandler extends Thread {
     public void connectToDB() throws IOException {
         try {
             Class.forName("com.mysql.cj.jdbc.Driver");
-            this.conn = DriverManager.getConnection("jdbc:mysql://localhost/KiwiDB", USER_NAME, PASSWORD);
+            this.conn = DriverManager.getConnection("jdbc:mysql://localhost/KiwiDB", ServerStartup.ROOT_NAME, ServerStartup.ROOT_PWD);
+            this.connLimited = DriverManager.getConnection("jdbc:mysql://localhost/KiwiDB", ServerStartup.STUDENT_NAME, ServerStartup.STUDENT_PWD);
             writer.writeObject(new StudentMessage(StudentMessage.CMD_CONNECT, null));
         } catch (SQLException | ClassNotFoundException ex) {
             writer.writeObject(new StudentMessage(StudentMessage.CMD_CONNECT, null, StudentMessage.FAIL_CONNECT));
@@ -136,10 +118,8 @@ class StudentHandler extends Thread {
     public void run() {
         try {
             connectToDB();
-            connected = false;
         } 
         catch (IOException e) {
-            connected = false;
             System.out.println("Problem creating to database on intial student login.");
             System.out.println(e);
         }
@@ -246,7 +226,7 @@ class StudentHandler extends Thread {
             }
             
             //Submissions still allowed:
-            assignment = new Assignment(conn, studentNo, noSubmissionsCompleted);  //create assignment 
+            assignment = new Assignment(conn, connLimited, studentNo, noSubmissionsCompleted);  //create assignment 
         
             //decrease submissions allowed on server:
             //increase noSubmissions by 1:
@@ -386,7 +366,6 @@ class StudentHandler extends Thread {
         reader.close();
         writer.close();
         studentSocket.close();
-        connected = false;
         System.out.println("Student logged off and connection closed: " + studentNo);
     }
     
