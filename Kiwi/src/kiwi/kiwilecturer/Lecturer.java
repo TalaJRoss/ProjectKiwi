@@ -11,8 +11,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import kiwi.kiwiserver.ServerStartup;
 import kiwi.message.*;
@@ -78,6 +76,7 @@ public class Lecturer {
     /**
      * Informs server of close and then closes socket connections.
      * @throws IOException
+     * @throws java.lang.ClassNotFoundException
      */
     public void closeConnection() throws IOException, ClassNotFoundException {
         writer.writeObject(new LecturerMessage(StudentMessage.CMD_CLOSE, null));
@@ -110,9 +109,18 @@ public class Lecturer {
                 schemaImg = getFileBytes(schemaPath);
             }
             writer.writeObject(new LecturerMessage(LecturerMessage.CMD_ASSIGNMENT_INFO, new AssignmentInfo(noSubmissions, noQuestions, date, time, schemaImg)));
-            return SUCCESS;
-        } catch (IOException ex) {
-            Logger.getLogger(Lecturer.class.getName()).log(Level.SEVERE, null, ex);
+            
+            LecturerMessage resp = (LecturerMessage) reader.readObject();
+            if (resp.getMessage()==LecturerMessage.RESP_SUCCESS) {
+                return SUCCESS;
+            }
+            else {
+                return FAIL;
+            }
+            
+        } catch (IOException | ClassNotFoundException ex) {
+            System.out.println("Error: problem uploading info.");
+            System.out.println(ex);
             return FAIL;
         }
     }
@@ -130,9 +138,18 @@ public class Lecturer {
             ArrayList<byte []> csvFiles = new ArrayList<>();
             csvFiles.add(getFileBytes(path));
             writer.writeObject(new LecturerMessage(LecturerMessage.CMD_UPLOAD_STUDENTS, new CSVFiles(csvFiles, null)));
-            return SUCCESS;
-        } catch (IOException ex) {
-            Logger.getLogger(Lecturer.class.getName()).log(Level.SEVERE, null, ex);
+        
+            LecturerMessage resp = (LecturerMessage) reader.readObject();
+            if (resp.getMessage()==LecturerMessage.RESP_SUCCESS) {
+                return SUCCESS;
+            }
+            else {
+                return FAIL;
+            }
+            
+        } catch (IOException | ClassNotFoundException ex) {
+            System.out.println("Error: problem uploading info.");
+            System.out.println(ex);
             return FAIL;
         }
     }
@@ -150,9 +167,18 @@ public class Lecturer {
             ArrayList<byte []> csvFiles = new ArrayList<>();
             csvFiles.add(getFileBytes(path));
             writer.writeObject(new LecturerMessage(LecturerMessage.CMD_UPLOAD_QUESTIONS, new CSVFiles(csvFiles, null)));
-            return SUCCESS;
-        } catch (IOException ex) {
-            Logger.getLogger(Lecturer.class.getName()).log(Level.SEVERE, null, ex);
+            
+            LecturerMessage resp = (LecturerMessage) reader.readObject();
+            if (resp.getMessage()==LecturerMessage.RESP_SUCCESS) {
+                return SUCCESS;
+            }
+            else {
+                return FAIL;
+            }
+            
+        } catch (IOException | ClassNotFoundException ex) {
+            System.out.println("Error: problem uploading info.");
+            System.out.println(ex);
             return FAIL;
         }
     }
@@ -178,9 +204,18 @@ public class Lecturer {
                 csvFiles.add(getFileBytes(path));
             }
             writer.writeObject(new LecturerMessage(LecturerMessage.CMD_UPLOAD_QUERY, new CSVFiles(csvFiles, names)));
-            return SUCCESS;
-        } catch (IOException ex) {
-            Logger.getLogger(Lecturer.class.getName()).log(Level.SEVERE, null, ex);
+            
+            LecturerMessage resp = (LecturerMessage) reader.readObject();
+            if (resp.getMessage()==LecturerMessage.RESP_SUCCESS) {
+                return SUCCESS;
+            }
+            else {
+                return FAIL;
+            }
+            
+        } catch (IOException | ClassNotFoundException ex) {
+            System.out.println("Error: problem uploading info.");
+            System.out.println(ex);
             return FAIL;
         }
     }
@@ -196,13 +231,18 @@ public class Lecturer {
         try {
             writer.writeObject(new LecturerMessage(LecturerMessage.CMD_GRADE_ALPH, null));
             LecturerMessage response = (LecturerMessage) reader.readObject();
-            Grades grades = (Grades) response.getBody(); //Object is of type Grades
-            return grades.getGrades();
+            if (response.getMessage()==LecturerMessage.RESP_SUCCESS) {
+                return ((Grades) response.getBody()).getGrades();
+            }
+            else {
+                return FAIL;
+            }
             
         } catch (IOException | ClassNotFoundException ex) {
-            Logger.getLogger(Lecturer.class.getName()).log(Level.SEVERE, null, ex);
+            System.out.println("Error: problem getting grades.");
+            System.out.println(ex);
+            return FAIL;
         }
-        return FAIL;
     }
     
     /**
@@ -216,13 +256,17 @@ public class Lecturer {
         try {
             writer.writeObject(new LecturerMessage(LecturerMessage.CMD_GRADE_DESC, null));
             LecturerMessage response = (LecturerMessage) reader.readObject();
-            Grades grades = (Grades) response.getBody(); //Object is of type Grades
-            return grades.getGrades(); //FIX getGrades()
-            
+            if (response.getMessage()==LecturerMessage.RESP_SUCCESS) {
+                return ((Grades) response.getBody()).getGrades();
+            }
+            else {
+                return FAIL;
+            }
         } catch (IOException | ClassNotFoundException ex) {
-            Logger.getLogger(Lecturer.class.getName()).log(Level.SEVERE, null, ex);
+            System.out.println("Error: problem getting grades.");
+            System.out.println(ex);
+            return FAIL;
         }
-        return FAIL;
     }
 
     public void connectToDB() throws IOException, ClassNotFoundException {

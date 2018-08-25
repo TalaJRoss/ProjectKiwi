@@ -119,6 +119,7 @@ final class LecturerHandler extends Thread{
     @Override
     public void run() {
         try {
+            System.out.println("hello");
             connectToDB();
         } 
         catch (IOException e) {
@@ -133,10 +134,12 @@ final class LecturerHandler extends Thread{
             while ((m = (LecturerMessage) reader.readObject())!= null)
             {
                 command = m.getCmd();
+                System.out.println(command);
                 switch (command) 
                 {
                     case LecturerMessage.CMD_ASSIGNMENT_INFO: //upload assignment info (noSubmissions, deadline etc.)
                         uploadAssignmentInfo((AssignmentInfo)m.getBody());
+                        break;
                     case LecturerMessage.CMD_CONNECT:  //retry connect
                         connectToDB();
                         break;
@@ -231,6 +234,10 @@ final class LecturerHandler extends Thread{
                 FileOutputStream fos = new FileOutputStream(ServerStartup.DB_PATH + "schema.jpg");
                 fos.write(assignmentInfo.getSchemaImg());
             }
+            
+            writer.writeObject(new LecturerMessage(LecturerMessage.CMD_ASSIGNMENT_INFO, null, LecturerMessage.RESP_SUCCESS));
+                
+            
         } catch (SQLException | IOException ex) {
             writer.writeObject(new LecturerMessage(LecturerMessage.CMD_ASSIGNMENT_INFO, null, LecturerMessage.RESP_FAIL));
         }
@@ -331,7 +338,7 @@ final class LecturerHandler extends Thread{
         if (response.equals(FAIL)) {
             writer.writeObject(new LecturerMessage(LecturerMessage.CMD_GRADE_ALPH, null, LecturerMessage.RESP_FAIL));
         } else {
-            writer.writeObject(new LecturerMessage(LecturerMessage.CMD_GRADE_ALPH, new Grades(response), LecturerMessage.RESP_FAIL));
+            writer.writeObject(new LecturerMessage(LecturerMessage.CMD_GRADE_ALPH, new Grades(response), LecturerMessage.RESP_SUCCESS));
         }
         
     }
@@ -346,9 +353,9 @@ final class LecturerHandler extends Thread{
     public void viewGradeDescGrade() throws IOException {
         String response = getGrades(GRADE, DESCENDING);
         if (response.equals(FAIL)) {
-            writer.writeObject(new LecturerMessage(LecturerMessage.CMD_GRADE_ALPH, null, LecturerMessage.RESP_FAIL));
+            writer.writeObject(new LecturerMessage(LecturerMessage.CMD_GRADE_DESC, null, LecturerMessage.RESP_FAIL));
         } else {
-            writer.writeObject(new LecturerMessage(LecturerMessage.CMD_GRADE_ALPH, new Grades(response), LecturerMessage.RESP_FAIL));
+            writer.writeObject(new LecturerMessage(LecturerMessage.CMD_GRADE_DESC, new Grades(response), LecturerMessage.RESP_SUCCESS));
         }
     }
     
