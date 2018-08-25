@@ -1,4 +1,4 @@
-"QuestionNo","Question","Answer","Difficulty","Type"
+"Question","Answer","Difficulty","Type"
 "Show all information in the offices relation.","select * from offices;",1,select
 "Show how many tuples there are in the orders relation, named as totalNumOrders.","select count(*) as totalNumOrders from orders;",2,arithmetic
 "Show all employees tuples where reportsTo is the same as employeeNumber.","select * from employees where employeeNumber=reportsTo;",2,select

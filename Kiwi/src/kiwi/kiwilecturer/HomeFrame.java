@@ -414,7 +414,7 @@ public class HomeFrame extends javax.swing.JFrame {
             //check that file is a csv
             File temp= fc.getSelectedFile();
             if (!(temp.getName().substring(temp.getName().lastIndexOf("."))).equals(".csv")) {
-                JOptionPane.showMessageDialog(null, "Incorrect file upload.\nPlease upload a .csv file.", "Error", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(this, "Incorrect file upload.\nPlease upload a .csv file.", "Error", JOptionPane.ERROR_MESSAGE);
             }
             else {
                 studentPath = temp.getAbsolutePath();
@@ -436,7 +436,7 @@ public class HomeFrame extends javax.swing.JFrame {
         if (result==JFileChooser.APPROVE_OPTION) {
             File temp= fc.getSelectedFile();
             if (!(temp.getName().substring(temp.getName().lastIndexOf("."))).equals(".csv")) {
-                JOptionPane.showMessageDialog(null, "Incorrect file upload.\nPlease upload a .csv file.", "Error", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(this, "Incorrect file upload.\nPlease upload a .csv file.", "Error", JOptionPane.ERROR_MESSAGE);
             }
             else {
                 questionsPath = temp.getAbsolutePath();
@@ -464,7 +464,7 @@ public class HomeFrame extends javax.swing.JFrame {
             boolean flag=true;
             for (int i=0; i<temp.length; i++) {
                 if (!(temp[i].getName().substring(temp[i].getName().lastIndexOf("."))).equals(".csv")) {
-                    JOptionPane.showMessageDialog(null, "Incorrect file upload for one or more files.\nPlease upload .csv files.", "Error", JOptionPane.ERROR_MESSAGE);
+                    JOptionPane.showMessageDialog(this, "Incorrect file upload for one or more files.\nPlease upload .csv files.", "Error", JOptionPane.ERROR_MESSAGE);
                     flag=false;
                     break;
                 }
@@ -492,10 +492,10 @@ public class HomeFrame extends javax.swing.JFrame {
         if (dataFilePaths!=null) {
             response = lecturer.uploadQueryData(dataFilePaths, dataFileNames);
             if (response.equals(Lecturer.SUCCESS)) {
-                JOptionPane.showMessageDialog(null, "Uploaded .csv files succesfully.", "Upload successful", JOptionPane.PLAIN_MESSAGE);
+                JOptionPane.showMessageDialog(this, "Uploaded .csv files succesfully.", "Upload successful", JOptionPane.PLAIN_MESSAGE);
             }
             else{
-                JOptionPane.showMessageDialog(null, "The following files were not uploaded.\nFiles: "+response, "Upload unsuccessful", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(this, "The following files were not uploaded.\nFiles: "+response, "Upload unsuccessful", JOptionPane.ERROR_MESSAGE);
             }
         }
         
@@ -558,7 +558,7 @@ public class HomeFrame extends javax.swing.JFrame {
         }
         
         if (!connected) {
-            JOptionPane.showMessageDialog(null, "Connection to database failed.", "Connection Error", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this, "Connection to database failed.", "Connection Error", JOptionPane.ERROR_MESSAGE);
         }        
         checkConnect();
         
@@ -607,9 +607,9 @@ public class HomeFrame extends javax.swing.JFrame {
         else{
             response = lecturer.uploadAssignmentInfo(noSubmissions, noQuestions, date, time, schemaPath);
             if (response.equals(Lecturer.SUCCESS)) {
-                JOptionPane.showMessageDialog(null, "Uploaded assignment information succesfully.", "Upload successful", JOptionPane.PLAIN_MESSAGE);
+                JOptionPane.showMessageDialog(this, "Uploaded assignment information succesfully.", "Upload successful", JOptionPane.PLAIN_MESSAGE);
             } else {
-                JOptionPane.showMessageDialog(null, "Assignment information not uploaded.", "Upload unsuccessful", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(this, "Assignment information not uploaded.", "Upload unsuccessful", JOptionPane.ERROR_MESSAGE);
             }
             //clean up:
             jSpinNoQuestions.setValue(0);
@@ -631,7 +631,7 @@ public class HomeFrame extends javax.swing.JFrame {
         if (result==JFileChooser.APPROVE_OPTION) {
             File image = fc.getSelectedFile();
             if (!(image.getName().substring(image.getName().lastIndexOf("."))).equalsIgnoreCase(".jpg")) {
-                JOptionPane.showMessageDialog(null, "Incorrect file upload.\nPlease upload a .png image.", "Error", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(this, "Incorrect file upload.\nPlease upload a .png image.", "Error", JOptionPane.ERROR_MESSAGE);
             }
             else {
                 schemaPath = image.getAbsolutePath();
@@ -649,12 +649,12 @@ public class HomeFrame extends javax.swing.JFrame {
             response = lecturer.uploadStudents(studentPath);
             switch (response) {
                 case Lecturer.SUCCESS:
-                    JOptionPane.showMessageDialog(null, 
+                    JOptionPane.showMessageDialog(this, 
                             "Uploaded students csv file succesfully.", 
                             "Upload Successful",JOptionPane.PLAIN_MESSAGE);
                     break;
                 case Lecturer.FAIL_INPUT:
-                    JOptionPane.showMessageDialog(null, 
+                    JOptionPane.showMessageDialog(this, 
                             "Students file was not uploaded.\n"
                             + "Provided csv file format is incorrect.\n\n"
                             + "Expected Format:\n"
@@ -665,14 +665,14 @@ public class HomeFrame extends javax.swing.JFrame {
                             "Upload Unsuccessful", JOptionPane.ERROR_MESSAGE);
                     break;
                 case Lecturer.FAIL_NULL:
-                    JOptionPane.showMessageDialog(null, 
+                    JOptionPane.showMessageDialog(this, 
                             "Students file was not uploaded.\n"
                             + "Assignment information needs to be entered before\n"
                             + "the students csv file can be saved.", 
                             "Upload Unsuccessful", JOptionPane.ERROR_MESSAGE);
                     break;
                 default:
-                    JOptionPane.showMessageDialog(null, 
+                    JOptionPane.showMessageDialog(this, 
                             "Students file was not uploaded.\n"
                             + "Problem connecting to database.", 
                             "Upload Unsuccessful", JOptionPane.ERROR_MESSAGE);
@@ -694,12 +694,12 @@ public class HomeFrame extends javax.swing.JFrame {
             response = lecturer.uploadQuestions(questionsPath);
             switch (response) {
                 case Lecturer.SUCCESS:
-                    JOptionPane.showMessageDialog(null, 
+                    JOptionPane.showMessageDialog(this, 
                             "Uploaded questions csv file succesfully.", 
                             "Upload Successful",JOptionPane.PLAIN_MESSAGE);
                     break;
                 case Lecturer.FAIL_INPUT:
-                    JOptionPane.showMessageDialog(null, 
+                    JOptionPane.showMessageDialog(this, 
                             "Questions file was not uploaded.\n"
                             + "Provided csv file format is incorrect.\n\n"
                             + "Expected Format:\n"
@@ -711,7 +711,7 @@ public class HomeFrame extends javax.swing.JFrame {
                             "Upload Unsuccessful", JOptionPane.ERROR_MESSAGE);
                     break;
                 default:
-                    JOptionPane.showMessageDialog(null, 
+                    JOptionPane.showMessageDialog(this, 
                             "Questions file was not uploaded."
                             + "Problem connecting to database.", 
                             "Upload Unsuccessful", JOptionPane.ERROR_MESSAGE);

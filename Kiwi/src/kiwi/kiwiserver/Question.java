@@ -51,6 +51,8 @@ public class Question {
     
     private String type;
     
+    private int questionDBNo;
+    
     /**
      * Mark student receives after question is marked.
      * Can be 0, difficulty or difficulty*2.
@@ -94,13 +96,14 @@ public class Question {
      * @param answer SQL statement expected answer.
      * @param difficulty Difficulty value (1, 2 or 3)
      */
-    public Question(String question, String answer, int difficulty, String type, Connection connLimited){
+    public Question(String question, String answer, int difficulty, String type, int questionDBNo, Connection connLimited){
         this.question = question;
         this.answer = answer;
         this.difficulty = difficulty;
         this.type = type;
         this.mark = 0;
         this.connLimited = connLimited;
+        this.questionDBNo = questionDBNo;
     }
     
     /**
@@ -590,6 +593,10 @@ public class Question {
 
     public int getOutOf() {
         return difficulty*MARK_RANGE[2];
+    }
+
+    public int getQuestionDBNo() {
+        return questionDBNo;
     }
     
 }

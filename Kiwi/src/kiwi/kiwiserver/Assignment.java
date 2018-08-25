@@ -164,7 +164,7 @@ public class Assignment {
                             String answer = rs.getString("Answer");
                             int difficulty = rs.getInt("Difficulty");
                             String type = rs.getString("Type");
-                            question = new Question(tempQ, answer, difficulty, type, connLimited);
+                            question = new Question(tempQ, answer, difficulty, type, Qid, connLimited);
                         }
                         questionList.add(question);
                         
@@ -196,11 +196,12 @@ public class Assignment {
                 //Create question object:
                 Question question = new Question(connLimited);
                 while (rs.next()) {
+                    int Qid = rs.getInt("QuestionNo");
                     String tempQuestion = rs.getString("Question");
                     String answer = rs.getString("Answer");
                     int difficulty = rs.getInt("Difficulty");
                     String type = rs.getString("Type");
-                    question = new Question(tempQuestion, answer, difficulty, type, connLimited);
+                    question = new Question(tempQuestion, answer, difficulty, type, Qid, connLimited);
                 }
                 
                 //Add question to list:
@@ -274,7 +275,11 @@ public class Assignment {
     public int getQuestionNumber() {
         return currentPos + 1;
     }
-
+    
+    public int getQuestionID() {
+        return questionList.get(currentPos).getQuestionDBNo();
+    }
+    
     public int getNoQuestions() {
         return noQuestions;
     }

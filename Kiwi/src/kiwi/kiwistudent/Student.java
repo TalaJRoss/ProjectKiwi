@@ -7,6 +7,8 @@ import java.net.Socket;
 import java.sql.Date;
 import java.sql.Time;
 import java.text.DecimalFormat;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import kiwi.kiwiserver.ServerStartup;
 import kiwi.message.QuestionInfo;
 import kiwi.message.StudentMessage;
@@ -314,8 +316,23 @@ public class Student {
         return noQuestions;
     }
 
-    boolean isAssignmentDone() {
+    public boolean isAssignmentDone() {
         return nextQuestion==null;
+    }
+
+    public boolean report(String suggested) {
+        try {
+            //send report:
+            writer.writeObject(new StudentMessage(StudentMessage.CMD_REPORT, suggested));
+            //get response:
+            StudentMessage m = (StudentMessage) reader.readObject();
+            return m.getResponse()==StudentMessage.SUCCESS; //success vs fail
+        } 
+        catch (IOException | ClassNotFoundException e) {
+            System.out.println("Error: problem connecting to DB to report mistake.");
+            System.out.println(e);
+            return false;
+        }
     }
     
 }

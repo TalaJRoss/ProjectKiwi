@@ -150,6 +150,9 @@ class StudentHandler extends Thread {
                     case StudentMessage.CMD_SUBMIT: //upload file
                         markQuestion((String)m.getBody());
                         break;
+                    case StudentMessage.CMD_REPORT: //upload file
+                        reportQuestion((String)m.getBody());
+                        break;
                     case StudentMessage.CMD_QUIT: //upload file
                         updateGrade();
                         break;
@@ -286,7 +289,7 @@ class StudentHandler extends Thread {
                 double highestGrade = (double) rs.getObject("highestGrade");
                 int noSubmissionsCompleted = (int) rs.getObject("noSubmissionsCompleted");
                 int noSubmissionsRemaining = maxNoSubmissions - noSubmissionsCompleted;
-                Date deadlineDay = (Date) rs.getObject("deadlineDay");
+                Date deadlineDay = (Date) rs.getObject("deadlineDate");
                 Time deadlineTime = (Time) rs.getObject("deadlineTime");
                 StudentStatistics ss = new StudentStatistics(highestGrade, noSubmissionsRemaining, deadlineDay, deadlineTime);
                 writer.writeObject(new StudentMessage(StudentMessage.CMD_STATS, ss));
@@ -368,6 +371,73 @@ class StudentHandler extends Thread {
         writer.close();
         studentSocket.close();
         System.out.println("Student logged off and connection closed: " + studentNo);
+    }
+
+    private void reportQuestion(String suggested) throws IOException {
+        try {
+            Statement st = conn.createStatement();
+            ResultSet rs;
+            
+            //Setup reported table:
+            String createStatement = "CREATE TABLE IF NOT EXISTS reported (" +
+                    "QuestionNo int(11) NOT NULL, " +
+                    "StudentNo varchar(9) NOT NULL, " +
+                    "Suggested varchar(500) DEFAULT NULL, " +
+                    "PRIMARY KEY (QuestionNo, StudentNo) " +
+                    ") ENGINE=InnoDB;";
+            st.executeUpdate(createStatement);
+            
+            //Enter the report:
+            String reportStatement = "INSERT INTO reported (QuestionNo, StudentNo, Suggested) " +
+                    "VALUES (" + 
+                    assignment.getQuestionID() + ", " +    //current question number
+                    "'" + studentNo + "', " +          //student's student no.
+                    "'" + suggested + "');";       //student's suggested answer
+            conn.setAutoCommit(false);  //start transaction
+            Savepoint sp = conn.setSavepoint();
+            try {
+                st.executeUpdate(reportStatement);
+            }
+            catch (SQLException e) {
+                conn.rollback(sp);
+                conn.setAutoCommit(true);   //end transaction
+                System.out.println("Error: Problem adding report.");
+                System.out.println(e); 
+                writer.writeObject(new StudentMessage(StudentMessage.CMD_REPORT, null, StudentMessage.FAIL_CONNECT));
+                return;
+            }
+            conn.commit();
+            conn.setAutoCommit(true);
+            
+            //Mark question as reported:
+            reportStatement = "UPDATE questions "
+                    + "SET Problem='Reported' "
+                    + "WHERE QuestionNo=" + assignment.getQuestionID() + ";";
+            System.out.println(reportStatement);
+            conn.setAutoCommit(false);  //start transaction
+            sp = conn.setSavepoint();
+            try {
+                st.executeUpdate(reportStatement);
+            }
+            catch (SQLException e) {
+                conn.rollback(sp);
+                conn.setAutoCommit(true);   //end transaction
+                System.out.println("Error: Problem adding report.");
+                System.out.println(e); 
+                writer.writeObject(new StudentMessage(StudentMessage.CMD_REPORT, null, StudentMessage.FAIL_CONNECT));
+                return;
+            }
+            conn.commit();
+            conn.setAutoCommit(true);
+            
+            //Successfully reported:
+            writer.writeObject(new StudentMessage(StudentMessage.CMD_REPORT, null, StudentMessage.SUCCESS));
+        } 
+        catch (SQLException e) {
+            System.out.println("Error: Problem adding report.");
+            System.out.println(e); 
+            writer.writeObject(new StudentMessage(StudentMessage.CMD_REPORT, null, StudentMessage.FAIL_CONNECT));
+        }
     }
     
     

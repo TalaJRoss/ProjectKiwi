@@ -92,7 +92,7 @@ public class AssignmentFrame extends javax.swing.JFrame {
         txtaQuestion = new javax.swing.JTextArea();
         jScrollPane2 = new javax.swing.JScrollPane();
         txtaFeedback = new javax.swing.JTextArea();
-        jLabel1 = new javax.swing.JLabel();
+        jlbAnswer = new javax.swing.JLabel();
         txtfAnswer = new javax.swing.JTextField();
         btnSubmit = new javax.swing.JButton();
         btnShowSchema = new javax.swing.JButton();
@@ -100,13 +100,13 @@ public class AssignmentFrame extends javax.swing.JFrame {
         txtfMark = new javax.swing.JTextField();
         btnHome = new javax.swing.JButton();
         btnNext = new javax.swing.JButton();
-        jLabel2 = new javax.swing.JLabel();
+        jlbMark = new javax.swing.JLabel();
         jScrollPane4 = new javax.swing.JScrollPane();
         txtaOutput = new javax.swing.JTextArea();
         jpbQuestionProgress = new javax.swing.JProgressBar();
+        btnReport = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
-        setPreferredSize(new java.awt.Dimension(1024, 768));
         addWindowListener(new java.awt.event.WindowAdapter() {
             public void windowClosing(java.awt.event.WindowEvent evt) {
                 windowCloser(evt);
@@ -127,7 +127,7 @@ public class AssignmentFrame extends javax.swing.JFrame {
         txtaFeedback.setText("Feedback:");
         jScrollPane2.setViewportView(txtaFeedback);
 
-        jLabel1.setText("Enter your answer:");
+        jlbAnswer.setText("Enter your answer:");
 
         btnSubmit.setText("Submit");
         btnSubmit.addActionListener(new java.awt.event.ActionListener() {
@@ -166,7 +166,7 @@ public class AssignmentFrame extends javax.swing.JFrame {
             }
         });
 
-        jLabel2.setText("Mark:");
+        jlbMark.setText("Mark:");
 
         txtaOutput.setEditable(false);
         txtaOutput.setColumns(20);
@@ -175,6 +175,13 @@ public class AssignmentFrame extends javax.swing.JFrame {
         jScrollPane4.setViewportView(txtaOutput);
 
         jpbQuestionProgress.setToolTipText("");
+
+        btnReport.setText("Report");
+        btnReport.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnReportActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
@@ -188,53 +195,57 @@ public class AssignmentFrame extends javax.swing.JFrame {
             .addGroup(jPanel1Layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
-                        .addGap(0, 0, Short.MAX_VALUE)
-                        .addComponent(btnShowSchema))
                     .addComponent(jScrollPane2, javax.swing.GroupLayout.Alignment.TRAILING)
                     .addComponent(jScrollPane1)
                     .addGroup(jPanel1Layout.createSequentialGroup()
                         .addComponent(btnHome)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 90, Short.MAX_VALUE)
-                        .addComponent(jpbQuestionProgress, javax.swing.GroupLayout.PREFERRED_SIZE, 181, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(75, 75, 75)
-                        .addComponent(jLabel2)
+                        .addGap(18, 18, 18)
+                        .addComponent(jpbQuestionProgress, javax.swing.GroupLayout.DEFAULT_SIZE, 339, Short.MAX_VALUE)
+                        .addGap(18, 18, 18)
+                        .addComponent(jlbMark)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(txtfMark, javax.swing.GroupLayout.PREFERRED_SIZE, 60, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(18, 18, 18)
                         .addComponent(btnNext))
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
-                        .addComponent(jLabel1)
+                        .addComponent(jlbAnswer)
                         .addGap(27, 27, 27)
                         .addComponent(txtfAnswer))
-                    .addComponent(jScrollPane4)))
+                    .addComponent(jScrollPane4)
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
+                        .addGap(0, 0, Short.MAX_VALUE)
+                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(btnShowSchema, javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addComponent(btnReport, javax.swing.GroupLayout.Alignment.TRAILING)))))
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel1Layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(24, 24, 24)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 102, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(18, 18, 18)
                 .addComponent(btnShowSchema)
                 .addGap(18, 18, 18)
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel1)
+                    .addComponent(jlbAnswer)
                     .addComponent(txtfAnswer, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(18, 18, 18)
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(btnSubmit)
                     .addComponent(btnCheck))
                 .addGap(18, 18, 18)
-                .addComponent(jScrollPane4, javax.swing.GroupLayout.DEFAULT_SIZE, 153, Short.MAX_VALUE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 173, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(jScrollPane4, javax.swing.GroupLayout.PREFERRED_SIZE, 178, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(18, 18, 18)
+                .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 178, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(btnReport)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 19, Short.MAX_VALUE)
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                     .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                         .addComponent(btnHome)
                         .addComponent(btnNext)
                         .addComponent(txtfMark, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addComponent(jLabel2))
+                        .addComponent(jlbMark))
                     .addComponent(jpbQuestionProgress, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
         );
@@ -249,7 +260,7 @@ public class AssignmentFrame extends javax.swing.JFrame {
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, 679, Short.MAX_VALUE)
+            .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, 722, Short.MAX_VALUE)
         );
 
         pack();
@@ -431,6 +442,27 @@ public class AssignmentFrame extends javax.swing.JFrame {
         }
     }//GEN-LAST:event_windowCloser
 
+    private void btnReportActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnReportActionPerformed
+        //Get student suggested statement
+        String suggested = JOptionPane.showInputDialog(this, 
+                "You are reporting that the expected output for this question is wrong.\n"
+                + "Please provide the SQL statement which you believe to be correct."
+                + "Note: The lecturer will know that you reported this question.", 
+                "Report Marking Mistake", 
+                JOptionPane.DEFAULT_OPTION);
+        
+        if (suggested!=null) {  //suggestion given
+            if(student.report(suggested)) {     //successfully reported
+                JOptionPane.showMessageDialog(this, "Question marking error was reported.", 
+                    "Reported Successfully", JOptionPane.PLAIN_MESSAGE);
+            }
+            else {  //error in reporting
+                JOptionPane.showMessageDialog(this, "Question marking error could not be reported.", 
+                    "Reporting Error", JOptionPane.ERROR_MESSAGE);
+            }
+        }
+    }//GEN-LAST:event_btnReportActionPerformed
+
     
     //Main method:
     
@@ -492,14 +524,15 @@ public class AssignmentFrame extends javax.swing.JFrame {
     private javax.swing.JButton btnCheck;
     private javax.swing.JButton btnHome;
     private javax.swing.JButton btnNext;
+    private javax.swing.JButton btnReport;
     private javax.swing.JButton btnShowSchema;
     private javax.swing.JButton btnSubmit;
-    private javax.swing.JLabel jLabel1;
-    private javax.swing.JLabel jLabel2;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JScrollPane jScrollPane4;
+    private javax.swing.JLabel jlbAnswer;
+    private javax.swing.JLabel jlbMark;
     private javax.swing.JProgressBar jpbQuestionProgress;
     private javax.swing.JTextArea txtaFeedback;
     private javax.swing.JTextArea txtaOutput;
