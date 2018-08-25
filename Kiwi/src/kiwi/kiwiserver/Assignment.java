@@ -47,25 +47,44 @@ public class Assignment {
     public static final String [] Types = {"select","arithmetic","update"};
     
     
-    public Assignment(Connection conn, String studentNo, int noSubmissionsCompleted) throws SQLException {
-        this.conn = conn;
-        this.questionList = new ArrayList<>();
-        this.currentPos = -1;
-        generateQuestions(studentNo,noSubmissionsCompleted);
+    public Assignment(Connection conn, String studentNo, int noSubmissionsCompleted){
+        try {
+            //Initialise data 
+            this.conn = conn;
+            this.questionList = new ArrayList<>();
+            this.currentPos = -1;
+            //Get number of questions in an assignment from assignmentInfo table in the database
+            Statement st = conn.createStatement();
+            String query = "SELECT NoQuestions FROM assignmentinfo";
+            ResultSet rs = st.executeQuery(query);
+            rs.next();
+            noQuestions = rs.getInt("NoQuestions");
+            //Clean Up
+            rs.close();
+            st.close();
+            //Generate Questions
+            generateQuestions(studentNo,noSubmissionsCompleted);
+
+        } catch (SQLException ex) {
+            Logger.getLogger(Assignment.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        
     }
     
    
-    //TODO: make fair question selection
-    //TODO: make based on student no.
-    /**
-     * Generates list of questions that make up the assignment.
-     * @return The list of questions.
-     */
-    private void generateQuestions(String studentNo, int noSubmissionsCompleted) {
+        //TODO: make fair question selection
+        //TODO: make based on student no.
+        /**
+         * Generates list of questions that make up the assignment.
+         * @return The list of questions.
+         */
+        private void generateQuestions(String studentNo, int noSubmissionsCompleted) {
         
         try {
             //Check no submissions remaining:
             //String query = "SELECT MaxNoSubmissions";
+            
+            //Setup with database:
             Statement st = conn.createStatement();
             
             //Get the total number of questions in the questions table:
@@ -88,42 +107,33 @@ public class Assignment {
             
             //Setup:
             String seed = studentNo + noSubmissionsCompleted;
-            System.out.println("DEbug: "+seed);
             Random rnd = new Random(seed.hashCode());
             
-            System.out.println(""+numQperTypeDiff);
             //Get list of questions:
             //For each difficulty of the questions
             for (int i=1; i<4; i++) {
                 //For each types of this question type
-                System.out.println("for 1");
                 for (int j=0; j<numType; j++)
                 {
-                    System.out.println("for 2");
                     //Get the number of questions that has difficulty i and type j
                     query = "SELECT COUNT(*) AS numQ FROM questions WHERE difficulty="
                             + i
                             +" and type like '"
                             + Types[j]
                             +"'";
-                    System.out.println(query);
                     rs = st.executeQuery(query);
                     rs.next();
                     int numQ = rs.getInt("numQ");
                     
-                    System.out.println("executed query");
                     //For number of questions we need for each of these type and difficulty
-                    System.out.println(""+numQperTypeDiff);
                     for (int k=0; k<numQperTypeDiff; k++) 
                     {
                         
-                        System.out.println("*");
                         boolean [] usedQuestions = new boolean [numQ];    //true if used otherwise false (used to avoid duplicates)
                         int random = 0;
                         
                         boolean used = true;
                         while (used) {  //loop until unused question number found
-                            System.out.println(""+numQ);
                             random = rnd.nextInt(numQ)+1;
                             if (!usedQuestions[random-1])
                             {
@@ -154,9 +164,7 @@ public class Assignment {
                             String type = rs.getString("Type");
                             question = new Question(tempQ, answer, difficulty, type, conn);
                         }
-                        
                         questionList.add(question);
-                        System.out.println("added");
                         
                         // set the availibilty of this question to false
                         TotalUsed[Qid-1] = true;
@@ -196,7 +204,6 @@ public class Assignment {
                 //Add question to list:
                 questionList.add(question);
             }
-            System.out.println(""+questionList.size());
             //Clean up:
             rs.close();
             st.close();
