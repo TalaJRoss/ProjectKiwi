@@ -12,18 +12,18 @@ import java.io.Serializable;
 public class AssignmentInfo implements Serializable{
     
     //Instance variables
-        private String noSubmissions;
-        private String noQuestions;
-        private String date;
-        private String time;
-        private byte [] schemaImg;  
+    private String noSubmissions;
+    private String noQuestions;
+    private String date;
+    private String time;
+    private boolean closedPrac;
 
-    public AssignmentInfo(String noSubmissions, String noQuestions, String date, String time, byte [] schemaImg) {
+    public AssignmentInfo(String noSubmissions, String noQuestions, String date, String time, boolean closedPrac) {
         this.noSubmissions = noSubmissions;
         this.noQuestions = noQuestions;
         this.date = date;
         this.time = time;
-        this.schemaImg = schemaImg;
+        this.closedPrac = closedPrac;
     }
 
     public String getNoSubmissions() {
@@ -41,8 +41,9 @@ public class AssignmentInfo implements Serializable{
     public String getTime() {
         return time;
     }
+
+    public boolean isClosedPrac() {
+        return closedPrac;
+    }
     
-    public byte[] getSchemaImg() {
-        return schemaImg;
-    }    
 }

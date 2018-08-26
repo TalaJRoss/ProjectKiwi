@@ -5,6 +5,7 @@ package kiwi.kiwiserver;
 
 import com.opencsv.CSVReader;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
@@ -124,7 +125,7 @@ final class LecturerHandler extends Thread{
             connectToDB();
         } 
         catch (IOException e) {
-            System.out.println("Problem creating to database on intial student login.");
+            System.out.println("Problem connecting to database on intial run.");
             System.out.println(e);
         }
         try {
@@ -158,6 +159,9 @@ final class LecturerHandler extends Thread{
                     case LecturerMessage.CMD_UPLOAD_QUERY: //upload file
                         uploadQueryData(((CSVFiles)m.getBody()).getCsvFiles(), ((CSVFiles)m.getBody()).getFileNames());
                         break;
+                    case LecturerMessage.CMD_UPLOAD_SCHEMA: //upload the schema for the query data
+                        uploadSchema((Schema)m.getBody());
+                        break;
                     case LecturerMessage.UPDATE_DEADLINE:
                         updateDeadline((UpdateInfo)m.getBody());
                         break;
@@ -171,7 +175,7 @@ final class LecturerHandler extends Thread{
             lecturerSocket.close();
         }
         catch (IOException | ClassNotFoundException e) {
-            System.out.println("Problem processing student message.");
+            System.out.println("Problem processing lecturer message.");
             System.out.println(e);
         }
     }
@@ -192,14 +196,21 @@ final class LecturerHandler extends Thread{
                                  "NoSubmissions INT, " +
                                  "NoQuestions INT, " +
                                  "DeadlineDate DATE, " +
-                                 "DeadlineTime TIME);";
+                                 "DeadlineTime TIME, " +
+                                 "ClosedPrac BOOL);"; //"ClosedPrac BOOL NOT NULL DEFAULT '0');";
  
         //insert into table statement:
+        String closedPrac = "FALSE";
+        if(assignmentInfo.isClosedPrac()){
+            closedPrac = "TRUE";
+        }
+        
         String insertStatement =  "INSERT INTO AssignmentInfo VALUES (1, " +
                                    assignmentInfo.getNoSubmissions()+ ", "+
                                    assignmentInfo.getNoQuestions() + ", \""+
                                    assignmentInfo.getDate() + "\", \"" +
-                                   assignmentInfo.getTime() + "\");";
+                                   assignmentInfo.getTime() + "\", " +
+                                   closedPrac+ ");";
         
         System.out.println("Drop statement:\n"+dropStatement);
         System.out.println("Create statement:\n"+createStatement);
@@ -232,11 +243,6 @@ final class LecturerHandler extends Thread{
             conn.commit();
             conn.setAutoCommit(true);   //end transaction
             
-            //save schema:
-            if (assignmentInfo.getSchemaImg() != null) {
-                FileOutputStream fos = new FileOutputStream(ServerStartup.DB_PATH + "schema.jpg");
-                fos.write(assignmentInfo.getSchemaImg());
-            }
             
             writer.writeObject(new LecturerMessage(LecturerMessage.CMD_ASSIGNMENT_INFO, null, LecturerMessage.RESP_SUCCESS));
                 
@@ -244,6 +250,19 @@ final class LecturerHandler extends Thread{
         } catch (SQLException | IOException ex) {
             writer.writeObject(new LecturerMessage(LecturerMessage.CMD_ASSIGNMENT_INFO, null, LecturerMessage.RESP_FAIL_CONNECT));
         }
+    }
+    
+    public void uploadSchema(Schema schema) throws IOException{
+        //save schema:
+        FileOutputStream fos;
+        try {
+            fos = new FileOutputStream(ServerStartup.DB_PATH + "schema.jpg");
+            fos.write(schema.getSchemaImg());
+            writer.writeObject(new LecturerMessage(LecturerMessage.CMD_UPLOAD_SCHEMA, null, LecturerMessage.RESP_SUCCESS));
+        } catch (IOException ex) {
+            writer.writeObject(new LecturerMessage(LecturerMessage.CMD_UPLOAD_SCHEMA, null, LecturerMessage.RESP_FAIL_CONNECT));
+            System.out.println("Error: problem saving schema image");
+        } 
     }
     
     //TODO:check studentNumber of format aaaaaa000

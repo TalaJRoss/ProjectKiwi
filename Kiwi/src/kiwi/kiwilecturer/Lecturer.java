@@ -110,16 +110,19 @@ public class Lecturer {
     }
     
     //Main functionality methods(public):
-    
-    public String uploadAssignmentInfo(String noSubmissions, String noQuestions, String date, String time, String schemaPath){
-        
-        byte [] schemaImg = null;
+    /**
+     * Upload the information for a single assignment.
+     * @param noSubmissions the number of times a student can attempt an assignment.
+     * @param noQuestions the number of questions that an assignment consists of.
+     * @param date the closing date of the assignment in the format YYYY-MM-DD.
+     * @param time the closing time of the assignment in HH:MM:SS.
+     * @param closedPrac whether the assignment is closed (everyone gets the same set of questions) or not.
+     * @return whether the upload to the database was successful or not.
+     */
+    public String uploadAssignmentInfo(String noSubmissions, String noQuestions, String date, String time, boolean closedPrac){
         
         try {
-            if (schemaPath != null) {
-                schemaImg = getFileBytes(schemaPath);
-            }
-            writer.writeObject(new LecturerMessage(LecturerMessage.CMD_ASSIGNMENT_INFO, new AssignmentInfo(noSubmissions, noQuestions, date, time, schemaImg)));
+            writer.writeObject(new LecturerMessage(LecturerMessage.CMD_ASSIGNMENT_INFO, new AssignmentInfo(noSubmissions, noQuestions, date, time, closedPrac)));
             
             LecturerMessage resp = (LecturerMessage) reader.readObject();
             if (resp.getMessage()==LecturerMessage.RESP_SUCCESS) {
@@ -132,6 +135,30 @@ public class Lecturer {
         } catch (IOException | ClassNotFoundException ex) {
             System.out.println("Error: problem uploading info.");
             System.out.println(ex);
+            return FAIL_CONNECT;
+        }
+    }
+    
+    /**
+     * Upload the schema image for the query data to the server.
+     * @param schemaPath the path to the schema image.
+     * @return 
+     */
+    public String uploadSchema(String schemaPath){
+        try {
+            byte [] schemaImg = getFileBytes(schemaPath);
+            writer.writeObject(new LecturerMessage(LecturerMessage.CMD_UPLOAD_SCHEMA, new Schema(schemaImg)));
+            
+            LecturerMessage resp = (LecturerMessage) reader.readObject();
+            if (resp.getMessage()==LecturerMessage.RESP_SUCCESS) {
+                return SUCCESS;
+            }
+            else {
+                return FAIL_CONNECT;
+            }
+            
+        } catch (IOException | ClassNotFoundException ex) {
+            System.out.println("Error: problem uploading schema image");
             return FAIL_CONNECT;
         }
     }
