@@ -158,6 +158,9 @@ final class LecturerHandler extends Thread{
                     case LecturerMessage.CMD_UPLOAD_QUERY: //upload file
                         uploadQueryData(((CSVFiles)m.getBody()).getCsvFiles(), ((CSVFiles)m.getBody()).getFileNames());
                         break;
+                    case LecturerMessage.UPDATE_DEADLINE:
+                        updateDeadline((UpdateInfo)m.getBody());
+                        break;
                     case LecturerMessage.CMD_CLOSE: //close sockets
                         closeConnection();
                         break ONLINE;
@@ -632,6 +635,12 @@ final class LecturerHandler extends Thread{
         writer.close();
         lecturerSocket.close();
         System.out.println("Lecturer connection closed.");
+    }
+
+    private void updateDeadline(UpdateInfo updateInfo) {
+        String studentNo = updateInfo.getStudentNo();
+        String date = updateInfo.getDate();
+        String time = updateInfo.getTime();
     }
     
 }

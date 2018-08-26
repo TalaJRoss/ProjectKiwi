@@ -11,6 +11,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import kiwi.kiwiserver.ServerStartup;
 import kiwi.message.*;
@@ -294,6 +296,14 @@ public class Lecturer {
         writer.writeObject(new LecturerMessage(LecturerMessage.CMD_CONNECT, null));
         LecturerMessage response = (LecturerMessage) reader.readObject();
         connected = (response.getMessage() == LecturerMessage.RESP_SUCCESS);            
+    }
+
+    void updateStudentDeadline(String studentNo, String date, String time) {
+        try {
+            writer.writeObject(new LecturerMessage(LecturerMessage.UPDATE_DEADLINE, new UpdateInfo(studentNo,date,time)));
+        } catch (IOException ex) {
+            Logger.getLogger(Lecturer.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
     
 }
