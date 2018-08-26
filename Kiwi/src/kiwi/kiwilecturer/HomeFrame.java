@@ -150,7 +150,7 @@ public class HomeFrame extends javax.swing.JFrame {
         txtfUDmm = new javax.swing.JTextField();
         jLabel2 = new javax.swing.JLabel();
         txtfUDss = new javax.swing.JTextField();
-        btnUDupdate = new javax.swing.JButton();
+        btnUpdateDeadline = new javax.swing.JButton();
         btnSchemaUpload = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
@@ -288,16 +288,18 @@ public class HomeFrame extends javax.swing.JFrame {
 
         lblUDdate.setText("New Deadline Date:");
 
-        lblUDtime.setText("New Daedline Time:");
+        lblUDtime.setText("New Deadline Time:");
+
+        jdcUDdate.setDateFormatString("yyyy-MM-dd");
 
         jLabel1.setText(":");
 
         jLabel2.setText(":");
 
-        btnUDupdate.setText("Update");
-        btnUDupdate.addActionListener(new java.awt.event.ActionListener() {
+        btnUpdateDeadline.setText("Update");
+        btnUpdateDeadline.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnUDupdateActionPerformed(evt);
+                btnUpdateDeadlineActionPerformed(evt);
             }
         });
 
@@ -315,6 +317,59 @@ public class HomeFrame extends javax.swing.JFrame {
             .addGroup(jPanel1Layout.createSequentialGroup()
                 .addGap(70, 70, 70)
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addComponent(btnSchemaPath)
+                        .addGap(55, 55, 55)
+                        .addComponent(txtfSchemaPath)
+                        .addGap(179, 179, 179))
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addGroup(jPanel1Layout.createSequentialGroup()
+                                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addGroup(jPanel1Layout.createSequentialGroup()
+                                        .addComponent(lblUDtime)
+                                        .addGap(18, 18, 18)
+                                        .addComponent(txtfUDhh, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                        .addComponent(jLabel1)
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                        .addComponent(txtfUDmm, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                        .addComponent(jLabel2)
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                        .addComponent(txtfUDss, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
+                                        .addComponent(lblUDdate)
+                                        .addGap(18, 18, 18)
+                                        .addComponent(jdcUDdate, javax.swing.GroupLayout.PREFERRED_SIZE, 156, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                    .addGroup(jPanel1Layout.createSequentialGroup()
+                                        .addComponent(lblUDstudentNo)
+                                        .addGap(29, 29, 29)
+                                        .addComponent(txtfUDstudentNo, javax.swing.GroupLayout.PREFERRED_SIZE, 158, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                    .addComponent(lblUD)
+                                    .addComponent(rbtnClosedPrac)
+                                    .addComponent(rbtnAssignment))
+                                .addGap(451, 451, 451))
+                            .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 720, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
+                                    .addComponent(lblViewGrades)
+                                    .addGap(206, 206, 206)
+                                    .addComponent(btnGradeDescending)
+                                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                    .addComponent(btnView))
+                                .addComponent(txtfStudentFilename, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 452, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
+                                    .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                                        .addComponent(btnQuestions, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                        .addComponent(btnQueryData, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                        .addComponent(btnStudentCSV, javax.swing.GroupLayout.PREFERRED_SIZE, 213, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                        .addComponent(lblUpload, javax.swing.GroupLayout.Alignment.LEADING))
+                                    .addGap(55, 55, 55)
+                                    .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                                        .addComponent(txtfQueryDataFilename, javax.swing.GroupLayout.PREFERRED_SIZE, 452, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                        .addComponent(txtfQuestionsFilename, javax.swing.GroupLayout.PREFERRED_SIZE, 452, javax.swing.GroupLayout.PREFERRED_SIZE)))))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 40, Short.MAX_VALUE))
                     .addGroup(jPanel1Layout.createSequentialGroup()
                         .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
                             .addGroup(jPanel1Layout.createSequentialGroup()
@@ -341,81 +396,25 @@ public class HomeFrame extends javax.swing.JFrame {
                                         .addComponent(jSpinNoQuestions)))
                                 .addGap(0, 0, Short.MAX_VALUE))
                             .addComponent(txtfFeedback, javax.swing.GroupLayout.PREFERRED_SIZE, 538, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addGap(77, 77, 77)
-                        .addComponent(btnReconnect)
-                        .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(btnInfoUpload)
                     .addGroup(jPanel1Layout.createSequentialGroup()
-                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(jPanel1Layout.createSequentialGroup()
-                                .addComponent(btnSchemaPath)
-                                .addGap(55, 55, 55)
-                                .addComponent(txtfSchemaPath)
-                                .addGap(179, 179, 179))
-                            .addGroup(jPanel1Layout.createSequentialGroup()
-                                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                                    .addGroup(jPanel1Layout.createSequentialGroup()
-                                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                            .addGroup(jPanel1Layout.createSequentialGroup()
-                                                .addComponent(lblUDtime)
-                                                .addGap(18, 18, 18)
-                                                .addComponent(txtfUDhh, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                                .addComponent(jLabel1)
-                                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                                .addComponent(txtfUDmm, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                                .addComponent(jLabel2)
-                                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                                .addComponent(txtfUDss, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE))
-                                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
-                                                .addComponent(lblUDdate)
-                                                .addGap(18, 18, 18)
-                                                .addComponent(jdcUDdate, javax.swing.GroupLayout.PREFERRED_SIZE, 156, javax.swing.GroupLayout.PREFERRED_SIZE))
-                                            .addGroup(jPanel1Layout.createSequentialGroup()
-                                                .addComponent(lblUDstudentNo)
-                                                .addGap(29, 29, 29)
-                                                .addComponent(txtfUDstudentNo, javax.swing.GroupLayout.PREFERRED_SIZE, 158, javax.swing.GroupLayout.PREFERRED_SIZE))
-                                            .addComponent(lblUD)
-                                            .addComponent(rbtnClosedPrac)
-                                            .addComponent(rbtnAssignment))
-                                        .addGap(378, 378, 378)
-                                        .addComponent(btnUDupdate))
-                                    .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                        .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 720, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                        .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
-                                            .addComponent(lblViewGrades)
-                                            .addGap(206, 206, 206)
-                                            .addComponent(btnGradeDescending)
-                                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                            .addComponent(btnView))
-                                        .addComponent(txtfStudentFilename, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 452, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                        .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
-                                            .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                                                .addComponent(btnQuestions, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                                .addComponent(btnQueryData, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                                .addComponent(btnStudentCSV, javax.swing.GroupLayout.PREFERRED_SIZE, 213, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                                .addComponent(lblUpload, javax.swing.GroupLayout.Alignment.LEADING))
-                                            .addGap(55, 55, 55)
-                                            .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                                                .addComponent(txtfQueryDataFilename, javax.swing.GroupLayout.PREFERRED_SIZE, 452, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                                .addComponent(txtfQuestionsFilename, javax.swing.GroupLayout.PREFERRED_SIZE, 452, javax.swing.GroupLayout.PREFERRED_SIZE)))))
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 40, Short.MAX_VALUE)))
-                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(btnInfoUpload)
-                            .addGroup(jPanel1Layout.createSequentialGroup()
-                                .addComponent(btnUploadQuestions)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                                .addComponent(jButton2))
-                            .addGroup(jPanel1Layout.createSequentialGroup()
-                                .addComponent(btnUploadStudent)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                                .addComponent(jButton1))
-                            .addGroup(jPanel1Layout.createSequentialGroup()
-                                .addComponent(btnUploadQueryData)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                                .addComponent(jButton3))
-                            .addComponent(btnSchemaUpload))
-                        .addGap(38, 38, 38))))
+                        .addComponent(btnUploadQuestions)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(jButton2))
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addComponent(btnUploadStudent)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(jButton1))
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addComponent(btnUploadQueryData)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(jButton3))
+                    .addComponent(btnSchemaUpload)
+                    .addComponent(btnUpdateDeadline)
+                    .addComponent(btnReconnect))
+                .addGap(38, 38, 38))
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -504,16 +503,21 @@ public class HomeFrame extends javax.swing.JFrame {
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                         .addComponent(lblUDdate))
                     .addComponent(jdcUDdate, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(lblUDtime)
-                    .addComponent(txtfUDhh, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jLabel1)
-                    .addComponent(txtfUDmm, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jLabel2)
-                    .addComponent(txtfUDss, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(btnUDupdate))
-                .addContainerGap(35, Short.MAX_VALUE))
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(lblUDtime)
+                            .addComponent(txtfUDhh, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(jLabel1)
+                            .addComponent(txtfUDmm, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(jLabel2)
+                            .addComponent(txtfUDss, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(btnUpdateDeadline)
+                        .addGap(44, 44, 44))))
         );
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
@@ -700,9 +704,11 @@ public class HomeFrame extends javax.swing.JFrame {
 
     private void btnInfoUploadActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnInfoUploadActionPerformed
         
+        //TODO: Check for valid inputs and null values etc.
+        
         //Send assignment information to save on server
         
-        String response = "";
+        String response;
         
         try {
             jSpinNoSubmission.commitEdit();
@@ -873,14 +879,18 @@ public class HomeFrame extends javax.swing.JFrame {
     private void windowCloser(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_windowCloser
         try {
                 lecturer.closeConnection();
-            }
-        catch (IOException | ClassNotFoundException ex) {
+        } catch (IOException | ClassNotFoundException ex) {
                 JOptionPane.showMessageDialog(this, "Error closing sockets.", "Socket Error", JOptionPane.ERROR_MESSAGE);
-            }
+        }
         System.exit(0);
     }//GEN-LAST:event_windowCloser
 
-    private void btnUDupdateActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnUDupdateActionPerformed
+    private void btnUpdateDeadlineActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnUpdateDeadlineActionPerformed
+        
+        String response;
+        
+        //TODO: Check for valid inputs and null values etc.
+        
         String studentNo = txtfUDstudentNo.getText();
         String date = ((JTextField)jdcUDdate.getDateEditor().getUiComponent()).getText();
         String hour = txtfUDhh.getText();
@@ -903,15 +913,24 @@ public class HomeFrame extends javax.swing.JFrame {
             time = time + second;
         }
         
-        lecturer.updateStudentDeadline(studentNo,date,time);
-    }//GEN-LAST:event_btnUDupdateActionPerformed
+        response = lecturer.updateStudentDeadline(studentNo,date,time);
+        
+        if (response.equals(Lecturer.SUCCESS)) {
+            JOptionPane.showMessageDialog(this, "Assignment deadline for "+studentNo+" has been updated.", "Update successful", JOptionPane.PLAIN_MESSAGE);
+        } else {
+            JOptionPane.showMessageDialog(this, "Deadline update for "+studentNo+" was unsuccessful.", "Unsuccessful update", JOptionPane.ERROR_MESSAGE);
+        }
+        //clean up:
+        //NEEDS TO BE DONE        
+        
+    }//GEN-LAST:event_btnUpdateDeadlineActionPerformed
 
     private void btnSchemaUploadActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSchemaUploadActionPerformed
         
         //Save schema image onto server
         System.out.println("Schema path: "+schemaPath);
         
-        String response = "";
+        String response;
 
         if(schemaPath==null){
             JOptionPane.showMessageDialog(this, "Please select a schema image to upload", "Error", JOptionPane.ERROR_MESSAGE);
@@ -986,7 +1005,7 @@ public class HomeFrame extends javax.swing.JFrame {
     private javax.swing.JButton btnSchemaPath;
     private javax.swing.JButton btnSchemaUpload;
     private javax.swing.JButton btnStudentCSV;
-    private javax.swing.JButton btnUDupdate;
+    private javax.swing.JButton btnUpdateDeadline;
     private javax.swing.JButton btnUploadQueryData;
     private javax.swing.JButton btnUploadQuestions;
     private javax.swing.JButton btnUploadStudent;

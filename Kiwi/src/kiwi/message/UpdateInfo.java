@@ -1,15 +1,13 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
+
 package kiwi.message;
+
+import java.io.Serializable;
 
 /**
  *
  * @author Steven
  */
-public class UpdateInfo {
+public class UpdateInfo implements Serializable{
 
     String studentNo;
     String date;

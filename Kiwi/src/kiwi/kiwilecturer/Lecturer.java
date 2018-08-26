@@ -318,19 +318,35 @@ public class Lecturer {
             return FAIL_CONNECT;
         }
     }
+    
+    /**
+     * Updates an individual student's deadline for submitting the assignment.
+     * @param studentNo the studentNo for the student whose assignment is to be updated.
+     * @param date the new deadline date.
+     * @param time the new deadline time.
+     * @return whether the upload to the database was successful or not.
+     */
+    public String updateStudentDeadline(String studentNo, String date, String time) {
+        try {
+            writer.writeObject(new LecturerMessage(LecturerMessage.CMD_UPDATE_DEADLINE, new UpdateInfo(studentNo,date,time)));
+            LecturerMessage response = (LecturerMessage) reader.readObject();
+            if (response.getMessage()==LecturerMessage.RESP_SUCCESS) {
+                return SUCCESS;
+            }
+            else {
+                return FAIL_CONNECT;
+            }
+        } catch (IOException | ClassNotFoundException ex) {
+            System.out.println("Error: problem updating student deadline.");
+            System.out.println(ex);
+            return FAIL_CONNECT;
+        }        
+    }
 
     public void connectToDB() throws IOException, ClassNotFoundException {
         writer.writeObject(new LecturerMessage(LecturerMessage.CMD_CONNECT, null));
         LecturerMessage response = (LecturerMessage) reader.readObject();
         connected = (response.getMessage() == LecturerMessage.RESP_SUCCESS);            
-    }
-
-    void updateStudentDeadline(String studentNo, String date, String time) {
-        try {
-            writer.writeObject(new LecturerMessage(LecturerMessage.UPDATE_DEADLINE, new UpdateInfo(studentNo,date,time)));
-        } catch (IOException ex) {
-            Logger.getLogger(Lecturer.class.getName()).log(Level.SEVERE, null, ex);
-        }
     }
     
 }

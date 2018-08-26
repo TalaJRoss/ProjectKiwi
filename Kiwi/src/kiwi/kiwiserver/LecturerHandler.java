@@ -162,7 +162,7 @@ final class LecturerHandler extends Thread{
                     case LecturerMessage.CMD_UPLOAD_SCHEMA: //upload the schema for the query data
                         uploadSchema((Schema)m.getBody());
                         break;
-                    case LecturerMessage.UPDATE_DEADLINE:
+                    case LecturerMessage.CMD_UPDATE_DEADLINE: //update the assignment submission deadline for a student
                         updateDeadline((UpdateInfo)m.getBody());
                         break;
                     case LecturerMessage.CMD_CLOSE: //close sockets
@@ -182,8 +182,12 @@ final class LecturerHandler extends Thread{
     
     //Main functionality methods(public):
     
-    
-    public void uploadAssignmentInfo(AssignmentInfo assignmentInfo) throws IOException{ //NoSubmissions, deadline date etc.
+    /**
+     * Create a table with the noSubmissions, noQuestions, DeadlineDate, DeadlineTime and whether it is a ClosedPrac or not.
+     * @param assignmentInfo an AssignmentInfo object with the details of an assignment.
+     * @throws IOException 
+     */
+    public void uploadAssignmentInfo(AssignmentInfo assignmentInfo) throws IOException{
         
         String tblName = "AssignmentInfo";
         
@@ -197,7 +201,7 @@ final class LecturerHandler extends Thread{
                                  "NoQuestions INT, " +
                                  "DeadlineDate DATE, " +
                                  "DeadlineTime TIME, " +
-                                 "ClosedPrac BOOL);"; //"ClosedPrac BOOL NOT NULL DEFAULT '0');";
+                                 "ClosedPrac BOOL);";
  
         //insert into table statement:
         String closedPrac = "FALSE";
@@ -252,6 +256,11 @@ final class LecturerHandler extends Thread{
         }
     }
     
+    /**
+     * Save the schema for the query data to the DB directory.
+     * @param schema the Schema object containing the bytes for the image.
+     * @throws IOException 
+     */
     public void uploadSchema(Schema schema) throws IOException{
         //save schema:
         FileOutputStream fos;
@@ -437,29 +446,25 @@ final class LecturerHandler extends Thread{
      * @param csvs Array of csv files containing query data.
      */
     public void uploadQueryData(ArrayList<byte []> csvs, String [] names) throws IOException {
-        try {
-            Statement st = conn.createStatement();
-            String flush = "FLUSH PRIVILEGES;";
-            for (int i=0; i<csvs.size(); i++) {
-                String response = createTable(names[i], csvs.get(i));
-                if (response.equals(SUCCESS)) {
-                    writer.writeObject(new LecturerMessage(LecturerMessage.CMD_UPLOAD_QUERY, null, LecturerMessage.RESP_SUCCESS));
-                    
-                    //grant students access to all successfully uploaded query data tables
-                    String studentPermissions = "GRANT SELECT, INSERT, UPDATE, DELETE ON "+ServerStartup.DB_NAME+"."+names[i]+" TO '"+ServerStartup.STUDENT_NAME+"'@'localhost';";
-                    String[] cmd = new String[]{ServerStartup.MYSQL_PATH,ServerStartup.DB_NAME,"--user=" + ServerStartup.ROOT_NAME,"--password=" + ServerStartup.ROOT_PWD,"-e",studentPermissions};
-                    Runtime.getRuntime().exec(cmd);
-                    String[] cmdFlush = new String[]{ServerStartup.MYSQL_PATH,ServerStartup.DB_NAME,"--user=" + ServerStartup.ROOT_NAME,"--password=" + ServerStartup.ROOT_PWD,"-e",flush};
-                    Runtime.getRuntime().exec(cmdFlush);
-                    System.out.println("Granted student permissions for "+names[i]);
-                    
-                } else {
-                    writer.writeObject(new LecturerMessage(LecturerMessage.CMD_UPLOAD_QUERY, null, LecturerMessage.RESP_FAIL_CONNECT));
-                }
-            }            
-        } catch (SQLException ex) {
-            System.out.println("Error setting permissions for student");
-            Logger.getLogger(LecturerHandler.class.getName()).log(Level.SEVERE, null, ex);
+        
+        String flush = "FLUSH PRIVILEGES;";
+        
+        for (int i=0; i<csvs.size(); i++) {
+            String response = createTable(names[i], csvs.get(i));
+            if (response.equals(SUCCESS)) {
+                writer.writeObject(new LecturerMessage(LecturerMessage.CMD_UPLOAD_QUERY, null, LecturerMessage.RESP_SUCCESS));
+                
+                //grant students access to all successfully uploaded query data tables
+                String studentPermissions = "GRANT SELECT, INSERT, UPDATE, DELETE ON "+ServerStartup.DB_NAME+"."+names[i]+" TO '"+ServerStartup.STUDENT_NAME+"'@'localhost';";
+                String[] cmd = new String[]{ServerStartup.MYSQL_PATH,ServerStartup.DB_NAME,"--user=" + ServerStartup.ROOT_NAME,"--password=" + ServerStartup.ROOT_PWD,"-e",studentPermissions};
+                Runtime.getRuntime().exec(cmd);
+                String[] cmdFlush = new String[]{ServerStartup.MYSQL_PATH,ServerStartup.DB_NAME,"--user=" + ServerStartup.ROOT_NAME,"--password=" + ServerStartup.ROOT_PWD,"-e",flush};
+                Runtime.getRuntime().exec(cmdFlush);
+                System.out.println("Granted student permissions for "+names[i]);
+                
+            } else {
+                writer.writeObject(new LecturerMessage(LecturerMessage.CMD_UPLOAD_QUERY, null, LecturerMessage.RESP_FAIL_CONNECT));
+            }
         }            
     }
     
@@ -494,6 +499,33 @@ final class LecturerHandler extends Thread{
         } else {
             writer.writeObject(new LecturerMessage(LecturerMessage.CMD_GRADE_DESC, new Grades(response), LecturerMessage.RESP_SUCCESS));
         }
+    }
+    
+    /**
+     * Updates an individual student's deadline for submitting the assignment by performing an SQL update on the Students table.
+     * @param updateInfo the object containing the details (studentNo, date and time) for the update.
+     */
+    
+    public void updateDeadline(UpdateInfo updateInfo) throws IOException {
+        
+        //update statement
+        String updateStatement = "UPDATE students "+
+                                 "SET DeadlineDate = '"+updateInfo.getDate()+"', DeadlineTime = ' "+updateInfo.getTime()+"'"+
+                                  "WHERE StudentNo = '"+updateInfo.getStudentNo()+"';";
+        
+        System.out.println("Deadline update statement: "+updateStatement);
+        
+        Statement st;
+        
+        try {
+             st = conn.createStatement();
+             st.executeUpdate(updateStatement);
+             writer.writeObject(new LecturerMessage(LecturerMessage.CMD_UPDATE_DEADLINE, null, LecturerMessage.RESP_SUCCESS));
+             st.close();
+        } catch (SQLException ex) {
+            writer.writeObject(new LecturerMessage(LecturerMessage.CMD_UPDATE_DEADLINE, null, LecturerMessage.RESP_FAIL_CONNECT));
+        }
+        
     }
     
     /**
@@ -654,12 +686,6 @@ final class LecturerHandler extends Thread{
         writer.close();
         lecturerSocket.close();
         System.out.println("Lecturer connection closed.");
-    }
-
-    private void updateDeadline(UpdateInfo updateInfo) {
-        String studentNo = updateInfo.getStudentNo();
-        String date = updateInfo.getDate();
-        String time = updateInfo.getTime();
     }
     
 }
