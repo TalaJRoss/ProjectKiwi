@@ -29,6 +29,10 @@ public class LecturerMessage implements Serializable{
     public static final int CMD_UPLOAD_SCHEMA = 8;
     public static final int CMD_UPDATE_DEADLINE = 9;
     
+    public static final int CMD_RESET_STUDENTS = 10;
+    public static final int CMD_RESET_QUESTIONS = 11;
+    public static final int CMD_RESET_QUERY_DATA = 12;
+    
     public static final int RESP_SUCCESS = 0;
     public static final int RESP_FAIL_CONNECT = 1;
     public static final int RESP_FAIL_NULL = 2;

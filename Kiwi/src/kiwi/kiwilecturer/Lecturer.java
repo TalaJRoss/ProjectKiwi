@@ -11,8 +11,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import kiwi.kiwiserver.ServerStartup;
 import kiwi.message.*;
@@ -125,7 +123,7 @@ public class Lecturer {
             writer.writeObject(new LecturerMessage(LecturerMessage.CMD_ASSIGNMENT_INFO, new AssignmentInfo(noSubmissions, noQuestions, date, time, closedPrac)));
             
             LecturerMessage resp = (LecturerMessage) reader.readObject();
-            if (resp.getMessage()==LecturerMessage.RESP_SUCCESS) {
+            if (resp.getMessage() == LecturerMessage.RESP_SUCCESS) {
                 return SUCCESS;
             }
             else {
@@ -150,7 +148,7 @@ public class Lecturer {
             writer.writeObject(new LecturerMessage(LecturerMessage.CMD_UPLOAD_SCHEMA, new Schema(schemaImg)));
             
             LecturerMessage resp = (LecturerMessage) reader.readObject();
-            if (resp.getMessage()==LecturerMessage.RESP_SUCCESS) {
+            if (resp.getMessage() == LecturerMessage.RESP_SUCCESS) {
                 return SUCCESS;
             }
             else {
@@ -252,7 +250,7 @@ public class Lecturer {
             String fails = "";
             for (String name: names) {
                 LecturerMessage resp = (LecturerMessage) reader.readObject();
-                if (resp.getMessage()!=LecturerMessage.RESP_SUCCESS) {
+                if (resp.getMessage() != LecturerMessage.RESP_SUCCESS) {
                     fails+= name + ", ";
                     success = false;
                 }
@@ -281,7 +279,7 @@ public class Lecturer {
         try {
             writer.writeObject(new LecturerMessage(LecturerMessage.CMD_GRADE_ALPH, null));
             LecturerMessage response = (LecturerMessage) reader.readObject();
-            if (response.getMessage()==LecturerMessage.RESP_SUCCESS) {
+            if (response.getMessage() == LecturerMessage.RESP_SUCCESS) {
                 return ((Grades) response.getBody()).getGrades();
             }
             else {
@@ -306,7 +304,7 @@ public class Lecturer {
         try {
             writer.writeObject(new LecturerMessage(LecturerMessage.CMD_GRADE_DESC, null));
             LecturerMessage response = (LecturerMessage) reader.readObject();
-            if (response.getMessage()==LecturerMessage.RESP_SUCCESS) {
+            if (response.getMessage() == LecturerMessage.RESP_SUCCESS) {
                 return ((Grades) response.getBody()).getGrades();
             }
             else {
@@ -330,7 +328,7 @@ public class Lecturer {
         try {
             writer.writeObject(new LecturerMessage(LecturerMessage.CMD_UPDATE_DEADLINE, new UpdateInfo(studentNo,date,time)));
             LecturerMessage response = (LecturerMessage) reader.readObject();
-            if (response.getMessage()==LecturerMessage.RESP_SUCCESS) {
+            if (response.getMessage() == LecturerMessage.RESP_SUCCESS) {
                 return SUCCESS;
             }
             else {
@@ -343,6 +341,72 @@ public class Lecturer {
         }        
     }
 
+    /**
+     * Drops the Students table.
+     * @return success/fail message depending on whether the drop was successful.
+     */
+    public String resetStudents(){
+        
+        try {
+            writer.writeObject(new LecturerMessage(LecturerMessage.CMD_RESET_STUDENTS, null));
+            LecturerMessage response = (LecturerMessage) reader.readObject();
+            if (response.getMessage() == LecturerMessage.RESP_SUCCESS) {
+                return SUCCESS;
+            }
+            else {
+                return FAIL_CONNECT;
+            }
+        } catch (IOException | ClassNotFoundException ex) {
+            System.out.println("Error: problem resetting students table.");
+            System.out.println(ex);
+            return FAIL_CONNECT;
+        }
+        
+    }
+    
+     /**
+     * Drops the Questions table.
+     * @return success/fail message depending on whether the drop was successful.
+     */
+    public String resetQuestions(){
+        
+        try {
+            writer.writeObject(new LecturerMessage(LecturerMessage.CMD_RESET_QUESTIONS, null));
+            LecturerMessage response = (LecturerMessage) reader.readObject();
+            if (response.getMessage() == LecturerMessage.RESP_SUCCESS) {
+                return SUCCESS;
+            }
+            else {
+                return FAIL_CONNECT;
+            }
+        } catch (IOException | ClassNotFoundException ex) {
+            System.out.println("Error: problem resetting questions table.");
+            System.out.println(ex);
+            return FAIL_CONNECT;
+        }
+        
+    }
+    /**
+     * Drops all QueryData tables, if they exist, in the database.
+     * @return success/fail response depending on whether all query data tables dropped.
+     */
+    public String resetQueryData(){
+        try {
+            writer.writeObject(new LecturerMessage(LecturerMessage.CMD_RESET_QUERY_DATA, null));
+            LecturerMessage response = (LecturerMessage) reader.readObject();
+            if (response.getMessage() == LecturerMessage.RESP_SUCCESS) {
+                return SUCCESS;
+            }
+            else {
+                return FAIL_CONNECT;
+            }
+        } catch (IOException | ClassNotFoundException ex) {
+            System.out.println("Error: problem resetting questions table.");
+            System.out.println(ex);
+            return FAIL_CONNECT;
+        }    
+    }
+    
     public void connectToDB() throws IOException, ClassNotFoundException {
         writer.writeObject(new LecturerMessage(LecturerMessage.CMD_CONNECT, null));
         LecturerMessage response = (LecturerMessage) reader.readObject();

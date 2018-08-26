@@ -165,6 +165,15 @@ final class LecturerHandler extends Thread{
                     case LecturerMessage.CMD_UPDATE_DEADLINE: //update the assignment submission deadline for a student
                         updateDeadline((UpdateInfo)m.getBody());
                         break;
+                    case LecturerMessage.CMD_RESET_STUDENTS: //reset the students table
+                        resetStudents();
+                        break;
+                    case LecturerMessage.CMD_RESET_QUESTIONS: //reset the questions table
+                        resetQuestions();
+                        break;
+                    case LecturerMessage.CMD_RESET_QUERY_DATA: //reset the questions table
+                        resetQueryData();
+                        break;                        
                     case LecturerMessage.CMD_CLOSE: //close sockets
                         closeConnection();
                         break ONLINE;
@@ -679,6 +688,66 @@ final class LecturerHandler extends Thread{
             System.out.println(e);
             return FAIL;
         } 
+    }
+    /**
+     * Drops the Students table, if it exists, in the database.
+     * @return success/fail response depending on Students table drop.
+     * @throws IOException 
+     */
+    private String resetStudents() throws IOException{
+        
+        String dropStatement = "DROP TABLE IF EXISTS Students;";
+        
+        Statement st;
+        
+        try {
+            st = conn.createStatement();
+            st.execute(dropStatement);
+            writer.writeObject(new LecturerMessage(LecturerMessage.CMD_RESET_STUDENTS, null, LecturerMessage.RESP_SUCCESS));
+            st.close();
+            return SUCCESS; //drop successful
+        } catch (SQLException ex) {
+            writer.writeObject(new LecturerMessage(LecturerMessage.CMD_RESET_STUDENTS, null, LecturerMessage.RESP_FAIL_CONNECT));
+            System.out.println("Error: Problem dropping Students table.");
+            System.out.println(ex);
+            return FAIL;
+        }
+    
+    }
+    
+    /**
+     * Drops the Questions table, if it exists, in the database.
+     * @return success/fail response depending on Students table drop.
+     * @throws IOException 
+     */
+    private String resetQuestions() throws IOException{
+        
+        String dropStatement = "DROP TABLE IF EXISTS Questions;";
+        
+        Statement st;
+        
+        try {
+            st = conn.createStatement();
+            st.execute(dropStatement);
+            writer.writeObject(new LecturerMessage(LecturerMessage.CMD_RESET_QUESTIONS, null, LecturerMessage.RESP_SUCCESS));
+            st.close();
+            return SUCCESS; //drop successful
+        } catch (SQLException ex) {
+            writer.writeObject(new LecturerMessage(LecturerMessage.CMD_RESET_QUESTIONS, null, LecturerMessage.RESP_FAIL_CONNECT));
+            System.out.println("Error: Problem dropping Questions table.");
+            System.out.println(ex);
+            return FAIL;
+        }
+    
+    }
+    
+    /**
+     * Drops all QueryData tables, if they exist, in the database.
+     * @return success/fail response depending on whether all query data tables dropped.
+     */
+    private String resetQueryData(){
+        //TODO: still to implement functionality
+        return null;
     }
     
     private void closeConnection() throws IOException {
