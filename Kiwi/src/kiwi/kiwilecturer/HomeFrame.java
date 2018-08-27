@@ -973,13 +973,16 @@ public class HomeFrame extends javax.swing.JFrame {
         
         //reset the students table
         
-        String response = lecturer.resetStudents();
+        int option = JOptionPane.showConfirmDialog(null, "Are you sure you want to delete the Students table?", "Warning", JOptionPane.WARNING_MESSAGE);
         
-        if (response.equals(Lecturer.SUCCESS)) {
-            JOptionPane.showMessageDialog(this, "Succesfully cleared Students table.", "Reset successful", JOptionPane.PLAIN_MESSAGE);
-        } else {
-            JOptionPane.showMessageDialog(this, "Students table was not cleared.", "Reset unsuccessful", JOptionPane.ERROR_MESSAGE);
-        }        
+        if (option == JOptionPane.YES_OPTION) {
+            String response = lecturer.resetStudents();
+            if (response.equals(Lecturer.SUCCESS)) {
+                JOptionPane.showMessageDialog(this, "Succesfully cleared Students table.", "Reset successful", JOptionPane.PLAIN_MESSAGE);
+            } else {
+                JOptionPane.showMessageDialog(this, "Students table was not cleared.", "Reset unsuccessful", JOptionPane.ERROR_MESSAGE);
+            }             
+        }
         
     }//GEN-LAST:event_btnResetStudentsActionPerformed
 
@@ -987,12 +990,15 @@ public class HomeFrame extends javax.swing.JFrame {
         
         //reset the questions table
         
-        String response = lecturer.resetQuestions();
+        int option = JOptionPane.showConfirmDialog(null, "Are you sure you want to delete the Questions table?", "Warning", JOptionPane.WARNING_MESSAGE);
         
-        if (response.equals(Lecturer.SUCCESS)) {
-            JOptionPane.showMessageDialog(this, "Succesfully cleared Questions table.", "Reset successful", JOptionPane.PLAIN_MESSAGE);
-        } else {
-            JOptionPane.showMessageDialog(this, "Questions table was not cleared.", "Reset unsuccessful", JOptionPane.ERROR_MESSAGE);
+        if (option == JOptionPane.YES_OPTION) {
+        String response = lecturer.resetQuestions();
+            if (response.equals(Lecturer.SUCCESS)) {
+                JOptionPane.showMessageDialog(this, "Succesfully cleared Questions table.", "Reset successful", JOptionPane.PLAIN_MESSAGE);
+            } else {
+                JOptionPane.showMessageDialog(this, "Questions table was not cleared.", "Reset unsuccessful", JOptionPane.ERROR_MESSAGE);
+            }
         }  
         
     }//GEN-LAST:event_btnResetQuestionsActionPerformed
@@ -1001,12 +1007,15 @@ public class HomeFrame extends javax.swing.JFrame {
        
         //reset the query data tables
         
-        String response = lecturer.resetQueryData();
+        int option = JOptionPane.showConfirmDialog(null, "Are you sure you want to delete all Query Data tables?", "Warning", JOptionPane.WARNING_MESSAGE);
         
-        if (response.equals(Lecturer.SUCCESS)) {
-            JOptionPane.showMessageDialog(this, "Succesfully cleared Query Data tables.", "Reset successful", JOptionPane.PLAIN_MESSAGE);
-        } else {
-            JOptionPane.showMessageDialog(this, "Query Data tables were not cleared.", "Reset unsuccessful", JOptionPane.ERROR_MESSAGE);
+        if (option == JOptionPane.YES_OPTION) {
+            String response = lecturer.resetQueryData();
+            if (response.equals(Lecturer.SUCCESS)) {
+                JOptionPane.showMessageDialog(this, "Succesfully cleared Query Data tables.", "Reset successful", JOptionPane.PLAIN_MESSAGE);
+            } else {
+                JOptionPane.showMessageDialog(this, "Query Data tables were not cleared.", "Reset unsuccessful", JOptionPane.ERROR_MESSAGE);
+            }
         }   
     }//GEN-LAST:event_btnResetQueryDataActionPerformed
     

@@ -456,8 +456,6 @@ final class LecturerHandler extends Thread{
      */
     public void uploadQueryData(ArrayList<byte []> csvs, String [] names) throws IOException {
         
-        String flush = "FLUSH PRIVILEGES;";
-        
         for (int i=0; i<csvs.size(); i++) {
             String response = createTable(names[i], csvs.get(i));
             if (response.equals(SUCCESS)) {
@@ -467,7 +465,7 @@ final class LecturerHandler extends Thread{
                 String studentPermissions = "GRANT SELECT, INSERT, UPDATE, DELETE ON "+ServerStartup.DB_NAME+"."+names[i]+" TO '"+ServerStartup.STUDENT_NAME+"'@'localhost';";
                 String[] cmd = new String[]{ServerStartup.MYSQL_PATH,ServerStartup.DB_NAME,"--user=" + ServerStartup.ROOT_NAME,"--password=" + ServerStartup.ROOT_PWD,"-e",studentPermissions};
                 Runtime.getRuntime().exec(cmd);
-                String[] cmdFlush = new String[]{ServerStartup.MYSQL_PATH,ServerStartup.DB_NAME,"--user=" + ServerStartup.ROOT_NAME,"--password=" + ServerStartup.ROOT_PWD,"-e",flush};
+                String[] cmdFlush = new String[]{ServerStartup.MYSQL_PATH,ServerStartup.DB_NAME,"--user=" + ServerStartup.ROOT_NAME,"--password=" + ServerStartup.ROOT_PWD,"-e","FLUSH PRIVILEGES;"};
                 Runtime.getRuntime().exec(cmdFlush);
                 System.out.println("Granted student permissions for "+names[i]);
                 
@@ -690,7 +688,7 @@ final class LecturerHandler extends Thread{
         } 
     }
     /**
-     * Drops the Students table, if it exists, in the database.
+     * Drops the Students table, if it exists, in the database and deletes the csv file stored in the DB directory.
      * @return success/fail response depending on Students table drop.
      * @throws IOException 
      */
@@ -701,6 +699,16 @@ final class LecturerHandler extends Thread{
         Statement st;
         
         try {
+            
+            //delete students csv file in DB directory
+            if(deleteFile("students.csv")){
+                System.out.println("'students.csv' file deleted from DB directory");
+            }
+            else{
+                System.out.println("'students.csv' file NOT deleted from DB directory");
+            }
+            
+            //delete table in DB
             st = conn.createStatement();
             st.execute(dropStatement);
             writer.writeObject(new LecturerMessage(LecturerMessage.CMD_RESET_STUDENTS, null, LecturerMessage.RESP_SUCCESS));
@@ -716,7 +724,7 @@ final class LecturerHandler extends Thread{
     }
     
     /**
-     * Drops the Questions table, if it exists, in the database.
+     * Drops the Questions table, if it exists, in the database and deletes the csv file stored in the DB directory.
      * @return success/fail response depending on Students table drop.
      * @throws IOException 
      */
@@ -727,6 +735,15 @@ final class LecturerHandler extends Thread{
         Statement st;
         
         try {
+            
+            //delete questions csv file in DB directory
+            if(deleteFile("questions.csv")){
+                System.out.println("'questions.csv' file deleted from DB directory");
+            }
+            else{
+                System.out.println("'questions.csv' file NOT deleted from DB directory");
+            }
+            
             st = conn.createStatement();
             st.execute(dropStatement);
             writer.writeObject(new LecturerMessage(LecturerMessage.CMD_RESET_QUESTIONS, null, LecturerMessage.RESP_SUCCESS));
@@ -742,12 +759,82 @@ final class LecturerHandler extends Thread{
     }
     
     /**
-     * Drops all QueryData tables, if they exist, in the database.
+     * Drops all QueryData tables, if they exist, in the database and deletes the csv files stored in the DB directory.
      * @return success/fail response depending on whether all query data tables dropped.
      */
-    private String resetQueryData(){
+    private String resetQueryData() throws IOException{
         //TODO: still to implement functionality
+        
+        //get the names of the query tables that we want to drop
+        String getQueryTablesStatement = "SHOW TABLES WHERE NOT (Tables_in_"+ServerStartup.DB_NAME+"= 'assignmentinfo' "
+                                          +"OR Tables_in_"+ServerStartup.DB_NAME+"= 'questions' "
+                                          +"OR Tables_in_"+ServerStartup.DB_NAME+" = 'students');";
+        
+        Statement st1, st2; //Need two so as not to destroy ResultSet containing the table names
+        
+        try {
+            st1 = conn.createStatement();
+            st2 = conn.createStatement();
+            
+            ResultSet rs = st1.executeQuery(getQueryTablesStatement);
+            
+            while (rs.next()) {
+                
+                String tableName = (String)rs.getObject(1);//only one column named 'Tables_in_kiwidb'
+                
+                //delete query data csv file in DB directory
+                if(deleteFile(tableName+".csv")){
+                    System.out.println("'questions.csv' file deleted from DB directory");
+                }
+                else{
+                    System.out.println("'questions.csv' file NOT deleted from DB directory");
+                }
+                
+                //drop individual table statement
+                String dropStatement = "DROP TABLE "+tableName+";"; 
+                st2.execute(dropStatement);
+                System.out.println("Dropped table: "+dropStatement);
+                
+                //revoke the students acccess to each of the query tables
+                String studentPermissions = "REVOKE SELECT, INSERT, UPDATE, DELETE ON "+ServerStartup.DB_NAME+"."+tableName+" FROM '"+ServerStartup.STUDENT_NAME+"'@'localhost';";
+                String[] cmd = new String[]{ServerStartup.MYSQL_PATH,ServerStartup.DB_NAME,"--user=" + ServerStartup.ROOT_NAME,"--password=" + ServerStartup.ROOT_PWD,"-e",studentPermissions};
+                Runtime.getRuntime().exec(cmd);
+                String[] cmdFlush = new String[]{ServerStartup.MYSQL_PATH,ServerStartup.DB_NAME,"--user=" + ServerStartup.ROOT_NAME,"--password=" + ServerStartup.ROOT_PWD,"-e","FLUSH PRIVILEGES;"};
+                Runtime.getRuntime().exec(cmdFlush);
+                System.out.println("Revoked student permissions for "+tableName);               
+            }
+            
+            //delete the schema corresponding to the query data
+            if(deleteFile("schema.jpg")){
+                System.out.println("'schema.jpg' image deleted from DB directory");
+            }
+            else{
+                System.out.println("'schema.jpg' image NOT deleted from DB directory");
+            }            
+            
+            writer.writeObject(new LecturerMessage(LecturerMessage.CMD_RESET_QUERY_DATA, null, LecturerMessage.RESP_SUCCESS));
+            st1.close();
+            st2.close();
+        } catch (SQLException ex) {
+            writer.writeObject(new LecturerMessage(LecturerMessage.CMD_RESET_QUERY_DATA, null, LecturerMessage.RESP_FAIL_CONNECT));
+            System.out.println("Error: Problem dropping Query Data tables.");
+            System.out.println(ex);
+            return FAIL;
+        }
+        
         return null;
+    }
+    
+    /**
+     * Deletes a single file from the DB directory.
+     * @param filename name of the csv file to be deleted.
+     * @return 
+     */
+    private boolean deleteFile(String filename){
+        
+        File file = new File(ServerStartup.DB_PATH+filename);
+        return file.delete();
+        
     }
     
     private void closeConnection() throws IOException {
