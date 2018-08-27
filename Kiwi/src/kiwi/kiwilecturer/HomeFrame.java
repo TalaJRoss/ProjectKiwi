@@ -121,6 +121,7 @@ public class HomeFrame extends javax.swing.JFrame {
         lblNoQuestions = new javax.swing.JLabel();
         lblDate = new javax.swing.JLabel();
         lblTime = new javax.swing.JLabel();
+        txtfHH = new javax.swing.JTextField();
         btnInfoUpload = new javax.swing.JButton();
         btnSchemaPath = new javax.swing.JButton();
         txtfSchemaPath = new javax.swing.JTextField();
@@ -128,7 +129,9 @@ public class HomeFrame extends javax.swing.JFrame {
         btnUploadQuestions = new javax.swing.JButton();
         jdcDate = new com.toedter.calendar.JDateChooser();
         lblColon1 = new javax.swing.JLabel();
+        txtfMM = new javax.swing.JTextField();
         lblColon2 = new javax.swing.JLabel();
+        txtfSS = new javax.swing.JTextField();
         jSpinNoSubmission = new javax.swing.JSpinner();
         jSpinNoQuestions = new javax.swing.JSpinner();
         rbtnAssignment = new javax.swing.JRadioButton();
@@ -142,16 +145,13 @@ public class HomeFrame extends javax.swing.JFrame {
         lblUDtime = new javax.swing.JLabel();
         txtfUDstudentNo = new javax.swing.JTextField();
         jdcUDdate = new com.toedter.calendar.JDateChooser();
+        txtfUDhh = new javax.swing.JTextField();
         jLabel1 = new javax.swing.JLabel();
+        txtfUDmm = new javax.swing.JTextField();
         jLabel2 = new javax.swing.JLabel();
+        txtfUDss = new javax.swing.JTextField();
         btnUpdateDeadline = new javax.swing.JButton();
         btnSchemaUpload = new javax.swing.JButton();
-        jspHH = new javax.swing.JSpinner();
-        jspMM = new javax.swing.JSpinner();
-        jspSS = new javax.swing.JSpinner();
-        jspUDhh = new javax.swing.JSpinner();
-        jspUDmm = new javax.swing.JSpinner();
-        jspUDss = new javax.swing.JSpinner();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         addWindowListener(new java.awt.event.WindowAdapter() {
@@ -270,12 +270,7 @@ public class HomeFrame extends javax.swing.JFrame {
 
         lblColon2.setText(":");
 
-        jSpinNoSubmission.setModel(new javax.swing.SpinnerNumberModel(0, 0, null, 1));
-
-        jSpinNoQuestions.setModel(new javax.swing.SpinnerNumberModel(0, 0, null, 1));
-
         btnGroupAssignmentType.add(rbtnAssignment);
-        rbtnAssignment.setSelected(true);
         rbtnAssignment.setText("Assignment");
 
         btnGroupAssignmentType.add(rbtnClosedPrac);
@@ -330,18 +325,6 @@ public class HomeFrame extends javax.swing.JFrame {
             }
         });
 
-        jspHH.setModel(new javax.swing.SpinnerNumberModel(0, 0, 23, 1));
-
-        jspMM.setModel(new javax.swing.SpinnerNumberModel(0, 0, 59, 1));
-
-        jspSS.setModel(new javax.swing.SpinnerNumberModel(0, 0, 59, 1));
-
-        jspUDhh.setModel(new javax.swing.SpinnerNumberModel(0, 0, 23, 1));
-
-        jspUDmm.setModel(new javax.swing.SpinnerNumberModel(0, 0, 59, 1));
-
-        jspUDss.setModel(new javax.swing.SpinnerNumberModel(0, 0, 59, 1));
-
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
@@ -353,89 +336,87 @@ public class HomeFrame extends javax.swing.JFrame {
                         .addComponent(lblUpload)
                         .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                     .addGroup(jPanel1Layout.createSequentialGroup()
-                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addGroup(jPanel1Layout.createSequentialGroup()
-                                .addComponent(btnStudentCSV, javax.swing.GroupLayout.PREFERRED_SIZE, 213, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                .addComponent(txtfStudentFilename, javax.swing.GroupLayout.PREFERRED_SIZE, 452, javax.swing.GroupLayout.PREFERRED_SIZE))
-                            .addGroup(jPanel1Layout.createSequentialGroup()
-                                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                                    .addComponent(btnQueryData, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.PREFERRED_SIZE, 213, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addComponent(btnQuestions, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.PREFERRED_SIZE, 213, javax.swing.GroupLayout.PREFERRED_SIZE))
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                                    .addComponent(txtfQueryDataFilename, javax.swing.GroupLayout.PREFERRED_SIZE, 452, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addComponent(txtfQuestionsFilename, javax.swing.GroupLayout.PREFERRED_SIZE, 452, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                            .addGroup(jPanel1Layout.createSequentialGroup()
-                                .addComponent(lblViewGrades)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                .addComponent(btnGradeDescending)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(btnView))
+                                .addComponent(btnSchemaPath)
+                                .addGap(55, 55, 55)
+                                .addComponent(txtfSchemaPath)
+                                .addGap(179, 179, 179))
                             .addGroup(jPanel1Layout.createSequentialGroup()
                                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 720, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addGroup(jPanel1Layout.createSequentialGroup()
-                                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
-                                                .addComponent(btnSchemaPath)
-                                                .addGap(55, 55, 55)
-                                                .addComponent(txtfSchemaPath))
-                                            .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                                                .addGroup(jPanel1Layout.createSequentialGroup()
-                                                    .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                                                        .addComponent(lblDate)
-                                                        .addComponent(lblTime)
-                                                        .addComponent(lblNoQuestions)
-                                                        .addComponent(lblNoSubmissions))
-                                                    .addGap(55, 55, 55)
-                                                    .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                                                            .addComponent(jSpinNoSubmission, javax.swing.GroupLayout.DEFAULT_SIZE, 49, Short.MAX_VALUE)
-                                                            .addComponent(jSpinNoQuestions))
-                                                        .addComponent(jdcDate, javax.swing.GroupLayout.PREFERRED_SIZE, 127, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                                        .addGroup(jPanel1Layout.createSequentialGroup()
-                                                            .addComponent(jspHH, javax.swing.GroupLayout.PREFERRED_SIZE, 49, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                                            .addComponent(lblColon2)
-                                                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                                            .addComponent(jspMM, javax.swing.GroupLayout.PREFERRED_SIZE, 49, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                                            .addComponent(lblColon1)
-                                                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                                            .addComponent(jspSS, javax.swing.GroupLayout.PREFERRED_SIZE, 48, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                                                    .addGap(0, 0, Short.MAX_VALUE))
-                                                .addComponent(txtfFeedback, javax.swing.GroupLayout.PREFERRED_SIZE, 538, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                                        .addGap(124, 124, 124)))
-                                .addGap(18, 18, 18))
-                            .addGroup(javax.swing.GroupLayout.Alignment.LEADING, jPanel1Layout.createSequentialGroup()
-                                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                        .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
-                                            .addComponent(lblUDdate)
-                                            .addGap(18, 18, 18)
-                                            .addComponent(jdcUDdate, javax.swing.GroupLayout.PREFERRED_SIZE, 156, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                    .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
                                         .addGroup(jPanel1Layout.createSequentialGroup()
-                                            .addComponent(lblUDstudentNo)
-                                            .addGap(29, 29, 29)
-                                            .addComponent(txtfUDstudentNo, javax.swing.GroupLayout.PREFERRED_SIZE, 158, javax.swing.GroupLayout.PREFERRED_SIZE))
-                                        .addComponent(lblUD)
-                                        .addComponent(rbtnClosedPrac)
-                                        .addComponent(rbtnAssignment))
-                                    .addGroup(jPanel1Layout.createSequentialGroup()
-                                        .addComponent(lblUDtime)
-                                        .addGap(18, 18, 18)
-                                        .addComponent(jspUDhh, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                        .addComponent(jLabel1)
-                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                        .addComponent(jspUDmm, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                        .addComponent(jLabel2)
-                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                        .addComponent(jspUDss, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                                .addGap(110, 110, 110)))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 40, Short.MAX_VALUE)
+                                            .addComponent(btnStudentCSV, javax.swing.GroupLayout.PREFERRED_SIZE, 213, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                            .addComponent(txtfStudentFilename, javax.swing.GroupLayout.PREFERRED_SIZE, 452, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                        .addGroup(jPanel1Layout.createSequentialGroup()
+                                            .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                                                .addComponent(btnQueryData, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.PREFERRED_SIZE, 213, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                                .addComponent(btnQuestions, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.PREFERRED_SIZE, 213, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                            .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                                                .addComponent(txtfQueryDataFilename, javax.swing.GroupLayout.PREFERRED_SIZE, 452, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                                .addComponent(txtfQuestionsFilename, javax.swing.GroupLayout.PREFERRED_SIZE, 452, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                                        .addGroup(jPanel1Layout.createSequentialGroup()
+                                            .addComponent(lblViewGrades)
+                                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                            .addComponent(btnGradeDescending)
+                                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                            .addComponent(btnView))
+                                        .addGroup(jPanel1Layout.createSequentialGroup()
+                                            .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 720, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                                    .addGroup(jPanel1Layout.createSequentialGroup()
+                                                        .addComponent(lblUDtime)
+                                                        .addGap(18, 18, 18)
+                                                        .addComponent(txtfUDhh, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                                        .addComponent(jLabel1)
+                                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                                        .addComponent(txtfUDmm, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                                        .addComponent(jLabel2)
+                                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                                        .addComponent(txtfUDss, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
+                                                        .addComponent(lblUDdate)
+                                                        .addGap(18, 18, 18)
+                                                        .addComponent(jdcUDdate, javax.swing.GroupLayout.PREFERRED_SIZE, 156, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                                    .addGroup(jPanel1Layout.createSequentialGroup()
+                                                        .addComponent(lblUDstudentNo)
+                                                        .addGap(29, 29, 29)
+                                                        .addComponent(txtfUDstudentNo, javax.swing.GroupLayout.PREFERRED_SIZE, 158, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                                    .addComponent(lblUD)
+                                                    .addComponent(rbtnClosedPrac)
+                                                    .addComponent(rbtnAssignment)))
+                                            .addGap(18, 18, 18)))
+                                    .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                                        .addGroup(jPanel1Layout.createSequentialGroup()
+                                            .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                                                .addComponent(lblDate)
+                                                .addComponent(lblTime)
+                                                .addComponent(lblNoQuestions)
+                                                .addComponent(lblNoSubmissions))
+                                            .addGap(55, 55, 55)
+                                            .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                                .addComponent(jdcDate, javax.swing.GroupLayout.PREFERRED_SIZE, 127, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                                .addGroup(jPanel1Layout.createSequentialGroup()
+                                                    .addComponent(txtfHH, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                                    .addComponent(lblColon1)
+                                                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                                    .addComponent(txtfMM, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                                    .addComponent(lblColon2)
+                                                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                                    .addComponent(txtfSS, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                                                    .addComponent(jSpinNoSubmission, javax.swing.GroupLayout.DEFAULT_SIZE, 49, Short.MAX_VALUE)
+                                                    .addComponent(jSpinNoQuestions)))
+                                            .addGap(0, 0, Short.MAX_VALUE))
+                                        .addComponent(txtfFeedback, javax.swing.GroupLayout.PREFERRED_SIZE, 538, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 40, Short.MAX_VALUE)))
                         .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(btnInfoUpload)
                             .addGroup(jPanel1Layout.createSequentialGroup()
@@ -475,13 +456,16 @@ public class HomeFrame extends javax.swing.JFrame {
                     .addComponent(lblDate, javax.swing.GroupLayout.PREFERRED_SIZE, 20, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jdcDate, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(lblTime)
-                    .addComponent(jspHH, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(lblColon2)
-                    .addComponent(jspMM, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(lblColon1)
-                    .addComponent(jspSS, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addComponent(lblTime)
+                        .addComponent(txtfHH, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addComponent(lblColon1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(txtfMM, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addComponent(lblColon2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(txtfSS, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(rbtnAssignment)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
@@ -544,11 +528,11 @@ public class HomeFrame extends javax.swing.JFrame {
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                         .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                             .addComponent(lblUDtime)
-                            .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 20, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(txtfUDhh, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(jLabel1)
+                            .addComponent(txtfUDmm, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(jLabel2)
-                            .addComponent(jspUDhh, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(jspUDmm, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(jspUDss, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addComponent(txtfUDss, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                         .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
@@ -749,9 +733,6 @@ public class HomeFrame extends javax.swing.JFrame {
         try {
             jSpinNoSubmission.commitEdit();
             jSpinNoQuestions.commitEdit();
-            jspHH.commitEdit();
-            jspMM.commitEdit();
-            jspSS.commitEdit();
         } catch (ParseException ex) {
             Logger.getLogger(HomeFrame.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -759,9 +740,9 @@ public class HomeFrame extends javax.swing.JFrame {
         String noSubmissions = ""+(Integer) jSpinNoSubmission.getValue();
         String noQuestions = ""+ (Integer) jSpinNoQuestions.getValue();
         String date = ((JTextField)jdcDate.getDateEditor().getUiComponent()).getText();
-        String hour = ""+(Integer) jspHH.getValue();
-        String minute = ""+(Integer) jspMM.getValue();
-        String second = ""+(Integer) jspSS.getValue();
+        String hour = txtfHH.getText();
+        String minute = txtfMM.getText();
+        String second = txtfSS.getText();
         
         String time = "";
         if (Integer.parseInt(hour)<10){
@@ -806,9 +787,9 @@ public class HomeFrame extends javax.swing.JFrame {
             jSpinNoQuestions.setValue(0);
             jSpinNoSubmission.setValue(0);
             jdcDate.setDate(null);
-            jspHH.setValue(0);
-            jspMM.setValue(0);
-            jspSS.setValue(0);
+            txtfHH.setText("");
+            txtfMM.setText("");
+            txtfSS.setText("");            
         }
         
     }//GEN-LAST:event_btnInfoUploadActionPerformed
@@ -926,22 +907,15 @@ public class HomeFrame extends javax.swing.JFrame {
 
     private void btnUpdateDeadlineActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnUpdateDeadlineActionPerformed
         
-        String response = "";
+        String response;
         
-        try {
-            jspHH.commitEdit();
-            jspMM.commitEdit();
-            jspSS.commitEdit();
-        } catch (ParseException ex) {
-            Logger.getLogger(HomeFrame.class.getName()).log(Level.SEVERE, null, ex);
-        }
-
+        //TODO: Check for valid inputs and null values etc.
         
         String studentNo = txtfUDstudentNo.getText();
         String date = ((JTextField)jdcUDdate.getDateEditor().getUiComponent()).getText();
-        String hour = ""+(Integer) jspUDhh.getValue();
-        String minute = ""+(Integer) jspUDmm.getValue();
-        String second = ""+(Integer) jspUDss.getValue();
+        String hour = txtfUDhh.getText();
+        String minute = txtfUDmm.getText();
+        String second = txtfUDss.getText();
         String time = "";
         if (Integer.parseInt(hour)<10){
             time = "0" + hour + ":";
@@ -959,26 +933,15 @@ public class HomeFrame extends javax.swing.JFrame {
             time = time + second;
         }
         
-        if (!studentNo.equals("")&&studentNo.length()==6&&!date.equals(null))
-        {
-            response = lecturer.updateStudentDeadline(studentNo,date,time);
-            if (response.equals(Lecturer.SUCCESS)) {
-                JOptionPane.showMessageDialog(this, "Assignment deadline for "+studentNo+" has been updated.", "Update successful", JOptionPane.PLAIN_MESSAGE);
-            } else {
-                JOptionPane.showMessageDialog(this, "Deadline update for "+studentNo+" was unsuccessful.", "Unsuccessful update", JOptionPane.ERROR_MESSAGE);
-            }
+        response = lecturer.updateStudentDeadline(studentNo,date,time);
+        
+        if (response.equals(Lecturer.SUCCESS)) {
+            JOptionPane.showMessageDialog(this, "Assignment deadline for "+studentNo+" has been updated.", "Update successful", JOptionPane.PLAIN_MESSAGE);
+        } else {
+            JOptionPane.showMessageDialog(this, "Deadline update for "+studentNo+" was unsuccessful.", "Unsuccessful update", JOptionPane.ERROR_MESSAGE);
         }
-        else
-        {
-            JOptionPane.showMessageDialog(this, "Invalid Studnet number or date!","Invalid Input", JOptionPane.ERROR_MESSAGE);
-        }
-    
         //clean up:
-        txtfUDstudentNo.setText("");
-        jdcUDdate.setDate(null);
-        jspUDhh.setValue(0);
-        jspUDmm.setValue(0);
-        jspUDss.setValue(0);
+        //NEEDS TO BE DONE        
         
     }//GEN-LAST:event_btnUpdateDeadlineActionPerformed
 
@@ -1128,12 +1091,6 @@ public class HomeFrame extends javax.swing.JFrame {
     private javax.swing.JSpinner jSpinNoSubmission;
     private com.toedter.calendar.JDateChooser jdcDate;
     private com.toedter.calendar.JDateChooser jdcUDdate;
-    private javax.swing.JSpinner jspHH;
-    private javax.swing.JSpinner jspMM;
-    private javax.swing.JSpinner jspSS;
-    private javax.swing.JSpinner jspUDhh;
-    private javax.swing.JSpinner jspUDmm;
-    private javax.swing.JSpinner jspUDss;
     private javax.swing.JLabel lblColon1;
     private javax.swing.JLabel lblColon2;
     private javax.swing.JLabel lblDate;
@@ -1150,10 +1107,16 @@ public class HomeFrame extends javax.swing.JFrame {
     private javax.swing.JRadioButton rbtnClosedPrac;
     private javax.swing.JTextArea txtaMarks;
     private javax.swing.JTextField txtfFeedback;
+    private javax.swing.JTextField txtfHH;
+    private javax.swing.JTextField txtfMM;
     private javax.swing.JTextField txtfQueryDataFilename;
     private javax.swing.JTextField txtfQuestionsFilename;
+    private javax.swing.JTextField txtfSS;
     private javax.swing.JTextField txtfSchemaPath;
     private javax.swing.JTextField txtfStudentFilename;
+    private javax.swing.JTextField txtfUDhh;
+    private javax.swing.JTextField txtfUDmm;
+    private javax.swing.JTextField txtfUDss;
     private javax.swing.JTextField txtfUDstudentNo;
     // End of variables declaration//GEN-END:variables
 
