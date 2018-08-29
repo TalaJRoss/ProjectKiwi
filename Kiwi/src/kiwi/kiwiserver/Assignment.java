@@ -29,7 +29,7 @@ public class Assignment {
     /**
      * Number of questions in an assignment.
      */
-    private int noQuestions = 9;
+    private int noQuestions;
     
     //TODO: load questions into list when multiple question assignment functionality created
     /**
@@ -228,8 +228,9 @@ public class Assignment {
         return questionList.get(currentPos);
     }
     
+    //changed
     public boolean hasNext() {
-        return questionList.size()-1 < currentPos;
+        return currentPos < questionList.size()-1;
     }
     
     public Question getQuestion()  {

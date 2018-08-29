@@ -97,6 +97,10 @@ public class Question {
      * @param question English question.
      * @param answer SQL statement expected answer.
      * @param difficulty Difficulty value (1, 2 or 3)
+     * @param type
+     * @param questionDBNo
+     * @param connLimited
+     * @param conn
      */
     public Question(String question, String answer, int difficulty, String type, int questionDBNo, Connection connLimited, Connection conn){
         this.question = question;
@@ -156,11 +160,11 @@ public class Question {
      * answer err or -2 for db conn/processing err
      */
     public int mark(String studentAns) {
-        if (!type.toLowerCase().equals(TYPE_UPDATE.toLowerCase())) { //query question
-            return markQueryQuestion(studentAns); 
-        }
-        else {  //update question
+        if (type.toLowerCase().equals(TYPE_UPDATE.toLowerCase())) {  //update question
             return markUpdateQuestion(studentAns);
+        }
+        else { //query question
+            return markQueryQuestion(studentAns);
         }
     }
     
@@ -232,7 +236,7 @@ public class Question {
             //Get student output:
             
             //Check expected query statement command:
-            if (studentAns.toUpperCase().startsWith("SELECT")) {   //student answer does not execute as expected
+            if (!studentAns.toUpperCase().startsWith("SELECT")) {   //student answer does not execute as expected
                 errorMessage = "Statement provided is not executing a permitted SQL query statement!\n"
                         + "i.e. SELECT";
                 mark = MARK_RANGE[0];

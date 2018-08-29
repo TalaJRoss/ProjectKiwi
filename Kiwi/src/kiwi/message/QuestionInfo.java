@@ -51,17 +51,17 @@ public class QuestionInfo implements Serializable{
         this.outOf = assignment.getQuestion().getOutOf();
         this.feedback = assignment.getFeedback(studentAns);
         
-        if (assignment.getQuestionNumber()+1>assignment.getNoQuestions()) { //no questions left
-            this.question = null;
-            this.questionNo = -1;
-            this.totalNoQuestions = assignment.getNoQuestions();   //total no. questions
-            this.finalGrade = assignment.getGrade();
-        }
-        else {  //questions left
+        if (assignment.hasNext()) {  //questions left
             this.question = assignment.nextQuestion().getQuestion();    //question text of next q
             this.questionNo = assignment.getQuestionNumber();   //question no. of next q
             this.totalNoQuestions = assignment.getNoQuestions();   //total no. questions
             this.finalGrade = 0;
+        }
+        else { //no questions left
+            this.question = null;
+            this.totalNoQuestions = assignment.getNoQuestions();   //total no. questions
+            this.questionNo = totalNoQuestions + 1;
+            this.finalGrade = assignment.getGrade();
         }
     }
     
