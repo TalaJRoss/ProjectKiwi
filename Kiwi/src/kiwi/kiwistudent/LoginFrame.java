@@ -1,7 +1,10 @@
 package kiwi.kiwistudent;
 
 import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JOptionPane;
+import kiwi.kiwiserver.DBConnectionException;
 
 /**
  * Creates login interface.
@@ -126,6 +129,10 @@ public class LoginFrame extends javax.swing.JFrame {
             student = new Student();
         } catch (IOException | ClassNotFoundException ex) {
             JOptionPane.showMessageDialog(this, "An error occurred during login. Please try again.", "Login Failed", JOptionPane.PLAIN_MESSAGE);
+            txtfStudentNo.setText("");
+            return;
+        } catch (DBConnectionException ex) {
+            JOptionPane.showMessageDialog(this, "Couldn't connect to the database. Please try again.", "Login Failed", JOptionPane.PLAIN_MESSAGE);
             txtfStudentNo.setText("");
             return;
         }
