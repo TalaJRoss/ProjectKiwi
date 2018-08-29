@@ -61,11 +61,16 @@ public class Assignment {
             ResultSet rs = st.executeQuery(query);
             rs.next();
             noQuestions = rs.getInt("NoQuestions");
+            // Determine wheather it is a close prac or an assignment
+            query = "SELECT ClosedPrac FROM assignmentinfo";
+            rs = st.executeQuery(query);
+            rs.next();
+            int closedPrac = rs.getInt("ClosedPrac");
             //Clean Up
             rs.close();
             st.close();
             //Generate Questions
-            generateQuestions(studentNo,noSubmissionsCompleted);
+            generateQuestions(studentNo,noSubmissionsCompleted, closedPrac);
 
         } catch (SQLException ex) {
             Logger.getLogger(Assignment.class.getName()).log(Level.SEVERE, null, ex);
@@ -79,9 +84,20 @@ public class Assignment {
          * Generates list of questions that make up the assignment.
          * @return The list of questions.
          */
-        private void generateQuestions(String studentNo, int noSubmissionsCompleted) {
+        private void generateQuestions(String studentNo, int noSubmissionsCompleted, int closedPrac) {
         
         try {
+            // Using int closed prac to determine the seed for random()
+            String seed; 
+            if (closedPrac == 1)
+            {
+                seed = "1234";
+            }
+            else
+            {
+                seed = studentNo + noSubmissionsCompleted;
+            }
+            
             //Check no submissions remaining:
             //String query = "SELECT MaxNoSubmissions";
             
@@ -107,7 +123,6 @@ public class Assignment {
             boolean [] TotalUsed = new boolean [noRows];
             
             //Setup:
-            String seed = studentNo + noSubmissionsCompleted;
             Random rnd = new Random(seed.hashCode());
             
             //Get list of questions:
