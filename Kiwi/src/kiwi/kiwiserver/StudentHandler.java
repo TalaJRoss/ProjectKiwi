@@ -111,7 +111,7 @@ class StudentHandler extends Thread {
             System.out.println(connLimited);
             writer.writeObject(new StudentMessage(StudentMessage.CMD_CONNECT, null));
         } catch (SQLException | ClassNotFoundException ex) {
-            writer.writeObject(new StudentMessage(StudentMessage.CMD_CONNECT, null, StudentMessage.FAIL_CONNECT));
+            writer.writeObject(new StudentMessage(StudentMessage.CMD_CONNECT, null, StudentMessage.RESP_FAIL_CONNECT));
         }
     }
     
@@ -188,12 +188,12 @@ class StudentHandler extends Thread {
                 writer.writeObject(new StudentMessage(StudentMessage.CMD_LOGIN, null));
             }
             else { //student number doesn't exist
-                writer.writeObject(new StudentMessage(StudentMessage.CMD_LOGIN, null, StudentMessage.FAIL_INPUT)); //null on student end indicates error
+                writer.writeObject(new StudentMessage(StudentMessage.CMD_LOGIN, null, StudentMessage.RESP_FAIL_INPUT)); //null on student end indicates error
             }  
         }catch (SQLException e) { //can't check student number
             System.out.println("Error: Problem checking student number on database for login.");
             System.out.println(e);
-            writer.writeObject(new StudentMessage(StudentMessage.CMD_LOGIN, null, StudentMessage.FAIL_CONNECT)); //null on student end indicates error
+            writer.writeObject(new StudentMessage(StudentMessage.CMD_LOGIN, null, StudentMessage.RESP_FAIL_CONNECT)); //null on student end indicates error
         }
          
     }
@@ -209,7 +209,7 @@ class StudentHandler extends Thread {
                 maxNoSubmissions = (int) rs.getObject("NoSubmissions");
             }
             else {  //couldn't get max no. submissions
-                writer.writeObject(new StudentMessage(StudentMessage.CMD_STATS, null, StudentMessage.FAIL_CONNECT));
+                writer.writeObject(new StudentMessage(StudentMessage.CMD_STATS, null, StudentMessage.RESP_FAIL_CONNECT));
                 return;
             }
             
@@ -221,11 +221,11 @@ class StudentHandler extends Thread {
                 noSubmissionsCompleted = (int) rs.getObject("NoSubmissionsCompleted");
             }
             else {  //couldn't get max no. submissions
-                writer.writeObject(new StudentMessage(StudentMessage.CMD_START, null, StudentMessage.FAIL_CONNECT));
+                writer.writeObject(new StudentMessage(StudentMessage.CMD_START, null, StudentMessage.RESP_FAIL_CONNECT));
                 return;
             }
             if (maxNoSubmissions-noSubmissionsCompleted<=0) {   //no more submissions allowed 
-                writer.writeObject(new StudentMessage(StudentMessage.CMD_START, null, StudentMessage.FAIL_DENY));
+                writer.writeObject(new StudentMessage(StudentMessage.CMD_START, null, StudentMessage.RESP_FAIL_DENY));
                 return;
             }
             
@@ -246,19 +246,19 @@ class StudentHandler extends Thread {
                 conn.setAutoCommit(true);
                 System.out.println("Error: Problem updating number of submissions.");
                 System.out.println(e); 
-                writer.writeObject(new StudentMessage(StudentMessage.CMD_START, null, StudentMessage.FAIL_CONNECT));
+                writer.writeObject(new StudentMessage(StudentMessage.CMD_START, null, StudentMessage.RESP_FAIL_CONNECT));
                 return;
             }
             conn.commit();
             conn.setAutoCommit(true);   //end transaction
             
             if (updateResp!=1) {    //error updating
-                writer.writeObject(new StudentMessage(StudentMessage.CMD_START, null, StudentMessage.FAIL_CONNECT));
+                writer.writeObject(new StudentMessage(StudentMessage.CMD_START, null, StudentMessage.RESP_FAIL_CONNECT));
             }
         } catch (SQLException e) {
             System.out.println("Error: Problem creating assignment.");
             System.out.println(e); 
-            writer.writeObject(new StudentMessage(StudentMessage.CMD_START, null, StudentMessage.FAIL_CONNECT));
+            writer.writeObject(new StudentMessage(StudentMessage.CMD_START, null, StudentMessage.RESP_FAIL_CONNECT));
         }
         QuestionInfo qi = new QuestionInfo(assignment, schemaImg);  //question info to return to student end
         writer.writeObject(new StudentMessage(StudentMessage.CMD_START, qi));
@@ -275,7 +275,7 @@ class StudentHandler extends Thread {
                 maxNoSubmissions = (int) rs.getObject("NoSubmissions");
             }
             else {  //couldn't get max no. submissions
-                writer.writeObject(new StudentMessage(StudentMessage.CMD_STATS, null, StudentMessage.FAIL_CONNECT));
+                writer.writeObject(new StudentMessage(StudentMessage.CMD_STATS, null, StudentMessage.RESP_FAIL_CONNECT));
                 return;
             }
             
@@ -295,10 +295,10 @@ class StudentHandler extends Thread {
                 writer.writeObject(new StudentMessage(StudentMessage.CMD_STATS, ss));
             }
             else {
-                writer.writeObject(new StudentMessage(StudentMessage.CMD_STATS, null, StudentMessage.FAIL_CONNECT));
+                writer.writeObject(new StudentMessage(StudentMessage.CMD_STATS, null, StudentMessage.RESP_FAIL_CONNECT));
             }
         } catch (SQLException ex) {
-            writer.writeObject(new StudentMessage(StudentMessage.CMD_STATS, null, StudentMessage.FAIL_CONNECT));
+            writer.writeObject(new StudentMessage(StudentMessage.CMD_STATS, null, StudentMessage.RESP_FAIL_CONNECT));
         }
     }
 
@@ -308,7 +308,7 @@ class StudentHandler extends Thread {
             writer.writeObject(new StudentMessage(StudentMessage.CMD_CHECK, output));
         }
         else {
-            writer.writeObject(new StudentMessage(StudentMessage.CMD_CHECK, null, StudentMessage.FAIL_CONNECT));
+            writer.writeObject(new StudentMessage(StudentMessage.CMD_CHECK, null, StudentMessage.RESP_FAIL_CONNECT));
         }
     }
     
@@ -317,10 +317,10 @@ class StudentHandler extends Thread {
         QuestionInfo qi = new QuestionInfo(assignment, sudentAns);
         switch (qi.getMark()) {
             case -1:    //lecturer answer is wrong
-                writer.writeObject(new StudentMessage(StudentMessage.CMD_SUBMIT, qi, StudentMessage.FAIL_INPUT));
+                writer.writeObject(new StudentMessage(StudentMessage.CMD_SUBMIT, qi, StudentMessage.RESP_FAIL_INPUT));
                 break;
             case -2:    //problem comparing result sets
-                writer.writeObject(new StudentMessage(StudentMessage.CMD_SUBMIT, qi, StudentMessage.FAIL_CONNECT));
+                writer.writeObject(new StudentMessage(StudentMessage.CMD_SUBMIT, qi, StudentMessage.RESP_FAIL_CONNECT));
                 break;
             default:
                 writer.writeObject(new StudentMessage(StudentMessage.CMD_SUBMIT, qi));
@@ -348,13 +348,13 @@ class StudentHandler extends Thread {
                 conn.setAutoCommit(true);   //end transaction
                 System.out.println("Error: Problem updating table.");
                 System.out.println(e); 
-                writer.writeObject(new StudentMessage(StudentMessage.CMD_QUIT, null, StudentMessage.FAIL_CONNECT));
+                writer.writeObject(new StudentMessage(StudentMessage.CMD_QUIT, null, StudentMessage.RESP_FAIL_CONNECT));
                 return;
             }
             conn.commit();
             conn.setAutoCommit(true);   //end transaction
             if (!(updateResp==1 || updateResp==0)) {   //error updating
-                writer.writeObject(new StudentMessage(StudentMessage.CMD_QUIT, null, StudentMessage.FAIL_CONNECT));
+                writer.writeObject(new StudentMessage(StudentMessage.CMD_QUIT, null, StudentMessage.RESP_FAIL_CONNECT));
             }
             else {
                 writer.writeObject(new StudentMessage(StudentMessage.CMD_QUIT, null));
@@ -362,7 +362,7 @@ class StudentHandler extends Thread {
         } catch (SQLException e) {
             System.out.println("Error: Problem updating table.");
             System.out.println(e); 
-            writer.writeObject(new StudentMessage(StudentMessage.CMD_QUIT, null, StudentMessage.FAIL_CONNECT));
+            writer.writeObject(new StudentMessage(StudentMessage.CMD_QUIT, null, StudentMessage.RESP_FAIL_CONNECT));
         }
     }
 
@@ -403,7 +403,7 @@ class StudentHandler extends Thread {
                 conn.setAutoCommit(true);   //end transaction
                 System.out.println("Error: Problem adding report.");
                 System.out.println(e); 
-                writer.writeObject(new StudentMessage(StudentMessage.CMD_REPORT, null, StudentMessage.FAIL_CONNECT));
+                writer.writeObject(new StudentMessage(StudentMessage.CMD_REPORT, null, StudentMessage.RESP_FAIL_CONNECT));
                 return;
             }
             conn.commit();
@@ -423,19 +423,19 @@ class StudentHandler extends Thread {
                 conn.setAutoCommit(true);   //end transaction
                 System.out.println("Error: Problem adding report.");
                 System.out.println(e); 
-                writer.writeObject(new StudentMessage(StudentMessage.CMD_REPORT, null, StudentMessage.FAIL_CONNECT));
+                writer.writeObject(new StudentMessage(StudentMessage.CMD_REPORT, null, StudentMessage.RESP_FAIL_CONNECT));
                 return;
             }
             conn.commit();
             conn.setAutoCommit(true);
             
             //Successfully reported:
-            writer.writeObject(new StudentMessage(StudentMessage.CMD_REPORT, null, StudentMessage.SUCCESS));
+            writer.writeObject(new StudentMessage(StudentMessage.CMD_REPORT, null, StudentMessage.RESP_SUCCESS));
         } 
         catch (SQLException e) {
             System.out.println("Error: Problem adding report.");
             System.out.println(e); 
-            writer.writeObject(new StudentMessage(StudentMessage.CMD_REPORT, null, StudentMessage.FAIL_CONNECT));
+            writer.writeObject(new StudentMessage(StudentMessage.CMD_REPORT, null, StudentMessage.RESP_FAIL_CONNECT));
         }
     }
     

@@ -98,7 +98,7 @@ public class Student {
             writer= new ObjectOutputStream(studentSocket.getOutputStream());
             //check connection:
             StudentMessage response = (StudentMessage) reader.readObject();
-            connected = (int)(response.getResponse())==StudentMessage.SUCCESS;
+            connected = (int)(response.getResponse())==StudentMessage.RESP_SUCCESS;
     }
     
     /**
@@ -126,10 +126,10 @@ public class Student {
             writer.writeObject(new StudentMessage(StudentMessage.CMD_LOGIN, studentNumber));
             StudentMessage loginResponce = (StudentMessage) reader.readObject();
             switch (loginResponce.getResponse()) {
-                case StudentMessage.FAIL_CONNECT:
+                case StudentMessage.RESP_FAIL_CONNECT:
                     System.out.println("Error: Failed to connect.");
                     return FAIL_CONNECT;
-                case StudentMessage.FAIL_INPUT:
+                case StudentMessage.RESP_FAIL_INPUT:
                     System.out.println("Error: Student is not register in the databease.");
                     return FAIL_LOGIN;
                 default:
@@ -156,14 +156,14 @@ public class Student {
             //get feedback and mark:
             StudentMessage m = (StudentMessage) reader.readObject();
             switch (m.getResponse()) {
-                case StudentMessage.SUCCESS:
+                case StudentMessage.RESP_SUCCESS:
                     QuestionInfo qi = (QuestionInfo) m.getBody();
                     noQuestions = qi.getTotalNoQuestions();
                     nextQuestionNo = qi.getQuestionNo();
                     nextQuestion = qi.getQuestion();
                     schemaImg = qi.getSchemaImg();
                     return SUCCESS;
-                case StudentMessage.FAIL_DENY:
+                case StudentMessage.RESP_FAIL_DENY:
                     return FAIL_DENY;
                 default:
                     return FAIL_CONNECT;
@@ -187,7 +187,7 @@ public class Student {
             
             //get feedback and mark:
             StudentMessage m = (StudentMessage) reader.readObject();
-            if (m.getResponse()==StudentMessage.SUCCESS) {
+            if (m.getResponse()==StudentMessage.RESP_SUCCESS) {
                 currentCheckOutput = (String) m.getBody();
                 return true;
             }
@@ -214,7 +214,7 @@ public class Student {
             StudentMessage m = (StudentMessage) reader.readObject();
             QuestionInfo qi;
             switch (m.getResponse()) {
-                case StudentMessage.SUCCESS:
+                case StudentMessage.RESP_SUCCESS:
                     qi = (QuestionInfo) m.getBody();
                     currentFeedback = qi.getFeedback();
                     currentMark = qi.getMark();
@@ -223,7 +223,7 @@ public class Student {
                     nextQuestionNo = qi.getQuestionNo();
                     currentFinalGrade = qi.getFinalGrade();
                     return SUCCESS;
-                case StudentMessage.FAIL_INPUT: //lecturer error
+                case StudentMessage.RESP_FAIL_INPUT: //lecturer error
                     qi = (QuestionInfo) m.getBody();
                     currentFeedback = qi.getFeedback();
                     currentOutOf = qi.getOutOf();
@@ -247,7 +247,7 @@ public class Student {
 
             //get feedback and mark:
             StudentMessage m = (StudentMessage) reader.readObject();
-            return m.getResponse()==StudentMessage.SUCCESS; //saved or didn't save grades
+            return m.getResponse()==StudentMessage.RESP_SUCCESS; //saved or didn't save grades
         } catch (IOException | ClassNotFoundException e) {
             System.out.println("Error: Problem sending/receiving tcp socket messages in leaveAssignment() method.");
             System.out.println(e);
@@ -261,7 +261,7 @@ public class Student {
 
             //get feedback and mark:
             StudentMessage m = (StudentMessage) reader.readObject();
-            if (m.getResponse()==StudentMessage.SUCCESS) {  //saved grades
+            if (m.getResponse()==StudentMessage.RESP_SUCCESS) {  //saved grades
                 StudentStatistics ss = (StudentStatistics) m.getBody();
                 highestGrade = ss.getHighestGrade();
                 noSubmissionsRemaining = ss.getNoSubmissionsRemaining();
@@ -326,7 +326,7 @@ public class Student {
             writer.writeObject(new StudentMessage(StudentMessage.CMD_REPORT, suggested));
             //get response:
             StudentMessage m = (StudentMessage) reader.readObject();
-            return m.getResponse()==StudentMessage.SUCCESS; //success vs fail
+            return m.getResponse()==StudentMessage.RESP_SUCCESS; //success vs fail
         } 
         catch (IOException | ClassNotFoundException e) {
             System.out.println("Error: problem connecting to DB to report mistake.");
