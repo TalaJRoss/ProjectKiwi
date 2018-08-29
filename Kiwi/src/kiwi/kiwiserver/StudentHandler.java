@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package kiwi.kiwiserver;
 
 import java.io.File;
@@ -21,8 +16,10 @@ import java.sql.SQLException;
 import java.sql.Savepoint;
 import java.sql.Statement;
 import java.sql.Time;
+import kiwi.message.LoginInfo;
 import kiwi.message.QuestionInfo;
 import kiwi.message.StudentMessage;
+import kiwi.message.StudentStatement;
 import kiwi.message.StudentStatistics;
 
 /**
@@ -136,7 +133,7 @@ class StudentHandler extends Thread {
                         connectToDB();
                         break;
                     case StudentMessage.CMD_LOGIN:   //login
-                        login((String)m.getBody());
+                        login((LoginInfo)m.getBody());
                         break;
                     case StudentMessage.CMD_START:   //start assignment
                         generateAssignment();
@@ -145,13 +142,13 @@ class StudentHandler extends Thread {
                         viewStats();
                         break;
                     case StudentMessage.CMD_CHECK: //check output
-                        checkOutput((String)m.getBody());
+                        checkOutput((StudentStatement)m.getBody());
                         break;
                     case StudentMessage.CMD_SUBMIT: //upload file
-                        markQuestion((String)m.getBody());
+                        markQuestion((StudentStatement)m.getBody());
                         break;
                     case StudentMessage.CMD_REPORT: //upload file
-                        reportQuestion((String)m.getBody());
+                        reportQuestion((StudentStatement)m.getBody());
                         break;
                     case StudentMessage.CMD_QUIT: //upload file
                         updateGrade();
@@ -173,13 +170,13 @@ class StudentHandler extends Thread {
     /**
      * Checks whether student number given is stored in students table on the
      * database and initializes instance variables if login is successful.
-     * @param studentNumber The student number of the student to login.
+     * @param loginInfo The student number of the student to login.
      */
-    public void login(String studentNumber) throws IOException {
+    public void login(LoginInfo loginInfo) throws IOException {
         try {
             //Get student info:
             Statement st = conn.createStatement();
-            String statement = "SELECT * FROM students WHERE StudentNo LIKE '" + studentNumber + "'";   //check for student number in student table
+            String statement = "SELECT * FROM students WHERE StudentNo LIKE '" + loginInfo.getStudentNo() + "'";   //check for student number in student table
             ResultSet rs = st.executeQuery(statement);
             
             //Check student number exists and load values:
@@ -302,8 +299,8 @@ class StudentHandler extends Thread {
         }
     }
 
-    private void checkOutput(String studentStatement) throws IOException {
-        String output = assignment.check(studentStatement);
+    private void checkOutput(StudentStatement studentStatement) throws IOException {
+        String output = assignment.check(studentStatement.getStatement());
         if (output!=null) {
             writer.writeObject(new StudentMessage(StudentMessage.CMD_CHECK, output));
         }
@@ -312,9 +309,9 @@ class StudentHandler extends Thread {
         }
     }
     
-    private void markQuestion(String sudentAns) throws IOException {
+    private void markQuestion(StudentStatement studentAns) throws IOException {
         //marks question and creates return object with feedback and next question info:
-        QuestionInfo qi = new QuestionInfo(assignment, sudentAns);
+        QuestionInfo qi = new QuestionInfo(assignment, studentAns.getStatement());
         switch (qi.getMark()) {
             case -1:    //lecturer answer is wrong
                 writer.writeObject(new StudentMessage(StudentMessage.CMD_SUBMIT, qi, StudentMessage.RESP_FAIL_INPUT));
@@ -373,7 +370,7 @@ class StudentHandler extends Thread {
         System.out.println("Student logged off and connection closed: " + studentNo);
     }
 
-    private void reportQuestion(String suggested) throws IOException {
+    private void reportQuestion(StudentStatement suggested) throws IOException {
         try {
             Statement st = conn.createStatement();
             ResultSet rs;
@@ -392,7 +389,7 @@ class StudentHandler extends Thread {
                     "VALUES (" + 
                     assignment.getQuestionID() + ", " +    //current question number
                     "'" + studentNo + "', " +          //student's student no.
-                    "'" + suggested + "');";       //student's suggested answer
+                    "'" + suggested.getStatement() + "');";       //student's suggested answer
             conn.setAutoCommit(false);  //start transaction
             Savepoint sp = conn.setSavepoint();
             try {

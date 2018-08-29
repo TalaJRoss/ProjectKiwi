@@ -10,7 +10,9 @@ import java.text.DecimalFormat;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import kiwi.kiwiserver.ServerStartup;
+import kiwi.message.LoginInfo;
 import kiwi.message.QuestionInfo;
+import kiwi.message.StudentStatement;
 import kiwi.message.StudentMessage;
 import kiwi.message.StudentStatistics;
 
@@ -123,7 +125,7 @@ public class Student {
     public int login(String studentNumber) {
         try {
             //Check student number exists and load values:
-            writer.writeObject(new StudentMessage(StudentMessage.CMD_LOGIN, studentNumber));
+            writer.writeObject(new StudentMessage(StudentMessage.CMD_LOGIN, new LoginInfo(studentNumber)));
             StudentMessage loginResponce = (StudentMessage) reader.readObject();
             switch (loginResponce.getResponse()) {
                 case StudentMessage.RESP_FAIL_CONNECT:
@@ -151,7 +153,7 @@ public class Student {
     
     public int startAssignment() {
         try {
-            writer.writeObject(new StudentMessage(StudentMessage.CMD_START, null));
+            writer.writeObject(new StudentMessage(StudentMessage.CMD_START));
             
             //get feedback and mark:
             StudentMessage m = (StudentMessage) reader.readObject();
@@ -183,7 +185,7 @@ public class Student {
      */
     public boolean check(String studentStatement) {
         try {
-            writer.writeObject(new StudentMessage(StudentMessage.CMD_CHECK, studentStatement));
+            writer.writeObject(new StudentMessage(StudentMessage.CMD_CHECK, new StudentStatement(studentStatement)));
             
             //get feedback and mark:
             StudentMessage m = (StudentMessage) reader.readObject();
@@ -208,7 +210,7 @@ public class Student {
      */
     public int submit(String studentAns) {
         try {    
-            writer.writeObject(new StudentMessage(StudentMessage.CMD_SUBMIT, studentAns));
+            writer.writeObject(new StudentMessage(StudentMessage.CMD_SUBMIT, new StudentStatement(studentAns)));
 
             //get feedback and mark:
             StudentMessage m = (StudentMessage) reader.readObject();
@@ -243,7 +245,7 @@ public class Student {
     
     public boolean leaveAssignment() {
         try {
-            writer.writeObject(new StudentMessage(StudentMessage.CMD_QUIT, null));
+            writer.writeObject(new StudentMessage(StudentMessage.CMD_QUIT));
 
             //get feedback and mark:
             StudentMessage m = (StudentMessage) reader.readObject();
@@ -257,7 +259,7 @@ public class Student {
     
     public boolean viewStats() {
         try {
-            writer.writeObject(new StudentMessage(StudentMessage.CMD_STATS, null));
+            writer.writeObject(new StudentMessage(StudentMessage.CMD_STATS));
 
             //get feedback and mark:
             StudentMessage m = (StudentMessage) reader.readObject();
@@ -323,7 +325,7 @@ public class Student {
     public boolean report(String suggested) {
         try {
             //send report:
-            writer.writeObject(new StudentMessage(StudentMessage.CMD_REPORT, suggested));
+            writer.writeObject(new StudentMessage(StudentMessage.CMD_REPORT, new StudentStatement(suggested)));
             //get response:
             StudentMessage m = (StudentMessage) reader.readObject();
             return m.getResponse()==StudentMessage.RESP_SUCCESS; //success vs fail

@@ -18,6 +18,7 @@ public class StudentMessage implements Serializable{
     //Constants:
     
     //Command Constants:
+    
     /**
      * Identifies a command to start an assignment from student and the server's
      * response messages to this command.
@@ -75,6 +76,7 @@ public class StudentMessage implements Serializable{
     
     
     //Response Constants:
+    
     /**
      * Indicates that action was successfully completed.
      */
@@ -109,16 +111,17 @@ public class StudentMessage implements Serializable{
     /**
      * The message body, containing the information to be shared.
      */
-    private final Object body;
+    private Object body;
     
     /**
      * The message response, used by server to indicate the state of the action.
      * That is, was it successful or not.
      */
-    private final int response;
+    private int response;
 
     
     //Constructors:
+    
     /**
      * Instantiates all fields of a StudentMessage, setting the response to
      * indicate a successful execution of the command.
@@ -131,6 +134,16 @@ public class StudentMessage implements Serializable{
         this.cmd = cmd;
         this.body = body;
         this.response = RESP_SUCCESS;
+    }
+    
+    /**
+     * Instantiates only the command field of the message.
+     * This should be used when no body is needed for the message and no
+     * response is needed.
+     * @param cmd The message command.
+     */
+    public StudentMessage(int cmd) {
+        this.cmd = cmd;
     }
     
     /**
@@ -149,6 +162,7 @@ public class StudentMessage implements Serializable{
     
     
     //Getters:
+    
     /**
      * Gets the message command.
      * @return The message command.
@@ -172,5 +186,6 @@ public class StudentMessage implements Serializable{
     public int getResponse() {
         return response;
     }
+   
     
 }

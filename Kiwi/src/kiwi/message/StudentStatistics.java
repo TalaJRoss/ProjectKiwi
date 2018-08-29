@@ -8,11 +8,13 @@ import java.sql.Date;
  * Message body object containing information about a student's assignment
  * statistics, including their highest grade, number of submissions remaining,
  * deadline day and deadline time.
- * This is used as the body of messages between student clients and the server.
+ * This is used as the body of messages between student clients and the server
+ * for a CMD_STATS command.
  * @author Tala Ross(rsstal002)
  */
 public class StudentStatistics implements Serializable{
     
+    //Instance Variables:
     /**
      * The student's highest grade, currently.
      */
@@ -37,6 +39,8 @@ public class StudentStatistics implements Serializable{
      */
     private final Time deadlineTime;
     
+    
+    //Constructors:
     /**
      * Initiates all fields in the StudentStatistics object.
      * This object contains information about a student's assignment statistics.
@@ -52,6 +56,8 @@ public class StudentStatistics implements Serializable{
         this.deadlineTime = deadlineTime;
     }
     
+    
+    //Getters:
     /**
      * Gets the student's current highest grade. 
      * @return The student's highest grade.
