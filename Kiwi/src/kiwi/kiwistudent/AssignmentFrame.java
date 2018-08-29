@@ -48,6 +48,7 @@ public class AssignmentFrame extends javax.swing.JFrame {
             jpbQuestionProgress.setMaximum(student.getNoQuestions());
             jpbQuestionProgress.setStringPainted(true);
             txtaQuestion.setText("Question:\n" + student.getNextQuestion());
+            btnSubmit.setEnabled(true);
             btnNext.setEnabled(false);
             btnReport.setEnabled(false);
             createdFlag = true;
@@ -300,7 +301,7 @@ public class AssignmentFrame extends javax.swing.JFrame {
                     "Submission Error", JOptionPane.ERROR_MESSAGE);
             btnSubmit.setEnabled(false);
             btnNext.setEnabled(true);
-            btnReport.setEnabled(true);
+            btnReport.setEnabled(false);
             jpbQuestionProgress.setValue(student.getNextQuestionNo()-1);
         }
         else {  //DB connection error
@@ -310,7 +311,7 @@ public class AssignmentFrame extends javax.swing.JFrame {
                     "Submission Error", JOptionPane.ERROR_MESSAGE);
             btnSubmit.setEnabled(false);
             btnNext.setEnabled(true);
-            btnReport.setEnabled(true);
+            btnReport.setEnabled(false);
             jpbQuestionProgress.setValue(student.getNextQuestionNo()-1);
         }
     }//GEN-LAST:event_btnSubmitActionPerformed
@@ -369,6 +370,7 @@ public class AssignmentFrame extends javax.swing.JFrame {
             txtfAnswer.setText("");
             btnSubmit.setEnabled(true);
             btnNext.setEnabled(false);
+            btnReport.setEnabled(false);
         }
     }//GEN-LAST:event_btnNextActionPerformed
     

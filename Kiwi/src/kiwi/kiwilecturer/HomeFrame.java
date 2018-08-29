@@ -916,10 +916,14 @@ public class HomeFrame extends javax.swing.JFrame {
     }//GEN-LAST:event_btnUploadQuestionsActionPerformed
 
     private void windowCloser(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_windowCloser
-        try {
+        if (lecturer!=null) {
+            try {
                 lecturer.closeConnection();
-        } catch (IOException | ClassNotFoundException ex) {
+            } 
+            catch (IOException | ClassNotFoundException ex) {
                 JOptionPane.showMessageDialog(this, "Error closing sockets.", "Socket Error", JOptionPane.ERROR_MESSAGE);
+                System.exit(0);
+            }
         }
         System.exit(0);
     }//GEN-LAST:event_windowCloser
