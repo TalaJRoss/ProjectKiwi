@@ -5,7 +5,6 @@ package kiwi.kiwiserver;
 
 import com.opencsv.CSVReader;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
@@ -23,8 +22,6 @@ import java.sql.Savepoint;
 import java.sql.Statement;
 import java.sql.Time;
 import java.util.ArrayList;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import kiwi.message.*;
 
 /**
@@ -730,7 +727,9 @@ final class LecturerHandler extends Thread{
      */
     private String resetQuestions() throws IOException{
         
-        String dropStatement = "DROP TABLE IF EXISTS Questions;";
+        String dropQuestions = "DROP TABLE IF EXISTS Questions;";
+        
+        String dropReported = "DROP TABLE IF EXISTS Reported;";
         
         Statement st;
         
@@ -745,13 +744,14 @@ final class LecturerHandler extends Thread{
             }
             
             st = conn.createStatement();
-            st.execute(dropStatement);
+            st.execute(dropQuestions);
+            st.execute(dropReported);
             writer.writeObject(new LecturerMessage(LecturerMessage.CMD_RESET_QUESTIONS, null, LecturerMessage.RESP_SUCCESS));
             st.close();
             return SUCCESS; //drop successful
         } catch (SQLException ex) {
             writer.writeObject(new LecturerMessage(LecturerMessage.CMD_RESET_QUESTIONS, null, LecturerMessage.RESP_FAIL_CONNECT));
-            System.out.println("Error: Problem dropping Questions table.");
+            System.out.println("Error: Problem dropping Questions and/or Reported table(s).");
             System.out.println(ex);
             return FAIL;
         }
