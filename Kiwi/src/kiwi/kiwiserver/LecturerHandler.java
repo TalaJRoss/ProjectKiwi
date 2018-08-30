@@ -1,6 +1,3 @@
-/*
- * Server-side handling of the Lecturer
- */
 package kiwi.kiwiserver;
 
 import com.opencsv.CSVReader;
