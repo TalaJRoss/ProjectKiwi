@@ -5,31 +5,76 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Savepoint;
 import java.sql.Statement;
-import kiwi.message.StudentMessage;
 
 /**
- * Stores information relevant to a question and processes marking and
+ * Stores information relevant to a question and also processes marking and
  * provision of feedback.
  * @author Tala Ross(rsstal002)
  * @author Nikai Jagganath (jggnik001)
- * @author Steve Shun Wang (wngshu003)
  */
 public class Question {
     
-    public static final String TYPE_SELECT = "Select";
-    public static final String TYPE_ARITHMETIC = "Arithmetic";
-    public static final String TYPE_JOIN = "Join";
-    public static final String TYPE_UPDATE = "Update";
-    
     //Constants:
     
+    //Question Type Constants:
     /**
-     * Base range of marks.
-     * 0: didn't compile
-     * 1: compiled but incorrect
-     * 2: compiled and correct
+     * Type of question involving select statements.
      */
-    public static final int [] MARK_RANGE = {0,1,2};
+    public static final String TYPE_SELECT = "Select";
+    
+    /**
+     * Type of question involving arithmetic such as count() or avg() etc.
+     */
+    public static final String TYPE_ARITHMETIC = "Arithmetic";
+    
+    /**
+     * Type of question involving update statements(update, insert, delete).
+     */
+    public static final String TYPE_UPDATE = "Update";
+    
+    
+    //Difficulty Constants:
+    /**
+     * Easy question difficulty.
+     */
+    public static final int DIFF_EASY = 1;
+    
+    /**
+     * Medium question difficulty.
+     */
+    public static final int DIFF_MEDIUM = 2;
+    
+    /**
+     * Hardest question difficulty.
+     */
+    public static final int DIFF_HARD = 3;
+    
+    
+    //Mark Base Constants:
+    /**
+     * Mark when statement doesn't compile or isn't permitted(wrong command).
+     */
+    public static final int MARK_BASE_ERR = 0;
+    
+    /**
+     * Mark when statement compiles but is incorrect.
+     */
+    public static final int MARK_BASE_COMPILED = 1;
+    
+    /**
+     * Mark when statement compiles and is correct.
+     */
+    public static final int MARK_BASE_CORRECT = 2;
+    
+    /**
+     * Mark when lecturers provided answer doesn't compile.
+     */
+    public static final int MARK_BASE_LECTURER_ERR = -1;
+    
+    /**
+     * Mark when question cannot be marked due to connection error.
+     */
+    public static final int MARK_BASE_CONN_ERR = -2;
     
     
     //Instance Variables:
@@ -45,62 +90,85 @@ public class Question {
     private String answer;
     
     /**
-     * Difficulty value.
-     * Can be 1, 2 or 3.
+     * Difficulty value, which can be DIFF_EASY, DIFF_MEDIUM or DIFF_HARD.
      */
     private int difficulty;
     
+    /**
+     * Question type, which can be TYPE_SELECT, TYPE_UPDATE or TYPE_ARITHMETIC.
+     */
     private String type;
     
+    /**
+     * The question number/question ID of this question in the database.
+     */
     private int questionDBNo;
     
     /**
      * Mark student receives after question is marked.
-     * Can be 0, difficulty or difficulty*2.
+     * Can be MARK_ERR, MARK_COMPILE or MARK_CORRECT*difficulty.
      */
-    int mark;
+    private int mark;
     
+    //Variables for marking:
     /**
      * Result set from expected sql statement output.
      */
-    ResultSet rsExpected;
-    int raExpected;
+    private ResultSet rsExpected;
+    
+    /**
+     * Rows affected from expected sql statement update.
+     */
+    private int raExpected;
     
     /**
      * Number of columns in expected sql statement output.
      */
-    int expectedColCount;
+    private int expectedColCount;
     
     /**
      * Result set from student's sql statement output.
      */
-    ResultSet rsStudent;
-    int raStudent;
+    private ResultSet rsStudent;
+    
+    /**
+     * Rows affected from student's sql statement update.
+     */
+    private int raStudent;
     
     /**
      * Number of columns in student's sql statement output.
      */
-    int studentColCount;
+    private int studentColCount;
     
     /**
      * Error message received on student statement execution - if any.
      */
-    String errorMessage;
+    private String errorMessage;
     
-    private Connection connLimited;
+    //Database Connection Variables:
+    /**
+     * Database connection, not allowed access to student and question info
+     * tables.
+     */
+    private final Connection connLimited;
+    
+    /**
+     * Database connection, allowed access to student and question info tables.
+     */
     private Connection conn;
     
-    //Constructor:
     
+    //Constructors:
     /**
      * Creates question object.
      * @param question English question.
      * @param answer SQL statement expected answer.
-     * @param difficulty Difficulty value (1, 2 or 3)
-     * @param type
-     * @param questionDBNo
-     * @param connLimited
-     * @param conn
+     * @param difficulty Difficulty value, which can be DIFF_EASY, DIFF_MEDIUM or DIFF_HARD.
+     * @param type Question type, which can be TYPE_SELECT, TYPE_UPDATE or TYPE_ARITHMETIC.
+     * @param questionDBNo Question number/ID in the system's database.
+     * @param connLimited Database connection, not allowed access to system's tables.
+     * @param conn Database connection, allowed access to system's tables.
      */
     public Question(String question, String answer, int difficulty, String type, int questionDBNo, Connection connLimited, Connection conn){
         this.question = question;
@@ -115,6 +183,7 @@ public class Question {
     
     /**
      * Default constructor to create a question.
+     * @param connLimited Database connection, not allowed access to system's tables.
      */
     public Question(Connection connLimited) {
         mark= 0;
@@ -122,42 +191,15 @@ public class Question {
     }
     
     
-    //Getters:
-    
-    /**
-     * Gets English question.
-     * @return English question
-     */
-    public String getQuestion() {
-        return question;
-    }
-    
-    /**
-     * Get SQL statement answer.
-     * @return SQL statement answer.
-     */
-    public String getAnswer() {
-        return answer;
-    }
-    
-    /**
-     * Gets question difficulty.
-     * @return Question difficulty.
-     */
-    public int getDifficulty() {
-        return difficulty;
-    }
-    
-    
     //Main functionality methods:
     
     /**
-     * Marks the given student answer. The student answer statement and
-     * expected answer statement are run and the outputs compared. Then a mark
-     * is returned.
+     * Marks the given student answer.
      * @param studentAns SQL statement that student submitted as answer.
      * @return Mark received by student for the question or -1 for lecturer
      * answer err or -2 for db conn/processing err
+     * @author Tala Ross(rsstal002)
+     * @author Nikai Jagganath (jggnik001)
      */
     public int mark(String studentAns) {
         if (type.toLowerCase().equals(TYPE_UPDATE.toLowerCase())) {  //update question
@@ -168,12 +210,19 @@ public class Question {
         }
     }
     
+    /**
+     * Mark the query question by comparing the column names and types of the
+     * result sets received after each statement execution and then comparing
+     * each entry in the result sets for the expected and student statements.
+     * @param studentAns The given answer SQL statement.
+     * @return The mark received.
+     * @author Tala Ross(RSSTAL002)
+     * @author Nikai Jagganath(JGGNIK001)
+     */
     private int markQueryQuestion(String studentAns) {
         try {
             //Get expected output:
-            
             //Check expected query statement command:
-            String tblNameExp = "";
             if (!answer.toUpperCase().startsWith("SELECT")) {//lecturer answer does not execute as expected
                 //Mark question as Not Permitted:
                 String reportStatement = "UPDATE questions "
@@ -196,7 +245,7 @@ public class Question {
                 conn.setAutoCommit(true);
                 
                 System.out.println("Error: answer from lecturer is not executing a permitted SQL DML statement!");
-                mark = -1;
+                mark = MARK_BASE_LECTURER_ERR;
                 return mark;
             }
             
@@ -227,19 +276,18 @@ public class Question {
                
                 System.out.println("Error: answer from lecturer wrong!");
                 System.out.println(e);
-                mark = -1;
+                mark = MARK_BASE_LECTURER_ERR;
                 return mark;
             }
             
             expectedColCount = rsExpected.getMetaData().getColumnCount();
            
             //Get student output:
-            
             //Check expected query statement command:
             if (!studentAns.toUpperCase().startsWith("SELECT")) {   //student answer does not execute as expected
                 errorMessage = "Statement provided is not executing a permitted SQL query statement!\n"
                         + "i.e. SELECT";
-                mark = MARK_RANGE[0];
+                mark = MARK_BASE_ERR;
                 return mark;
             }
             
@@ -248,7 +296,7 @@ public class Question {
                 rsStudent = stStudent.executeQuery(studentAns); //execute student's sql statement
             }
             catch (SQLException e) { //didn't compile
-                mark = MARK_RANGE[0];
+                mark = MARK_BASE_ERR;
                
                 //Process error message:
                 errorMessage = "SQL Statement did not compile.\n"
@@ -260,7 +308,7 @@ public class Question {
            
             //Wrong if not same no. columns:
             if (studentColCount!= expectedColCount) {
-                mark = MARK_RANGE[1];
+                mark = MARK_BASE_COMPILED;
                 return mark;
             }
            
@@ -269,7 +317,7 @@ public class Question {
                 //Wrong if different column sql types:
                 for (int i=1; i<=expectedColCount; i++) {    //all expected columns
                     if (rsStudent.getMetaData().getColumnType(i)!= rsExpected.getMetaData().getColumnType(i)){  //not same type
-                        mark = MARK_RANGE[1];
+                        mark = MARK_BASE_COMPILED;
                         return mark;
                     }
                 }
@@ -282,40 +330,46 @@ public class Question {
                         for (int i=1; i<=expectedColCount; i++) {   //fields in given expected row
                             if (rsStudent.getObject(i)==null || rsExpected.getObject(i)==null) {    //at least one field null
                                 if (rsStudent.getObject(i)!=null || rsExpected.getObject(i)!=null) {    //not both null
-                                    mark = MARK_RANGE[1];
+                                    mark = MARK_BASE_COMPILED;
                                     return mark;
                                 }
                             }
                             else if (!rsStudent.getObject(i).equals(rsExpected.getObject(i))) {   //fields not equal
-                                mark = MARK_RANGE[1];
+                                mark = MARK_BASE_COMPILED;
                                 return mark;
                             }
                         }
                     }
                     else {   //student output has too few rows
-                        mark = MARK_RANGE[1];
+                        mark = MARK_BASE_COMPILED;
                         return mark;
                     }
                 }
                 if (rsStudent.next()) {  //student output too many rows
-                    mark = MARK_RANGE[1];
+                    mark = MARK_BASE_COMPILED;
                     return mark;
                 }
                 
                 //Output is exactly the same:
-                mark = MARK_RANGE[2]*difficulty;
+                mark = MARK_BASE_CORRECT*difficulty;
                 return mark;
             }
         }
         catch (SQLException e) {
             System.out.println("Error: Problem comparing sql result set outputs.");
             System.out.println(e);
-            mark = -2;
+            mark = MARK_BASE_CONN_ERR;
             return mark;
         }
     }
     
-    
+    /**
+     * Mark the update question by comparing the rows affected for each update
+     * and then target tables after the expected and given update statements.
+     * @param studentAns The given answer SQL statement.
+     * @return The mark received.
+     * @author Tala Ross(RSSTAL002)
+     */
     private int markUpdateQuestion(String studentAns) {
         try {
             //Get expected output:
@@ -360,7 +414,7 @@ public class Question {
                 conn.setAutoCommit(true);
                 
                 System.out.println("Error: answer from lecturer is not executing a permitted SQL DML statement!");
-                mark = -1;
+                mark = MARK_BASE_LECTURER_ERR;
                 return mark;
             }
            
@@ -395,7 +449,7 @@ public class Question {
                
                 System.out.println("Error: answer from lecturer wrong!");
                 System.out.println(e);
-                mark = -1;
+                mark = MARK_BASE_LECTURER_ERR;
                 return mark;
             }
            
@@ -408,7 +462,7 @@ public class Question {
                 connLimited.setAutoCommit(true);
                 System.out.println("Error: couldn't get lecturer output!");
                 System.out.println(e);
-                mark = -2;
+                mark = MARK_BASE_CONN_ERR;
                 return mark;
             }
            
@@ -443,7 +497,7 @@ public class Question {
             else {   //lecturer answer does not execute as expected
                 errorMessage = "Statement provided is not executing a permitted SQL DML statement!\n"
                         + "i.e. UPDATE, INSERT or DELETE";
-                mark = MARK_RANGE[0];
+                mark = MARK_BASE_ERR;
                 return mark;
             }
 
@@ -463,7 +517,7 @@ public class Question {
                  errorMessage = "SQL Statement did not compile.\n"
                         + e.toString().substring("java.sql.".length()).replace("kiwidb.",""); //remove "java.sql." from error name and "kiwidb." from table name
 
-                 mark = MARK_RANGE[0];
+                 mark = MARK_BASE_ERR;
                  return mark;
             }
 
@@ -490,7 +544,7 @@ public class Question {
 
             //Wrong if didn't update same table:
             if (!tblNameExp.toLowerCase().equals(tblNameStu.toLowerCase())) { 
-                mark = MARK_RANGE[1];
+                mark = MARK_BASE_COMPILED;
                 return mark;
             }
 
@@ -504,49 +558,47 @@ public class Question {
                         for (int i=1; i<=expectedColCount; i++) {   //fields in given expected row
                             if (rsStudent.getObject(i)==null || rsExpected.getObject(i)==null) {    //at least one field null
                                 if (rsStudent.getObject(i)!=null || rsExpected.getObject(i)!=null) {    //not both null
-                                    mark = MARK_RANGE[1];
+                                    mark = MARK_BASE_COMPILED;
                                     return mark;
                                 }
                             }
                             else if (!rsStudent.getObject(i).equals(rsExpected.getObject(i))) {   //fields not equal
-                                mark = MARK_RANGE[1];
+                                mark = MARK_BASE_COMPILED;
                                 return mark;
                             }
                         }
                     }
                     else {   //student output has too few rows
-                        mark = MARK_RANGE[1];
+                        mark = MARK_BASE_COMPILED;
                         return mark;
                     }
                 }
                 if (rsStudent.next()) {  //student output too many rows
-                    mark = MARK_RANGE[1];
+                    mark = MARK_BASE_COMPILED;
                     return mark;
                 }
                 
                 //Output is exactly the same:
-                mark = MARK_RANGE[2]*difficulty;
+                mark = MARK_BASE_CORRECT*difficulty;
                 return mark;
             }
         }
         catch (SQLException e) {
             System.out.println("Error: Problem comparing sql result set outputs.");
             System.out.println(e);
-            mark = -2;
+            mark = MARK_BASE_CONN_ERR;
             return mark;
         }
     }
     
     
+    //Getters:
     
-    
-    //TODO: Show what the differences in output are?
     /**
-     * Creates feedback, once student submits answer, which shows what the
-     * expected and received sql statements and output are.
-     * @param studentAns The statement received from student as answer.
-     * @return Formatted String showing expected and received sql statements
-     * and output or null if db conneection/processing error occurs
+     * Gets the feedback for the marked question.
+     * @return Formatted String showing expected and received output or null if
+     * DB connection/processing error occurs.
+     * @author Tala Ross(RSSTAL002)
      */
     public String getFeedback() {
         //Check that lecturer sql statement executed:
@@ -564,6 +616,12 @@ public class Question {
         
     }
     
+    /**
+     * Gets the feedback for a query question.
+     * @return Formatted String showing expected and received output or null if
+     * DB connection/processing error occurs.
+     * @author Tala Ross(RSSTAL002)
+     */
     private String getQueryFeedback() {
         //Show expected output:
         String toReturn = "Expected Output:\n";
@@ -594,7 +652,7 @@ public class Question {
         //Show student output:
         toReturn+= "Your Output:\n";
         
-        if (mark==Question.MARK_RANGE[0]) {  //answer statement didn't compile
+        if (mark==MARK_BASE_ERR) {  //answer statement didn't compile
             toReturn+= errorMessage+"\n";
         }
         else {  //answer statement did compile
@@ -625,6 +683,13 @@ public class Question {
         return toReturn;    //all feedback
     }
     
+    /**
+     * Gets the feedback for an update question.
+     * @return Formatted String showing expected and received output after
+     * update and the number of affected rows or null if DB
+     * connection/processing error occurs.
+     * @author Tala Ross(RSSTAL002)
+     */
     private String getUpdateFeedback() {
         //Show expected output:
         String toReturn = "Expected table contents after update:\n";
@@ -655,7 +720,7 @@ public class Question {
         //Show student output:
         toReturn+= "Your table contents after update:\n";
         
-        if (mark==Question.MARK_RANGE[0]) {  //answer statement didn't compile
+        if (mark==MARK_BASE_ERR) {  //answer statement didn't compile
             toReturn+= errorMessage+"\n";
         }
         else {  //answer statement did compile
@@ -686,20 +751,53 @@ public class Question {
         return toReturn;    //all feedback
     }
     
+    /**
+     * Gets English question.
+     * @return English question
+     */
+    public String getQuestion() {
+        return question;
+    }
+    
+    /**
+     * Get SQL statement answer.
+     * @return SQL statement answer.
+     */
+    public String getAnswer() {
+        return answer;
+    }
+    
+    /**
+     * Gets question difficulty.
+     * @return Question difficulty, which can be DIFF_EASY, DIFF_MEDIUM or DIFF_HARD.
+     */
+    public int getDifficulty() {
+        return difficulty;
+    }
+    
+    /**
+     * Gets the received mark for the question.
+     * @return The received mark for the question.
+     */
     public int getMark() {
         return mark;
     }
    
+    /**
+     * Gets the max mark available for the question.
+     * @return The max mark available for the question.
+     */
     public int getMaxMark() {
-        return MARK_RANGE[2]*difficulty;
+        return MARK_BASE_CORRECT*difficulty;
     }
-
-    public int getOutOf() {
-        return difficulty*MARK_RANGE[2];
-    }
-
+    
+    /**
+     * Gets the questions ID/number in the system's database.
+     * @return The questions ID/number in the system's database.
+     */
     public int getQuestionDBNo() {
         return questionDBNo;
     }
+    
     
 }

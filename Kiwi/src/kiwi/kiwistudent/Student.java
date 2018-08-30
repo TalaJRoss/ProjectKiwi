@@ -145,6 +145,7 @@ public class Student {
      * @throws java.io.IOException
      * @throws java.lang.ClassNotFoundException
      * @throws kiwi.kiwiserver.DBConnectionException
+     * @author Tala Ross(rsstal002)
      */
     public Student() throws IOException, ClassNotFoundException, DBConnectionException {
         //Set up socket:
@@ -168,6 +169,7 @@ public class Student {
      * Informs server of close and then closes socket connections.
      * @throws IOException
      * @throws java.lang.ClassNotFoundException
+     * @author Tala Ross(rsstal002)
      */
     public void closeConnection() throws IOException, ClassNotFoundException {
         writer.writeObject(new StudentMessage(StudentMessage.CMD_CLOSE, null));
@@ -182,6 +184,7 @@ public class Student {
      * Attempts to login student with given student number.
      * @param studentNumber The student number to try login.
      * @return SUCCESS, FAIL_LOGIN, or FAIL_CONNECT
+     * @author Steve Shun Wang (wngshu003)
      */
     public int login(String studentNumber) {
         try {
@@ -215,6 +218,7 @@ public class Student {
      * including the total number of question, the first question and the
      * schema diagram image.
      * @return SUCCESS, FAIL_DENY or FAIL_CONNECT
+     * @author Tala Ross(rsstal002)
      */
     public int startAssignment() {
         try {
@@ -248,6 +252,7 @@ public class Student {
      * String output.
      * @param studentStatement The given SQL statement.
      * @return true if successfully executed action otherwise false (ie. couldn't get output)
+     * @author Tala Ross(rsstal002)
      */
     public boolean check(String studentStatement) {
         try {
@@ -274,6 +279,7 @@ public class Student {
      * Takes in student answer gets feedback and marks and saves them.
      * @param studentAns Answer SQL statement.
      * @return true if successfully executed action otherwise false (ie. couldn't mark)
+     * @author Tala Ross(rsstal002)
      */
     public int submit(String studentAns) {
         try {    
@@ -315,6 +321,7 @@ public class Student {
      * Tells the server that student is quitting the assignment and the
      * assignment grade must be save.
      * @return true if successfully executed action otherwise false (ie. couldn't save grade)
+     * @author Tala Ross(rsstal002)
      */
     public boolean leaveAssignment() {
         try {
@@ -337,6 +344,7 @@ public class Student {
      * saved values in instance variables. The statistics include highest grade,
      * number of submissions remaining and deadline info.
      * @return true if successfully executed action otherwise false (ie. couldn't get stats)
+     * @author Tala Ross(rsstal002)
      */
     public boolean viewStats() {
         try {
@@ -369,6 +377,7 @@ public class Student {
      * and suggesting the correct answer.
      * @param suggested The given suggested answer from student.
      * @return true if successfully executed action otherwise false (ie. couldn't report question)
+     * @author Tala Ross(rsstal002)
      */
     public boolean report(String suggested) {
         try {

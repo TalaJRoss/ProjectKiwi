@@ -80,7 +80,7 @@ public class QuestionInfo implements Serializable{
     public QuestionInfo(Assignment assignment, String studentAns) {
         //Mark the current question:
         this.mark = assignment.mark(studentAns);
-        this.outOf = assignment.getQuestion().getOutOf();
+        this.outOf = assignment.getQuestion().getMaxMark();
         this.feedback = assignment.getFeedback(studentAns);
         
         //Get the next question's info or calculate the final grade:
