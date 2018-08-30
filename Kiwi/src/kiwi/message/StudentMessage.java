@@ -101,6 +101,10 @@ public class StudentMessage implements Serializable{
      */
     public static final int RESP_FAIL_DENY = 3;
     
+    /**
+     * Indicates that assignment is overdue
+     */
+    public static final int RESP_ASSIGNMENT_OVERDUE = 4;
     
     //Instance Variables:
     /**

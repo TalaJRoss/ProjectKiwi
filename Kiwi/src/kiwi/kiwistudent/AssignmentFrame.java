@@ -59,6 +59,12 @@ public class AssignmentFrame extends javax.swing.JFrame {
                     + "\nYour final grade is: " + d.format(student.highestGrade), "Final Grade", JOptionPane.PLAIN_MESSAGE);
             createdFlag = false;
         }
+        else if (resp==Student.ASSIGNMENT_OVERDUE)
+        {
+            JOptionPane.showMessageDialog(this, "The assignment is over due. "
+                    + "\nYou may apply for extened deadline from the course convener.","Assignment Overdue" ,JOptionPane.ERROR_MESSAGE);
+            createdFlag = false;
+        }
         else {  //error in creation of assignment
             JOptionPane.showMessageDialog(this, "There was an error connecting to the database."
                     + "\nPlease start the assignment again.", "Startup Error", JOptionPane.ERROR_MESSAGE);
