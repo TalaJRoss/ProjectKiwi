@@ -22,8 +22,6 @@ public class StudentListener extends Thread{
     /**
      * Creates listener socket for student connections on server's student
      * port number. 
-     * @param server The server which the listener is servicing
-     * @throws java.io.IOException
      */
     public StudentListener() {
         try {

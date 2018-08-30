@@ -79,6 +79,7 @@ public class Question {
     
     //Instance Variables:
     
+    //Main information:
     /**
      * English question.
      */
@@ -110,6 +111,7 @@ public class Question {
      */
     private int mark;
     
+    
     //Variables for marking:
     /**
      * Result set from expected sql statement output.
@@ -127,6 +129,16 @@ public class Question {
     private int expectedColCount;
     
     /**
+     * The name of the table being updated by the answer update statement.
+     */
+    private String tblNameExpected;
+    
+    /**
+     * The row of the expected table where the first difference occurred.
+     */
+    private String diffRowExpected;
+    
+    /**
      * Result set from student's sql statement output.
      */
     private ResultSet rsStudent;
@@ -140,6 +152,16 @@ public class Question {
      * Number of columns in student's sql statement output.
      */
     private int studentColCount;
+    
+    /**
+     * The name of the table being updated by a student update statement.
+     */
+    private String tblNameStudent;
+    
+    /**
+     * The row of the student table where the first difference occurred.
+     */
+    private String diffRowStudent;
     
     /**
      * Error message received on student statement execution - if any.
@@ -306,8 +328,24 @@ public class Question {
             }
             studentColCount= rsStudent.getMetaData().getColumnCount();
            
+            //Mark the question:
+            
             //Wrong if not same no. columns:
             if (studentColCount!= expectedColCount) {
+                //Get column labels for expected output:
+                String expRow = "";
+                for (int i=1; i<=expectedColCount; i++) {   //fields in given expected row
+                        expRow+= rsExpected.getMetaData().getColumnLabel(i) + "\t";
+                    }
+                diffRowExpected = expRow.substring(0, expRow.length()-2);
+
+                //Get column labels from student output:
+                String stuRow = "";
+                for (int i=1; i<=studentColCount; i++) {   //fields in given expected row
+                        stuRow+= rsStudent.getMetaData().getColumnLabel(i) + "\t";
+                    }
+                diffRowStudent = stuRow.substring(0, stuRow.length() - 2);
+                
                 mark = MARK_BASE_COMPILED;
                 return mark;
             }
@@ -315,8 +353,16 @@ public class Question {
             //For same no. columns:
             else {
                 //Wrong if different column sql types:
+                String expLabels = "";
+                String stuLabels = "";
                 for (int i=1; i<=expectedColCount; i++) {    //all expected columns
+                    expLabels+= rsExpected.getMetaData().getColumnLabel(i) + "\t";
+                    stuLabels+= rsStudent.getMetaData().getColumnLabel(i) + "\t";
+                    
                     if (rsStudent.getMetaData().getColumnType(i)!= rsExpected.getMetaData().getColumnType(i)){  //not same type
+                        diffRowExpected = expLabels.substring(0, expLabels.length()-2);
+                        diffRowStudent = stuLabels.substring(0, stuLabels.length() - 2);
+                        
                         mark = MARK_BASE_COMPILED;
                         return mark;
                     }
@@ -330,22 +376,74 @@ public class Question {
                         for (int i=1; i<=expectedColCount; i++) {   //fields in given expected row
                             if (rsStudent.getObject(i)==null || rsExpected.getObject(i)==null) {    //at least one field null
                                 if (rsStudent.getObject(i)!=null || rsExpected.getObject(i)!=null) {    //not both null
+                                    
+                                    //Get first row from expected output:
+                                    String expRow = "";
+                                    for (int j=1; j<=expectedColCount; j++) {   //fields in given expected row
+                                        expRow+= rsExpected.getObject(j).toString() + "\t";
+                                    }
+                                    diffRowExpected = expRow.substring(0, expRow.length()-2);
+
+                                    //Get first row from expected output:
+                                    String stuRow = "";
+                                    for (int j=1; j<=studentColCount; j++) {   //fields in given student row
+                                        stuRow+= rsStudent.getObject(j).toString() + "\t";
+                                    }
+                                    diffRowStudent = stuRow.substring(0, stuRow.length()-2);
+                                    
                                     mark = MARK_BASE_COMPILED;
                                     return mark;
                                 }
                             }
                             else if (!rsStudent.getObject(i).equals(rsExpected.getObject(i))) {   //fields not equal
+                                
+                                //Get first row from expected output:
+                                String expRow = "";
+                                for (int j=1; j<=expectedColCount; j++) {   //fields in given expected row
+                                    expRow+= rsExpected.getObject(j).toString() + "\t";
+                                }
+                                diffRowExpected = expRow.substring(0, expRow.length()-2);
+
+                                //Get first row from expected output:
+                                String stuRow = "";
+                                for (int j=1; j<=studentColCount; j++) {   //fields in given student row
+                                    stuRow+= rsStudent.getObject(j).toString() + "\t";
+                                }
+                                diffRowStudent = stuRow.substring(0, stuRow.length()-2);
+                                
                                 mark = MARK_BASE_COMPILED;
                                 return mark;
                             }
                         }
                     }
                     else {   //student output has too few rows
+                        
+                        //Get first row from expected output:
+                        String expRow = "";
+                        for (int i=1; i<=expectedColCount; i++) {   //fields in given expected row
+                            expRow+= rsExpected.getObject(i).toString() + "\t";
+                        }
+                        diffRowExpected = expRow.substring(0, expRow.length()-2);
+
+                        //Get first row from expected output: doesn't exist
+                        diffRowStudent = "";
+                        
                         mark = MARK_BASE_COMPILED;
                         return mark;
                     }
                 }
                 if (rsStudent.next()) {  //student output too many rows
+                    
+                    //Get first row from expected output: doesn't exist
+                    diffRowExpected = "";
+
+                    //Get first row from expected output:
+                    String stuRow = "";
+                    for (int j=1; j<=studentColCount; j++) {   //fields in given student row
+                        stuRow+= rsStudent.getObject(j).toString() + "\t";
+                    }
+                    diffRowStudent = stuRow.substring(0, stuRow.length()-2);
+                    
                     mark = MARK_BASE_COMPILED;
                     return mark;
                 }
@@ -376,23 +474,23 @@ public class Question {
             Statement stExpected = connLimited.createStatement();
            
             //Get table being updated in expected sql update:
-            String tblNameExp = "";
             if (answer.toUpperCase().startsWith("INSERT")) {
                 if (answer.split(" ").length>2) {   //will catch error later
-                    tblNameExp = answer.split(" ")[2];  //insert into <table>
+                    tblNameExpected = answer.split(" ")[2];  //insert into <table>
                 }
             }
             else if (answer.toUpperCase().startsWith("UPDATE")) {
                 if (answer.split(" ").length>1) {
-                    tblNameExp = answer.split(" ")[1];  //update <table>
+                    tblNameExpected = answer.split(" ")[1];  //update <table>
                 }
             }
             else if (answer.toUpperCase().startsWith("DELETE")) {
                 if (answer.split(" ").length>2) {
-                    tblNameExp = answer.split(" ")[2];  //delete from <table>
+                    tblNameExpected = answer.split(" ")[2];  //delete from <table>
                 }
             }
             else {   //lecturer answer does not execute as expected
+                
                 //Mark question as Not Permitted:
                 String reportStatement = "UPDATE questions "
                         + "SET Problem='Not Permitted' "
@@ -411,9 +509,11 @@ public class Question {
                     System.out.println(ex); 
                 }
                 conn.commit();
-                conn.setAutoCommit(true);
+                conn.setAutoCommit(true);   //end transaction
                 
+                //Set appropriate mark:
                 System.out.println("Error: answer from lecturer is not executing a permitted SQL DML statement!");
+                tblNameExpected = null;
                 mark = MARK_BASE_LECTURER_ERR;
                 return mark;
             }
@@ -455,7 +555,7 @@ public class Question {
            
             //Expected new table:
             try {
-                 rsExpected = stExpected.executeQuery("SELECT * FROM " + tblNameExp + ";");
+                 rsExpected = stExpected.executeQuery("SELECT * FROM " + tblNameExpected + ";");
             }
             catch (SQLException e) { //didn't compile
                 connLimited.rollback(spExp);
@@ -472,29 +572,28 @@ public class Question {
 
             expectedColCount = rsExpected.getMetaData().getColumnCount();
 
-            /////////////////////////
+            ///////////////////////// End of lecturer update and get new table
 
             //Get student output:
             Statement stStudent = connLimited.createStatement();
 
             //Get table being updated in student sql update:
-            String tblNameStu = "";
             if (studentAns.toUpperCase().startsWith("INSERT")) {
                 if (studentAns.split(" ").length>2) {   //will catch error later
-                    tblNameStu = studentAns.split(" ")[2];  //insert into <table>
+                    tblNameStudent = studentAns.split(" ")[2];  //insert into <table>
                 }
             }
             else if (studentAns.toUpperCase().startsWith("UPDATE")) {
                 if (studentAns.split(" ").length>1) {
-                    tblNameStu = studentAns.split(" ")[1];  //update <table>
+                    tblNameStudent = studentAns.split(" ")[1];  //update <table>
                 }
             }
             else if (studentAns.toUpperCase().startsWith("DELETE")) {
                 if (studentAns.split(" ").length>2) {
-                    tblNameStu = studentAns.split(" ")[2];  //delete from <table>
+                    tblNameStudent = studentAns.split(" ")[2];  //delete from <table>
                 }
             }
-            else {   //lecturer answer does not execute as expected
+            else {   //student answer does not execute as expected
                 errorMessage = "Statement provided is not executing a permitted SQL DML statement!\n"
                         + "i.e. UPDATE, INSERT or DELETE";
                 mark = MARK_BASE_ERR;
@@ -505,7 +604,7 @@ public class Question {
             connLimited.setAutoCommit(false);
             Savepoint spStu = connLimited.setSavepoint();
 
-            //Expected update:
+            //Student update:
             try {
                  raStudent = stStudent.executeUpdate(studentAns); //execute student's sql statement
             }
@@ -521,9 +620,9 @@ public class Question {
                  return mark;
             }
 
-            //Expected new table:
+            //Student's new table:
             try {
-                rsStudent = stStudent.executeQuery("SELECT * FROM " + tblNameStu + ";");
+                rsStudent = stStudent.executeQuery("SELECT * FROM " + tblNameStudent + ";");
             }
             catch (SQLException e) {
                 connLimited.rollback(spStu);
@@ -540,42 +639,39 @@ public class Question {
 
             studentColCount= rsStudent.getMetaData().getColumnCount();
 
-            /////////////////////////
-
+            ///////////////////////// End of student update and get new table
+            
+            //Mark the question:
+            
             //Wrong if didn't update same table:
-            if (!tblNameExp.toLowerCase().equals(tblNameStu.toLowerCase())) { 
+            if (!tblNameExpected.toLowerCase().equals(tblNameStudent.toLowerCase())) { 
+                mark = MARK_BASE_COMPILED;
+                return mark;
+            }
+            
+            //Wrong if didn't affect the same number of rows:
+            if (raExpected!=raStudent) { 
                 mark = MARK_BASE_COMPILED;
                 return mark;
             }
 
-            //For same tables:
+            //For same tables and number of rows affected check that changes were the same:
             else {
                 //Compare rows of expected and received output:
-                while(rsExpected.next()) {  //all expected rows
-                    if (rsStudent.next()) { //there is another student row
-                        
-                        //Compare each column value in rows:
-                        for (int i=1; i<=expectedColCount; i++) {   //fields in given expected row
-                            if (rsStudent.getObject(i)==null || rsExpected.getObject(i)==null) {    //at least one field null
-                                if (rsStudent.getObject(i)!=null || rsExpected.getObject(i)!=null) {    //not both null
-                                    mark = MARK_BASE_COMPILED;
-                                    return mark;
-                                }
-                            }
-                            else if (!rsStudent.getObject(i).equals(rsExpected.getObject(i))) {   //fields not equal
+                while(rsExpected.next()) {  //all expected rows and student rows (same number of rows)
+                    //Compare each column value in rows:
+                    for (int i=1; i<=expectedColCount; i++) {   //fields in given expected row
+                        if (rsStudent.getObject(i)==null || rsExpected.getObject(i)==null) {    //at least one field null
+                            if (rsStudent.getObject(i)!=null || rsExpected.getObject(i)!=null) {    //not both null
                                 mark = MARK_BASE_COMPILED;
                                 return mark;
                             }
                         }
+                        else if (!rsStudent.getObject(i).equals(rsExpected.getObject(i))) {   //fields not equal
+                            mark = MARK_BASE_COMPILED;
+                            return mark;
+                        }
                     }
-                    else {   //student output has too few rows
-                        mark = MARK_BASE_COMPILED;
-                        return mark;
-                    }
-                }
-                if (rsStudent.next()) {  //student output too many rows
-                    mark = MARK_BASE_COMPILED;
-                    return mark;
                 }
                 
                 //Output is exactly the same:
@@ -583,7 +679,7 @@ public class Question {
                 return mark;
             }
         }
-        catch (SQLException e) {
+        catch (SQLException e) {    //Problem comparing sql ResultSets
             System.out.println("Error: Problem comparing sql result set outputs.");
             System.out.println(e);
             mark = MARK_BASE_CONN_ERR;
@@ -595,53 +691,82 @@ public class Question {
     //Getters:
     
     /**
-     * Gets the feedback for the marked question.
-     * @return Formatted String showing expected and received output or null if
-     * DB connection/processing error occurs.
+     * Gets the feedback for the marked question and gives help if full marks
+     * weren't received.
+     * @return Formatted String giving a message and showing expected and
+     * received output if answer wasn't correct or null if DB connection/ 
+     * processing error occurs.
      * @author Tala Ross(RSSTAL002)
      */
     public String getFeedback() {
-        //Check that lecturer sql statement executed:
-        if (rsExpected==null) {
-            return "Error: Couldn't run lecturer's sql statement. Please contact your lecturer about this.";
+        if (rsExpected==null) { //check that lecturer sql statement executed
+            return "Error: Couldn't run lecturer's sql statement.";
         }
-        
-        //Get feedback:
-        if (!type.equals(TYPE_UPDATE)) { //query question
-            return getQueryFeedback(); 
+        else if (mark==getMaxMark()) {   //got full marks so return basic message
+            return getFeedbackMessage();
         }
-        else {  //update question
-            return getUpdateFeedback();
+        else {  //didn't get full marks so return help
+            if (!type.equals(TYPE_UPDATE)) { //query question
+                return getQueryFeedback(); 
+            }
+            else {  //update question
+                return getUpdateFeedback();
+            }
         }
-        
     }
     
     /**
-     * Gets the feedback for a query question.
-     * @return Formatted String showing expected and received output or null if
-     * DB connection/processing error occurs.
+     * Gets the feedback for a query question, with contents dependent on
+     * this question difficulty.
+     * That is, if the question is DIFF_EASY then the expected and received
+     * output are both shown.
+     * If the question is DIFF_MEDIUM then the differences in a single row are
+     * shown if any exist.
+     * And, if the question is DIFF_HARD then no differences in output after
+     * the update are shown and only a basic message is displayed.
+     * @return Formatted String showing feedback with contents dependent on
+     * question difficulty, or null if a connection/processing error occurs
      * @author Tala Ross(RSSTAL002)
      */
     private String getQueryFeedback() {
+        //Get feedback and its level of help based on the question difficulty:
+        switch (difficulty) {
+            case DIFF_EASY:
+                return getQueryFeedbackComplete();
+            case DIFF_MEDIUM:
+                return getQueryFeedbackSubset();
+            default:
+                return getFeedbackMessage();
+        }
+    }
+    
+    /**
+     * Gets the feedback for a query question when the question difficulty is
+     * DIFF_EASY.
+     * @return Formatted String showing expected and received output after
+     * of statement or null if DB connection/processing error occurs.
+     * @author Tala Ross(RSSTAL002)
+     */
+    private String getQueryFeedbackComplete() {
         //Show expected output:
-        String toReturn = "Expected Output:\n";
+        String feedback = "Expected Output:\n";
         try {
             rsExpected.beforeFirst();   //move cursor to start of result set
             
             //Get column names:
             for (int i=1; i<=expectedColCount; i++) {   
-                    toReturn+= rsExpected.getMetaData().getColumnName(i) + "\t";
+                    feedback+= rsExpected.getMetaData().getColumnName(i) + "\t";
                 }
-            toReturn+="\n";
+            feedback+="\n";
             
             //Get row entries:
             while(rsExpected.next()) {  //each row 
                 for (int i=1; i<=expectedColCount; i++) {   //each field in row
-                    toReturn+= rsExpected.getObject(i) + "\t";
+                    feedback+= rsExpected.getObject(i) + "\t";
                 }
-                toReturn+="\n";
+                feedback+="\n";
             }
-            toReturn+="\n"; //end of expected output
+            feedback+="\n"; //end of expected output
         } 
         catch (SQLException e) {
             System.out.println("Error: Couldn't read lecturer output.");
@@ -650,10 +775,10 @@ public class Question {
         }
         
         //Show student output:
-        toReturn+= "Your Output:\n";
+        feedback+= "Your Output:\n";
         
         if (mark==MARK_BASE_ERR) {  //answer statement didn't compile
-            toReturn+= errorMessage+"\n";
+            feedback+= errorMessage+"\n";
         }
         else {  //answer statement did compile
             try {
@@ -661,18 +786,18 @@ public class Question {
                 
                 //Get column names:
                 for (int i=1; i<=studentColCount; i++) {   
-                        toReturn+= rsStudent.getMetaData().getColumnName(i) + "\t";
+                        feedback+= rsStudent.getMetaData().getColumnName(i) + "\t";
                     }
-                toReturn+="\n";
+                feedback+="\n";
                 
                 //Get row entries:
                 while(rsStudent.next()) {  //each row
                     for (int i=1; i<=studentColCount; i++) {    //each field in row
-                        toReturn+= rsStudent.getObject(i) + "\t";
+                        feedback+= rsStudent.getObject(i) + "\t";
                     }
-                    toReturn+="\n";
+                    feedback+="\n";
                 }
-                toReturn+="\n"; //end of student's output
+                feedback+="\n"; //end of student's output
             } 
             catch (SQLException e) {
                 System.out.println("Error: Couldn't read student output.");
@@ -680,36 +805,75 @@ public class Question {
                 return null;
             }
         }
-        return toReturn;    //all feedback
+        return getFeedbackMessage() + "\n" + feedback;    //all feedback with a basic message at start
     }
     
     /**
-     * Gets the feedback for an update question.
+     * Gets the feedback for a query question, when question difficulty is
+     * DIFF_MEDIUM.
+     * @return Formatted String showing the differences in a single row if any
+     * exist or null if DB connection/processing error occurs.
+     * @author Tala Ross(RSSTAL002)
+     */
+    private String getQueryFeedbackSubset() {
+        String feedback = "An example row difference is shown below.\n"
+                + "Expected row: " + diffRowExpected + "\n"
+                + "Your corresponding row: " + diffRowStudent + "\n";
+        return getFeedbackMessage() + "\n" + feedback;    //a single row difference with a basic message at start
+    }
+    
+    /**
+     * Gets the feedback for an update question, with contents dependent on
+     * this question difficulty. 
+     * That is, if the question is DIFF_EASY then the expected and received
+     * output after updates are both shown.
+     * If the question is DIFF_MEDIUM then the differences in amount of rows
+     * affected and the tables being affected are shown.
+     * And, if the question is DIFF_HARD then no differences in output after
+     * the update are shown and only a basic message is displayed.
+     * @return Formatted String showing feedback with contents dependent on
+     * question difficulty, or null if a connection/processing error occurs.
+     * @author Tala Ross(RSSTAL002)
+     */
+    private String getUpdateFeedback() {
+        //Get feedback and its level of help based on the question difficulty:
+        switch (difficulty) {
+            case DIFF_EASY:
+                return getUpdateFeedbackComplete();
+            case DIFF_MEDIUM:
+                return getUpdateFeedbackSubset();
+            default:
+                return getFeedbackMessage();
+        }
+    }
+    
+    /**
+     * Gets the feedback for an update question .
      * @return Formatted String showing expected and received output after
      * update and the number of affected rows or null if DB
      * connection/processing error occurs.
      * @author Tala Ross(RSSTAL002)
      */
-    private String getUpdateFeedback() {
+    private String getUpdateFeedbackComplete() {
         //Show expected output:
-        String toReturn = "Expected table contents after update:\n";
+        String feedback = "Expected table contents after update:\n";
         try {
             rsExpected.beforeFirst();   //move cursor to start of result set
             
             //Get column names:
             for (int i=1; i<=expectedColCount; i++) {   
-                    toReturn+= rsExpected.getMetaData().getColumnName(i) + "\t";
+                    feedback+= rsExpected.getMetaData().getColumnName(i) + "\t";
                 }
-            toReturn+="\n";
+            feedback+="\n";
             
             //Get row entries:
             while(rsExpected.next()) {  //each row 
                 for (int i=1; i<=expectedColCount; i++) {   //each field in row
-                    toReturn+= rsExpected.getObject(i) + "\t";
+                    feedback+= rsExpected.getObject(i) + "\t";
                 }
-                toReturn+="\n";
+                feedback+="\n";
             }
-            toReturn+="\n"; //end of expected output
+            feedback+="\n"; //end of expected output
         } 
         catch (SQLException e) {
             System.out.println("Error: Couldn't read lecturer output.");
@@ -718,10 +882,10 @@ public class Question {
         }
         
         //Show student output:
-        toReturn+= "Your table contents after update:\n";
+        feedback+= "Your table contents after update:\n";
         
         if (mark==MARK_BASE_ERR) {  //answer statement didn't compile
-            toReturn+= errorMessage+"\n";
+            feedback+= errorMessage+"\n";
         }
         else {  //answer statement did compile
             try {
@@ -729,18 +893,18 @@ public class Question {
                 
                 //Get column names:
                 for (int i=1; i<=studentColCount; i++) {   
-                        toReturn+= rsStudent.getMetaData().getColumnName(i) + "\t";
+                        feedback+= rsStudent.getMetaData().getColumnName(i) + "\t";
                     }
-                toReturn+="\n";
+                feedback+="\n";
                 
                 //Get row entries:
                 while(rsStudent.next()) {  //each row
                     for (int i=1; i<=studentColCount; i++) {    //each field in row
-                        toReturn+= rsStudent.getObject(i) + "\t";
+                        feedback+= rsStudent.getObject(i) + "\t";
                     }
-                    toReturn+="\n";
+                    feedback+="\n";
                 }
-                toReturn+="\n"; //end of student's output
+                feedback+="\n"; //end of student's output
             } 
             catch (SQLException e) {
                 System.out.println("Error: Couldn't read student output.");
@@ -748,7 +912,48 @@ public class Question {
                 return null;
             }
         }
-        return toReturn;    //all feedback
+        return getFeedbackMessage() + "\n" + feedback;    //all feedback with a basic message at start
+    }
+    
+    /**
+     * Gets the feedback for an update question, when difficulty is DIFF_MEDIUM.
+     * Only the difference in tables being updated and the number of affected
+     * rows is shown.
+     * @return Formatted String showing expected table updated and the rows
+     * affected and the received table updated and the rows affected.
+     * connection/processing error occurs.
+     * @author Tala Ross(RSSTAL002)
+     */
+    private String getUpdateFeedbackSubset() {
+        //Show expected output:
+        String feedback = "The expected changes after the update:\n"
+                        + tblNameExpected + " - " + raExpected + "row(s) affected\n\n"
+                        + "Your changes after the update:\n"
+                        + tblNameStudent + " - " + raStudent + "row(s) affected\n";
+        return getFeedbackMessage() + "\n" + feedback;  //feedback with basic message
+    }
+    
+    /**
+     * Gets a basic return message or returns an empty String if the question
+     * couldn't be marked or the lecturer statement didn't compile.
+     * This is used when difficulty is DIFF_HARD
+     * @return A basic return message based on question mark or an empty String
+     * if lecturer/connection/processing error occurs.
+     * @author Tala Ross(RSSTAL002)
+     */
+    private String getFeedbackMessage() {
+        if (mark==MARK_BASE_ERR) {
+            return "Oops! Your statement didn't compile or wasn't permitted.\n";
+        }
+        else if (mark==MARK_BASE_COMPILED) {
+            return "Almost! Your statement compiled but wasn't correct.\n";
+        }
+        else if (mark==this.getMaxMark()) {
+            return"Well done! Your statement compiled and was 100% correct.\n";
+        }
+        else {  //lecturer statement didn't compile/wasn't able to mark
+            return "";
+        }
     }
     
     /**
