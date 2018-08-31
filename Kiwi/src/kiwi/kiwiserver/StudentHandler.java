@@ -16,6 +16,7 @@ import java.sql.SQLException;
 import java.sql.Savepoint;
 import java.sql.Statement;
 import java.sql.Time;
+import java.util.Calendar;
 import kiwi.message.LoginInfo;
 import kiwi.message.QuestionInfo;
 import kiwi.message.StudentMessage;
@@ -209,6 +210,33 @@ class StudentHandler extends Thread {
                 writer.writeObject(new StudentMessage(StudentMessage.CMD_STATS, null, StudentMessage.RESP_FAIL_CONNECT));
                 return;
             }
+            
+            //Get the current date in sql.Date
+            Calendar cal = Calendar.getInstance();
+            java.util.Date currentDate = cal.getTime();
+            //System.out.println(""+currentDate);
+            
+            //Get the deadline Date and Deadline time
+            statement = "SELECT * FROM assignmentinfo";
+            rs = st.executeQuery(statement);
+            Date deadlineSQLDate = null;
+            Time deadlinSQLTime = null;
+            if (rs.next())
+            {
+                deadlineSQLDate = (Date) rs.getObject("deadlineDate");
+                deadlinSQLTime = (Time) rs.getObject("deadlineTime");
+            }
+            java.util.Date deadlineDate=new java.util.Date(deadlineSQLDate.getTime()+deadlinSQLTime.getTime()+7200000);
+            //System.out.println(""+deadlineDate);
+            
+            //Check if the assignment in overdue
+            if (currentDate.compareTo(deadlineDate)>0)
+            {
+                //System.out.println("Assignement is overdue");
+                writer.writeObject(new StudentMessage(StudentMessage.CMD_START, null, StudentMessage.RESP_ASSIGNMENT_OVERDUE));
+                return;
+            }
+            
             
             //Check that student allowed to do assignment:
             statement = "SELECT NoSubmissionsCompleted FROM Students WHERE StudentNo LIKE '" + studentNo + "'"; 

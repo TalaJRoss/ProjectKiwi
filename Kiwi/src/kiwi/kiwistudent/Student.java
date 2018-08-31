@@ -44,6 +44,11 @@ public class Student {
      */
     public static int SUCCESS = 0;
     
+    /**
+     * Action executed successfully.
+     */
+    public static int ASSIGNMENT_OVERDUE = 4;
+    
     
     //Instance Variables:
     
@@ -237,6 +242,8 @@ public class Student {
                     return SUCCESS;
                 case StudentMessage.RESP_FAIL_DENY:  //No more submissions allowed
                     return FAIL_DENY;
+                case StudentMessage.RESP_ASSIGNMENT_OVERDUE: //Past Assignment Deadline
+                    return ASSIGNMENT_OVERDUE;
                 default:    //Problem getting info from server.
                     return FAIL_CONNECT;    
             }
