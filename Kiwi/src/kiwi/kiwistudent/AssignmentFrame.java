@@ -289,7 +289,7 @@ public class AssignmentFrame extends javax.swing.JFrame {
         if (student.isAssignmentDone()) {
             btnNext.setText("Grade");
         }
-        System.out.println("DEBUG: "+(student.getNextQuestionNo()-1));
+        
         if (resp==Student.SUCCESS) { //submitted correctly to server
             txtfMark.setText(student.getCurrentMarkString());
             txtaFeedback.setText(student.getCurrentFeedback());

@@ -91,7 +91,7 @@ public class QuestionInfo implements Serializable{
         }
         else { //no questions left so get final grade
             this.question = null;
-            this.questionNo = totalNoQuestions + 1;     //for student-end processing purposes(not incremented inquestion object)
+            this.questionNo = assignment.getNoQuestions() + 1;     //for student-end processing purposes(not incremented inquestion object)
             this.finalGrade = assignment.getGrade();
         }
     }

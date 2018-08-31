@@ -77,6 +77,26 @@ public class Question {
     public static final int MARK_BASE_CONN_ERR = -2;
     
     
+    //Feedback Constants:
+    /**
+     * The percentage of the correct statement shown as feedback when student
+     * answer doesn't compile for a DIFF_EASY question.
+     */
+    private static final double HELP_FACTOR_EASY = 0.5;
+    
+    /**
+     * The percentage of the correct statement shown as feedback when student
+     * answer doesn't compile for a DIFF_MEDIUM question.
+     */
+    private static final double HELP_FACTOR_MEDIUM = 0.3;
+    
+    /**
+     * The percentage of the correct statement shown as feedback when student
+     * answer doesn't compile for a DIFF_HARD question.
+     */
+    private static final double HELP_FACTOR_HARD = 0.3;
+    
+    
     //Instance Variables:
     
     //Main information:
@@ -218,8 +238,8 @@ public class Question {
     /**
      * Marks the given student answer.
      * @param studentAns SQL statement that student submitted as answer.
-     * @return Mark received by student for the question or -1 for lecturer
-     * answer err or -2 for db conn/processing err
+     * @return Mark received by student for the question or MARK_BASE_LECTURER_ERR for lecturer
+     * answer err or MARK_BASE_CONN_ERR for db conn/processing err
      * @author Tala Ross(rsstal002)
      * @author Nikai Jagganath (jggnik001)
      */
@@ -262,6 +282,8 @@ public class Question {
                     conn.setAutoCommit(true);   //end transaction
                     System.out.println("Error: Problem adding not permitted marker.");
                     System.out.println(ex); 
+                    mark = MARK_BASE_LECTURER_ERR;
+                    return mark;
                 }
                 conn.commit();
                 conn.setAutoCommit(true);
@@ -292,6 +314,8 @@ public class Question {
                     conn.setAutoCommit(true);   //end transaction
                     System.out.println("Error: Problem adding not compile marker.");
                     System.out.println(ex); 
+                    mark = MARK_BASE_LECTURER_ERR;
+                    return mark;
                 }
                 conn.commit();
                 conn.setAutoCommit(true);
@@ -337,7 +361,7 @@ public class Question {
                 for (int i=1; i<=expectedColCount; i++) {   //fields in given expected row
                         expRow+= rsExpected.getMetaData().getColumnLabel(i) + "\t";
                     }
-                diffRowExpected = expRow.substring(0, expRow.length()-2);
+                diffRowExpected = expRow.substring(0, expRow.length() - 1);
 
                 //Get column labels from student output:
                 String stuRow = "";
@@ -360,8 +384,8 @@ public class Question {
                     stuLabels+= rsStudent.getMetaData().getColumnLabel(i) + "\t";
                     
                     if (rsStudent.getMetaData().getColumnType(i)!= rsExpected.getMetaData().getColumnType(i)){  //not same type
-                        diffRowExpected = expLabels.substring(0, expLabels.length()-2);
-                        diffRowStudent = stuLabels.substring(0, stuLabels.length() - 2);
+                        diffRowExpected = expLabels.substring(0, expLabels.length() - 1);
+                        diffRowStudent = stuLabels.substring(0, stuLabels.length() - 1);
                         
                         mark = MARK_BASE_COMPILED;
                         return mark;
@@ -382,14 +406,14 @@ public class Question {
                                     for (int j=1; j<=expectedColCount; j++) {   //fields in given expected row
                                         expRow+= rsExpected.getObject(j).toString() + "\t";
                                     }
-                                    diffRowExpected = expRow.substring(0, expRow.length()-2);
+                                    diffRowExpected = expRow.substring(0, expRow.length() - 1);
 
                                     //Get first row from expected output:
                                     String stuRow = "";
                                     for (int j=1; j<=studentColCount; j++) {   //fields in given student row
                                         stuRow+= rsStudent.getObject(j).toString() + "\t";
                                     }
-                                    diffRowStudent = stuRow.substring(0, stuRow.length()-2);
+                                    diffRowStudent = stuRow.substring(0, stuRow.length() - 1);
                                     
                                     mark = MARK_BASE_COMPILED;
                                     return mark;
@@ -402,14 +426,14 @@ public class Question {
                                 for (int j=1; j<=expectedColCount; j++) {   //fields in given expected row
                                     expRow+= rsExpected.getObject(j).toString() + "\t";
                                 }
-                                diffRowExpected = expRow.substring(0, expRow.length()-2);
+                                diffRowExpected = expRow.substring(0, expRow.length() - 1);
 
                                 //Get first row from expected output:
                                 String stuRow = "";
                                 for (int j=1; j<=studentColCount; j++) {   //fields in given student row
                                     stuRow+= rsStudent.getObject(j).toString() + "\t";
                                 }
-                                diffRowStudent = stuRow.substring(0, stuRow.length()-2);
+                                diffRowStudent = stuRow.substring(0, stuRow.length() - 1);
                                 
                                 mark = MARK_BASE_COMPILED;
                                 return mark;
@@ -423,7 +447,7 @@ public class Question {
                         for (int i=1; i<=expectedColCount; i++) {   //fields in given expected row
                             expRow+= rsExpected.getObject(i).toString() + "\t";
                         }
-                        diffRowExpected = expRow.substring(0, expRow.length()-2);
+                        diffRowExpected = expRow.substring(0, expRow.length() - 1);
 
                         //Get first row from expected output: doesn't exist
                         diffRowStudent = "";
@@ -442,7 +466,7 @@ public class Question {
                     for (int j=1; j<=studentColCount; j++) {   //fields in given student row
                         stuRow+= rsStudent.getObject(j).toString() + "\t";
                     }
-                    diffRowStudent = stuRow.substring(0, stuRow.length()-2);
+                    diffRowStudent = stuRow.substring(0, stuRow.length() - 1);
                     
                     mark = MARK_BASE_COMPILED;
                     return mark;
@@ -507,6 +531,9 @@ public class Question {
                     conn.setAutoCommit(true);   //end transaction
                     System.out.println("Error: Problem adding not permitted marker.");
                     System.out.println(ex); 
+                    tblNameExpected = null;
+                    mark = MARK_BASE_LECTURER_ERR;
+                    return mark;
                 }
                 conn.commit();
                 conn.setAutoCommit(true);   //end transaction
@@ -543,6 +570,8 @@ public class Question {
                     conn.setAutoCommit(true);   //end transaction
                     System.out.println("Error: Problem adding not compile marker.");
                     System.out.println(ex); 
+                    mark = MARK_BASE_LECTURER_ERR;
+                    return mark;
                 }
                 conn.commit();
                 conn.setAutoCommit(true);
@@ -629,7 +658,7 @@ public class Question {
                 connLimited.setAutoCommit(true);
                 System.out.println("Error: couldn't get student output!");
                 System.out.println(e);
-                mark = -2;
+                mark = MARK_BASE_CONN_ERR;
                 return mark;
             }
 
@@ -658,7 +687,7 @@ public class Question {
             //For same tables and number of rows affected check that changes were the same:
             else {
                 //Compare rows of expected and received output:
-                while(rsExpected.next()) {  //all expected rows and student rows (same number of rows)
+                while(rsExpected.next()&&rsStudent.next()) {  //all expected rows and student rows (same number of rows)
                     //Compare each column value in rows:
                     for (int i=1; i<=expectedColCount; i++) {   //fields in given expected row
                         if (rsStudent.getObject(i)==null || rsExpected.getObject(i)==null) {    //at least one field null
@@ -692,10 +721,11 @@ public class Question {
     
     /**
      * Gets the feedback for the marked question and gives help if full marks
-     * weren't received.
+     * weren't received, suggesting differences, and supplies a partial correct
+     * statement if student answer didn't compile.
      * @return Formatted String giving a message and showing expected and
-     * received output if answer wasn't correct or null if DB connection/ 
-     * processing error occurs.
+     * received output if answer wasn't correct, a statement suggestion if
+     * answer didn't compile or null if DB connection/processing error occurs.
      * @author Tala Ross(RSSTAL002)
      */
     public String getFeedback() {
@@ -705,12 +735,15 @@ public class Question {
         else if (mark==getMaxMark()) {   //got full marks so return basic message
             return getFeedbackMessage();
         }
-        else {  //didn't get full marks so return help
-            if (!type.equals(TYPE_UPDATE)) { //query question
-                return getQueryFeedback(); 
-            }
-            else {  //update question
+        else if (mark==MARK_BASE_ERR) { //answer didn't compile so show suggested partial statement
+            return getAdditionalHelp();
+        }
+        else {  //didn't get full marks so return help(compiled but incorrect)
+            if (type.toLowerCase().equals(TYPE_UPDATE.toLowerCase())) { //update question
                 return getUpdateFeedback();
+            }
+            else {  //query question
+                return getQueryFeedback(); 
             }
         }
     }
@@ -777,35 +810,33 @@ public class Question {
         //Show student output:
         feedback+= "Your Output:\n";
         
-        if (mark==MARK_BASE_ERR) {  //answer statement didn't compile
-            feedback+= errorMessage+"\n";
-        }
-        else {  //answer statement did compile
-            try {
-                rsStudent.beforeFirst();    //move cursor to start of result set
-                
-                //Get column names:
-                for (int i=1; i<=studentColCount; i++) {   
-                        feedback+= rsStudent.getMetaData().getColumnName(i) + "\t";
-                    }
-                feedback+="\n";
-                
-                //Get row entries:
-                while(rsStudent.next()) {  //each row
-                    for (int i=1; i<=studentColCount; i++) {    //each field in row
-                        feedback+= rsStudent.getObject(i) + "\t";
-                    }
-                    feedback+="\n";
+        //Assume answer compiled:
+        try {
+            rsStudent.beforeFirst();    //move cursor to start of result set
+
+            //Get column names:
+            for (int i=1; i<=studentColCount; i++) {   
+                    feedback+= rsStudent.getMetaData().getColumnName(i) + "\t";
                 }
-                feedback+="\n"; //end of student's output
-            } 
-            catch (SQLException e) {
-                System.out.println("Error: Couldn't read student output.");
-                System.out.println(e);
-                return null;
+            feedback+="\n";
+
+            //Get row entries:
+            while(rsStudent.next()) {  //each row
+                for (int i=1; i<=studentColCount; i++) {    //each field in row
+                    feedback+= rsStudent.getObject(i) + "\t";
+                }
+                feedback+="\n";
             }
+            feedback+="\n"; //end of student's output
+        } 
+        catch (SQLException e) {
+            System.out.println("Error: Couldn't read student output.");
+            System.out.println(e);
+            return null;
         }
-        return getFeedbackMessage() + "\n" + feedback;    //all feedback with a basic message at start
+        
+        //All feedback with a basic message at start and some help if it didn't compile:
+        return getFeedbackMessage() + "\n" + feedback;   
     }
     
     /**
@@ -817,9 +848,11 @@ public class Question {
      */
     private String getQueryFeedbackSubset() {
         String feedback = "An example row difference is shown below.\n"
-                + "Expected row: " + diffRowExpected + "\n"
-                + "Your corresponding row: " + diffRowStudent + "\n";
-        return getFeedbackMessage() + "\n" + feedback;    //a single row difference with a basic message at start
+                + "Expected Output: " + diffRowExpected + "\n"
+                + "Your Output: " + diffRowStudent + "\n";
+        
+        //All feedback with a basic message at start and some help if it didn't compile:
+        return getFeedbackMessage() + "\n" + feedback;  
     }
     
     /**
@@ -855,6 +888,7 @@ public class Question {
      * @author Tala Ross(RSSTAL002)
      */
     private String getUpdateFeedbackComplete() {
+       
         //Show expected output:
         String feedback = "Expected table contents after update:\n";
         try {
@@ -883,36 +917,33 @@ public class Question {
         
         //Show student output:
         feedback+= "Your table contents after update:\n";
-        
-        if (mark==MARK_BASE_ERR) {  //answer statement didn't compile
-            feedback+= errorMessage+"\n";
-        }
-        else {  //answer statement did compile
-            try {
-                rsStudent.beforeFirst();    //move cursor to start of result set
-                
-                //Get column names:
-                for (int i=1; i<=studentColCount; i++) {   
-                        feedback+= rsStudent.getMetaData().getColumnName(i) + "\t";
-                    }
-                feedback+="\n";
-                
-                //Get row entries:
-                while(rsStudent.next()) {  //each row
-                    for (int i=1; i<=studentColCount; i++) {    //each field in row
-                        feedback+= rsStudent.getObject(i) + "\t";
-                    }
-                    feedback+="\n";
+        //Assume answer compiled:
+        try {
+            rsStudent.beforeFirst();    //move cursor to start of result set
+
+            //Get column names:
+            for (int i=1; i<=studentColCount; i++) {   
+                    feedback+= rsStudent.getMetaData().getColumnName(i) + "\t";
                 }
-                feedback+="\n"; //end of student's output
-            } 
-            catch (SQLException e) {
-                System.out.println("Error: Couldn't read student output.");
-                System.out.println(e);
-                return null;
+            feedback+="\n";
+
+            //Get row entries:
+            while(rsStudent.next()) {  //each row
+                for (int i=1; i<=studentColCount; i++) {    //each field in row
+                    feedback+= rsStudent.getObject(i) + "\t";
+                }
+                feedback+="\n";
             }
+            feedback+="\n"; //end of student's output
+        } 
+        catch (SQLException e) {
+            System.out.println("Error: Couldn't read student output.");
+            System.out.println(e);
+            return null;
         }
-        return getFeedbackMessage() + "\n" + feedback;    //all feedback with a basic message at start
+        
+        //All feedback with a basic message at start and some help if it didn't compile:
+        return getFeedbackMessage() + "\n" + feedback;  
     }
     
     /**
@@ -930,7 +961,9 @@ public class Question {
                         + tblNameExpected + " - " + raExpected + "row(s) affected\n\n"
                         + "Your changes after the update:\n"
                         + tblNameStudent + " - " + raStudent + "row(s) affected\n";
-        return getFeedbackMessage() + "\n" + feedback;  //feedback with basic message
+        
+        //All feedback with a basic message at start and some help if it didn't compile:
+        return getFeedbackMessage() + "\n" + feedback;  
     }
     
     /**
@@ -949,11 +982,51 @@ public class Question {
             return "Almost! Your statement compiled but wasn't correct.\n";
         }
         else if (mark==this.getMaxMark()) {
-            return"Well done! Your statement compiled and was 100% correct.\n";
+            return "Well done! Your statement compiled and was 100% correct.\n";
         }
         else {  //lecturer statement didn't compile/wasn't able to mark
             return "";
         }
+    }
+    
+    /**
+     * Gets a string showing additional help to the student, based on the
+     * questions difficulty's corresponding help factor, if the student's
+     * answer didn't compile. That is, the amount of help provided decreases
+     * with difficulty.
+     * @return Formatted help String.
+     * @author Tala Ross (RSSTAL002)
+     */
+    private String getAdditionalHelp() {
+        //Get help factor:
+        double helpFactor;
+        switch (difficulty) {
+            case DIFF_EASY:
+                helpFactor = HELP_FACTOR_EASY;
+                break;
+            case DIFF_MEDIUM:
+                helpFactor = HELP_FACTOR_MEDIUM;
+                break;
+            default:
+                return getFeedbackMessage();
+        }
+        
+        //Split the answer up into a words array and get the number of words to show from this:
+        String [] words = answer.trim().split(" ");
+        int noToShow = (int)(words.length*helpFactor);
+        if (noToShow==0) {  //ust show at least 1 word
+            noToShow = 1;
+        }
+
+        //Create the partial suggestion statement:
+        String partialStatement = "";
+        for (int i=0; i<noToShow; i++) {
+            partialStatement+= words[i] + " ";
+        }
+        String additionalHelp = "\nTip: Try a statement that starts like the statement below.\n"
+                            + partialStatement.substring(0, partialStatement.length() - 1) + "...\n\n";
+        
+        return getFeedbackMessage() + additionalHelp;
     }
     
     /**

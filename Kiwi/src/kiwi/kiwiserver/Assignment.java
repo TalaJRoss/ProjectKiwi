@@ -30,24 +30,24 @@ public class Assignment {
      * Database connection, not allowed access to student and question info
      * tables.
      */
-    private Connection connLimited;
+    private final Connection connLimited;
     
     /**
      * Database connection, allowed access to student and question info tables.
      */
-    private Connection conn;
+    private final Connection conn;
     
     
     //Assignment Details Variables:
     /**
      * Number of questions in an assignment.
      */
-    private int noQuestions;
+    private final int noQuestions;
     
     /**
      * List of questions in assignment.
      */
-    private ArrayList<Question> questionList;
+    private final ArrayList<Question> questionList;
     
     /**
      * Current position in the question list.
@@ -369,7 +369,7 @@ public class Assignment {
                 
                 //Put output in string:
                 //Get column names:
-                toReturn+= ra + " row(s) affected";
+                toReturn+= tblName + ": " + ra + " row(s) affected\n\n";
                 toReturn+= "Table, " + tblName + ", after statement execution:\n";
                 int noColumns = rs.getMetaData().getColumnCount();
                 for (int i=1; i<=noColumns; i++) {   //each column
