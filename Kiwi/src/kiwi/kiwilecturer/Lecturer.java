@@ -64,6 +64,12 @@ public class Lecturer {
      * Fail message for missing info that is required before action can be executed.
      */
     public static final String FAIL_NULL = "ErrorNull";
+    
+    /**
+     * Fail message for type-difficulty variety of questions.
+     */
+    public static final String FAIL_QUESTIONS = "InsufficientVariety";
+    
 
     public Lecturer() throws IOException, ClassNotFoundException {
         //make socket:
@@ -214,6 +220,8 @@ public class Lecturer {
                     return SUCCESS;
                 case LecturerMessage.RESP_FAIL_INPUT:
                     return FAIL_INPUT;
+                case LecturerMessage.RESP_FAIL_QUESTIONS:
+                    return FAIL_QUESTIONS;
                 default:
                     return FAIL_CONNECT;
             }

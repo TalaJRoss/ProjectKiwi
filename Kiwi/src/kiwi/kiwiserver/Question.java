@@ -16,6 +16,11 @@ public class Question {
     
     //Constants:
     
+    /**
+     * Number of types of questions.
+     */
+    public static final int NO_TYPES = 3;
+    
     //Question Type Constants:
     /**
      * Type of question involving select statements.
@@ -34,6 +39,11 @@ public class Question {
     
     
     //Difficulty Constants:
+     /**
+     * Number of difficulty levels associated with questions.
+     */
+    public static final int NO_DIFFICULTY_LEVELS = 3;
+    
     /**
      * Easy question difficulty.
      */
