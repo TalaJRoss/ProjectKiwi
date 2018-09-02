@@ -179,6 +179,8 @@ public class Assignment {
                         random = rnd.nextInt(numQ)+1;
                         if (!usedQuestions[random-1])
                         {
+                            //check permitted/compiled
+                            //If not set usedQuestion[random-1] = true but leave used=true
                             usedQuestions[random-1] = true;
                             used = false;
                         }
@@ -247,6 +249,9 @@ public class Assignment {
             //Add question to list:
             questionList.add(question);
         }
+        
+        //check that 
+        
         //Clean up:
         rs.close();
         st.close();

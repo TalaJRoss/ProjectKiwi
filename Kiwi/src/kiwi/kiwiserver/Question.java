@@ -82,19 +82,31 @@ public class Question {
      * The percentage of the correct statement shown as feedback when student
      * answer doesn't compile for a DIFF_EASY question.
      */
-    private static final double HELP_FACTOR_EASY = 0.5;
+    private static final double HELP_FACTOR_EASY = 0.7;
     
     /**
      * The percentage of the correct statement shown as feedback when student
      * answer doesn't compile for a DIFF_MEDIUM question.
      */
-    private static final double HELP_FACTOR_MEDIUM = 0.3;
+    private static final double HELP_FACTOR_MEDIUM = 0.4;
     
     /**
      * The percentage of the correct statement shown as feedback when student
      * answer doesn't compile for a DIFF_HARD question.
      */
-    private static final double HELP_FACTOR_HARD = 0.3;
+    private static final double HELP_FACTOR_HARD = 0.0;
+    
+    /**
+     * Indicates that student question received a MARK_BASE_ERR because
+     * the SQL statement was using a command which is not permitted. 
+     */
+    private static final String STUDENT_ERR_PERMIT = "Not Permitted";
+    
+    /**
+     * Indicates that student question received a MARK_BASE_ERR because
+     * the SQL statement provided did not compile. 
+     */
+    private static final String STUDENT_ERR_COMPILE = "Couldn't Compile";
     
     
     //Instance Variables:
@@ -331,8 +343,7 @@ public class Question {
             //Get student output:
             //Check expected query statement command:
             if (!studentAns.toUpperCase().startsWith("SELECT")) {   //student answer does not execute as expected
-                errorMessage = "Statement provided is not executing a permitted SQL query statement!\n"
-                        + "i.e. SELECT";
+                errorMessage = STUDENT_ERR_PERMIT;
                 mark = MARK_BASE_ERR;
                 return mark;
             }
@@ -342,12 +353,8 @@ public class Question {
                 rsStudent = stStudent.executeQuery(studentAns); //execute student's sql statement
             }
             catch (SQLException e) { //didn't compile
+                errorMessage = STUDENT_ERR_COMPILE;
                 mark = MARK_BASE_ERR;
-               
-                //Process error message:
-                errorMessage = "SQL Statement did not compile.\n"
-                        + e.toString().substring("java.sql.".length()).replace("kiwidb.",""); //remove "java.sql." from error name and "kiwidb." from table name
-               
                 return mark;
             }
             studentColCount= rsStudent.getMetaData().getColumnCount();
@@ -623,8 +630,7 @@ public class Question {
                 }
             }
             else {   //student answer does not execute as expected
-                errorMessage = "Statement provided is not executing a permitted SQL DML statement!\n"
-                        + "i.e. UPDATE, INSERT or DELETE";
+                errorMessage = STUDENT_ERR_PERMIT;
                 mark = MARK_BASE_ERR;
                 return mark;
             }
@@ -640,11 +646,7 @@ public class Question {
             catch (SQLException e) { //didn't compile
                  connLimited.rollback(spStu);
                  connLimited.setAutoCommit(true);
-
-                 //Process error message:
-                 errorMessage = "SQL Statement did not compile.\n"
-                        + e.toString().substring("java.sql.".length()).replace("kiwidb.",""); //remove "java.sql." from error name and "kiwidb." from table name
-
+                 errorMessage = STUDENT_ERR_COMPILE;
                  mark = MARK_BASE_ERR;
                  return mark;
             }
@@ -976,7 +978,12 @@ public class Question {
      */
     private String getFeedbackMessage() {
         if (mark==MARK_BASE_ERR) {
-            return "Oops! Your statement didn't compile or wasn't permitted.\n";
+            if (errorMessage.equals(STUDENT_ERR_COMPILE)) { //didn't compile
+                return "Oops! Your statement didn't compile.\n";
+            }
+            else {  //didn't use permitted SQL command
+                return "Oops! Your statement used a SQL command which wasn't permitted.\n";
+            }
         }
         else if (mark==MARK_BASE_COMPILED) {
             return "Almost! Your statement compiled but wasn't correct.\n";
@@ -1007,24 +1014,32 @@ public class Question {
             case DIFF_MEDIUM:
                 helpFactor = HELP_FACTOR_MEDIUM;
                 break;
+            case DIFF_HARD:
+                helpFactor = HELP_FACTOR_HARD;
+                break;
             default:
                 return getFeedbackMessage();
         }
         
-        //Split the answer up into a words array and get the number of words to show from this:
-        String [] words = answer.trim().split(" ");
-        int noToShow = (int)(words.length*helpFactor);
-        if (noToShow==0) {  //ust show at least 1 word
-            noToShow = 1;
-        }
+        String additionalHelp = "";
+        
+        //Get help message for help factor greater than zero:
+        if (helpFactor>0) {
+            //Split the answer up into a words array and get the number of words to show from this:
+            String [] words = answer.trim().split(" ");
+            int noToShow = (int)(words.length*helpFactor);
+            if (noToShow==0) {  //ust show at least 1 word
+                noToShow = 1;
+            }
 
-        //Create the partial suggestion statement:
-        String partialStatement = "";
-        for (int i=0; i<noToShow; i++) {
-            partialStatement+= words[i] + " ";
+            //Create the partial suggestion statement:
+            String partialStatement = "";
+            for (int i=0; i<noToShow; i++) {
+                partialStatement+= words[i] + " ";
+            }
+            additionalHelp = "\nTip: Try a statement that starts like the statement below.\n"
+                                + partialStatement.substring(0, partialStatement.length() - 1) + "...\n\n";
         }
-        String additionalHelp = "\nTip: Try a statement that starts like the statement below.\n"
-                            + partialStatement.substring(0, partialStatement.length() - 1) + "...\n\n";
         
         return getFeedbackMessage() + additionalHelp;
     }
