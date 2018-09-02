@@ -1,6 +1,7 @@
 package kiwi.kiwiserver;
 
 import com.opencsv.CSVReader;
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.FileReader;
@@ -19,6 +20,9 @@ import java.sql.Savepoint;
 import java.sql.Statement;
 import java.sql.Time;
 import java.util.ArrayList;
+import java.util.Scanner;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import kiwi.message.*;
 
 /**
@@ -363,7 +367,6 @@ final class LecturerHandler extends Thread{
     }
     
     
-    //TODO: check difficulty=1,2 or 3 and type=select, arithmetic or update
     /**
      * Uploads question-answer pairs contained in the given csv file to the
      * questions table in the database on the server.
@@ -378,56 +381,68 @@ final class LecturerHandler extends Thread{
                 fos.write(csv);
             }
             
-            Statement st = conn.createStatement();
+            //Check that the questions file has enough types and difficulties of each question
+            boolean check = checkQuestions(ServerStartup.DB_PATH + "questions.csv");            
             
-            //Create questions table:
-            String createStatement = "CREATE TABLE IF NOT EXISTS questions (" +
-                                        "QuestionNo int(11) NOT NULL AUTO_INCREMENT, " +
-                                        "Question varchar(500) DEFAULT NULL, " +
-                                        "Answer varchar(500) DEFAULT NULL, " +
-                                        "Difficulty int(11) DEFAULT NULL, " +
-                                        "Type varchar(20) DEFAULT NULL, " +
-                                        "Problem varchar(20) DEFAULT NULL, " +
-                                        "PRIMARY KEY (QuestionNo) " +
-                                        ") ENGINE=InnoDB;";
-            st.executeUpdate(createStatement);
-            
-            /*Upload questions to table with initial field entries as null for
-            the problem field and question number auto incrementing:
-            */
-            String uploadStatement = "LOAD DATA INFILE 'questions.csv' INTO TABLE questions " +
-                                        "FIELDS OPTIONALLY ENCLOSED BY '\"' " +
-                                        "TERMINATED BY ',' " +
-                                        "LINES TERMINATED BY '\\r\\n' " +
-                                        "IGNORE 1 ROWS " +
-                                        "(Question, Answer, Difficulty, Type) " +
-                                        "SET Problem=null;";
-            
-            conn.setAutoCommit(false);  //start transaction
-            Savepoint sp = conn.setSavepoint();
-            try { 
-                st.executeUpdate(uploadStatement);
+            if (!check){ //Questions do not have enough difficulty levels and/or types
+                //Delete file from DB
+                deleteFile("questions.csv");
+                
+                writer.writeObject(new LecturerMessage(LecturerMessage.CMD_UPLOAD_QUESTIONS, null, LecturerMessage.RESP_FAIL_QUESTIONS));
             }
-            catch (SQLException e) {    //csv file format wrong
-                conn.rollback(sp);
-                conn.setAutoCommit(true);
-                System.out.println("Error: Problem loading csv to database: questionss.");
-                System.out.println(e);
-                writer.writeObject(new LecturerMessage(LecturerMessage.CMD_UPLOAD_QUESTIONS, null, LecturerMessage.RESP_FAIL_INPUT));
-                return;
+            else{
+                
+                Statement st = conn.createStatement();
+
+                //Create questions table:
+                String createStatement = "CREATE TABLE IF NOT EXISTS questions (" +
+                                            "QuestionNo int(11) NOT NULL AUTO_INCREMENT, " +
+                                            "Question varchar(500) DEFAULT NULL, " +
+                                            "Answer varchar(500) DEFAULT NULL, " +
+                                            "Difficulty int(11) DEFAULT NULL, " +
+                                            "Type varchar(20) DEFAULT NULL, " +
+                                            "Problem varchar(20) DEFAULT NULL, " +
+                                            "PRIMARY KEY (QuestionNo) " +
+                                            ") ENGINE=InnoDB;";
+                st.executeUpdate(createStatement);
+
+                /*Upload questions to table with initial field entries as null for
+                the problem field and question number auto incrementing:
+                */
+                String uploadStatement = "LOAD DATA INFILE 'questions.csv' INTO TABLE questions " +
+                                            "FIELDS OPTIONALLY ENCLOSED BY '\"' " +
+                                            "TERMINATED BY ',' " +
+                                            "LINES TERMINATED BY '\\r\\n' " +
+                                            "IGNORE 1 ROWS " +
+                                            "(Question, Answer, Difficulty, Type) " +
+                                            "SET Problem=null;";
+
+                conn.setAutoCommit(false);  //start transaction
+                Savepoint sp = conn.setSavepoint();
+                try { 
+                    st.executeUpdate(uploadStatement);
+                }
+                catch (SQLException e) {    //csv file format wrong
+                    conn.rollback(sp);
+                    conn.setAutoCommit(true);
+                    System.out.println("Error: Problem loading csv to database: questionss.");
+                    System.out.println(e);
+                    writer.writeObject(new LecturerMessage(LecturerMessage.CMD_UPLOAD_QUESTIONS, null, LecturerMessage.RESP_FAIL_INPUT));
+                    return;
+                }
+                conn.commit();
+                conn.setAutoCommit(true);   //end transaction
+
+                /*Increment question numbers(not auto incremented since this
+                causes incorrect numbers if incorrect input is given first):
+                */
+                String incrementStatement = "ALTER TABLE questions MODIFY COLUMN QuestionNo INT AUTO_INCREMENT;";
+                st.executeUpdate(incrementStatement);
+
+                //Successfully loaded table:
+                writer.writeObject(new LecturerMessage(LecturerMessage.CMD_UPLOAD_QUESTIONS, null, LecturerMessage.RESP_SUCCESS));
+
             }
-            conn.commit();
-            conn.setAutoCommit(true);   //end transaction
-            
-            /*Increment question numbers(not auto incremented since this
-            causes incorrect numbers if incorrect input is given first):
-            */
-            String incrementStatement = "ALTER TABLE questions MODIFY COLUMN QuestionNo INT AUTO_INCREMENT;";
-            st.executeUpdate(incrementStatement);
-            
-            //Successfully loaded table:
-            writer.writeObject(new LecturerMessage(LecturerMessage.CMD_UPLOAD_QUESTIONS, null, LecturerMessage.RESP_SUCCESS));
-            
         }
         catch (SQLException e) {
             System.out.println("Error: Problem loading csv to database: students.");
@@ -435,6 +450,92 @@ final class LecturerHandler extends Thread{
             writer.writeObject(new LecturerMessage(LecturerMessage.CMD_UPLOAD_QUESTIONS, null, LecturerMessage.RESP_FAIL_CONNECT));
         }
     }
+    
+    /**
+     * Checks that the questions file that the lecturer uploads has sufficient 
+     * type-difficulty question pairs. The assignment generation algorithm 
+     * creates an assignment that has an even distribution of select, update and
+     * arithmetic questions of each difficulty type, namely easy, medium and 
+     * hard.
+     * @param path the path to the questions file saved on the server.
+     * @return success/fail depending on whether the questions file meets the 
+     * criteria.
+     */
+    private boolean checkQuestions(String path){
+    
+        try {
+            Scanner file = new Scanner(new FileReader(path));
+            
+            //Arrays for number of questions of each type and difficulty.
+            String [] types = {Question.TYPE_SELECT, Question.TYPE_UPDATE, Question.TYPE_ARITHMETIC};
+            
+            int [] difficulties = {Question.DIFF_EASY, Question.DIFF_MEDIUM, Question.DIFF_HARD};
+            
+            int [][] difficultiesForTypes = new int [Question.NO_TYPES][Question.NO_DIFFICULTY_LEVELS];
+            
+            file.nextLine(); //Remove the first line with headings
+            
+            while (file.hasNext()) {
+                //Get the type and difficulty of each question
+                //Note: A comma delimiter cannot be used here dur to the questions themselves having commas in them.
+                String line = file.nextLine();
+                int posLastComma = line.lastIndexOf(",");
+                String type = line.substring(posLastComma+1);
+                line = line.substring(0, posLastComma);
+                posLastComma = line.lastIndexOf(",");
+                int difficulty = 0;
+                try {
+                     difficulty = Integer.parseInt(line.substring(posLastComma+1));
+                } catch (NumberFormatException e) {
+                    //Difficulty not identified
+                    System.out.println("Error: Unidentified difficulty in questions file");
+                    return false;
+                }
+                
+                //Count the number of type-difficulty pairs
+                for (int i = 0; i < Question.NO_TYPES; i++) { //Check if type matches
+                    if (type.equalsIgnoreCase(types[i])) {
+                        for (int j = 0; j < Question.NO_DIFFICULTY_LEVELS; j++) { //Check if difficulty levels match
+                            if (difficulty == difficulties[j]) {
+                                difficultiesForTypes[i][j]++; //Increment for specific type and difficulty
+                            }
+                        }
+                    }
+                }
+            }
+            
+            //Get the number of questions in the assignement
+            String selectStatement = "SELECT NoQuestions FROM AssignmentInfo WHERE ID = 1";
+            
+            Statement st = conn.createStatement();
+            ResultSet rs = st.executeQuery(selectStatement);
+            
+            int noQuestions = 0; //default will give insufficient variety as expected
+            
+            while (rs.next()) {
+                noQuestions = (Integer)rs.getObject(1);
+            }
+            
+            //Calculate the expected number of type-difficulty pairs needed
+            int expectedNoPairs = (int) Math.ceil((double)noQuestions/(double)(Question.NO_TYPES*Question.NO_DIFFICULTY_LEVELS));
+            
+            //Check that there is sufficient type-difficulty pairs for the 'generate assignment' algorithm to work
+            for (int i = 0; i < Question.NO_TYPES; i++) { 
+                for (int j = 0; j < Question.NO_DIFFICULTY_LEVELS; j++) {
+                    if (difficultiesForTypes[i][j] < expectedNoPairs) {
+                        return false;
+                    }
+                }
+            }
+        } catch (IOException | SQLException ex) {
+            System.out.println("Error: Problem reading the questions.csv file OR AssignmentInfo has not been created");
+            System.out.println(ex);
+            return false;
+        }
+        
+        return true;
+    }
+    
     
     /**
      * Creates tables on database to represent the query data contained in the
@@ -503,8 +604,10 @@ final class LecturerHandler extends Thread{
     }
     
     /**
-     * Updates an individual student's deadline for submitting the assignment by performing an SQL update on the Students table.
-     * @param updateInfo the object containing the details (studentNo, date and time) for the update.
+     * Updates an individual student's deadline for submitting the assignment by
+     * performing an SQL update on the Students table.
+     * @param updateInfo the object containing the details (studentNo, date and 
+     * time) for the update.
      */
     
     public void updateDeadline(UpdateInfo updateInfo) throws IOException {

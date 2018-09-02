@@ -270,9 +270,9 @@ public class HomeFrame extends javax.swing.JFrame {
 
         lblColon2.setText(":");
 
-        jSpinNoSubmission.setModel(new javax.swing.SpinnerNumberModel(0, 0, null, 1));
+        jSpinNoSubmission.setModel(new javax.swing.SpinnerNumberModel(1, 1, null, 1));
 
-        jSpinNoQuestions.setModel(new javax.swing.SpinnerNumberModel(0, 0, null, 1));
+        jSpinNoQuestions.setModel(new javax.swing.SpinnerNumberModel(1, 1, null, 1));
 
         btnGroupAssignmentType.add(rbtnAssignment);
         rbtnAssignment.setSelected(true);
@@ -803,8 +803,8 @@ public class HomeFrame extends javax.swing.JFrame {
                 JOptionPane.showMessageDialog(this, "Assignment information not uploaded.", "Upload unsuccessful", JOptionPane.ERROR_MESSAGE);
             }
             //clean up:
-            jSpinNoQuestions.setValue(0);
-            jSpinNoSubmission.setValue(0);
+            jSpinNoQuestions.setValue(1);
+            jSpinNoSubmission.setValue(1);
             jdcDate.setDate(null);
             jspHH.setValue(0);
             jspMM.setValue(0);
@@ -899,6 +899,11 @@ public class HomeFrame extends javax.swing.JFrame {
                             + "...," 
                             + "where Type in {select, arithmetic, update}.",
                             "Upload Unsuccessful", JOptionPane.ERROR_MESSAGE);
+                    break;
+                case Lecturer.FAIL_QUESTIONS:
+                    JOptionPane.showMessageDialog(this, "Questions file was not uploaded. Please ensure the following:\n"
+                            + "1. There are sufficient type-difficulty pairs.\n"
+                            + "2. The assignment information has been uploaded.");
                     break;
                 default:
                     JOptionPane.showMessageDialog(this, 

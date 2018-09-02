@@ -37,6 +37,7 @@ public class LecturerMessage implements Serializable{
     public static final int RESP_FAIL_CONNECT = 1;
     public static final int RESP_FAIL_NULL = 2;
     public static final int RESP_FAIL_INPUT = 3;
+    public static final int RESP_FAIL_QUESTIONS = 4;
     
     //Instance Variables:
     private int cmd;
