@@ -5,6 +5,9 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Savepoint;
 import java.sql.Statement;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import kiwi.message.StatementOutput;
 
 /**
  * Stores information relevant to a question and also processes marking and
@@ -740,23 +743,30 @@ public class Question {
      * answer didn't compile or null if DB connection/processing error occurs.
      * @author Tala Ross(RSSTAL002)
      */
-    public String getFeedback() {
-        if (rsExpected==null) { //check that lecturer sql statement executed
-            return "Error: Couldn't run lecturer's sql statement.";
-        }
-        else if (mark==getMaxMark()) {   //got full marks so return basic message
-            return getFeedbackMessage();
-        }
-        else if (mark==MARK_BASE_ERR) { //answer didn't compile so show suggested partial statement
-            return getAdditionalHelp();
-        }
-        else {  //didn't get full marks so return help(compiled but incorrect)
-            if (type.toLowerCase().equals(TYPE_UPDATE.toLowerCase())) { //update question
-                return getUpdateFeedback();
+    public StatementOutput getFeedback() {
+        try {
+            if (rsExpected==null) { //check that lecturer sql statement executed
+                return new StatementOutput("Error: Couldn't run lecturer's sql statement.");
             }
-            else {  //query question
-                return getQueryFeedback(); 
+            else if (mark==getMaxMark()) {   //got full marks so return basic message
+                return new StatementOutput(getFeedbackMessage());
             }
+            else if (mark==MARK_BASE_ERR) { //answer didn't compile so show suggested partial statement
+                return new StatementOutput(getAdditionalHelp());
+            }
+            else {  //didn't get full marks so return help(compiled but incorrect)
+                if (type.toLowerCase().equals(TYPE_UPDATE.toLowerCase())) { //update question
+                    return getUpdateFeedback();
+                }
+                else {  //query question
+                    return getQueryFeedback(); 
+                }
+            }
+        }
+        catch (SQLException e) {
+            System.out.println("Error: Couldn't read output.");
+            System.out.println(e);
+            return null;
         }
     }
     
@@ -773,15 +783,22 @@ public class Question {
      * question difficulty, or null if a connection/processing error occurs
      * @author Tala Ross(RSSTAL002)
      */
-    private String getQueryFeedback() {
+    private StatementOutput getQueryFeedback() {
         //Get feedback and its level of help based on the question difficulty:
-        switch (difficulty) {
-            case DIFF_EASY:
-                return getQueryFeedbackComplete();
-            case DIFF_MEDIUM:
-                return getQueryFeedbackSubset();
-            default:
-                return getFeedbackMessage();
+        try {
+            switch (difficulty) {
+                case DIFF_EASY:
+                    return getQueryFeedbackComplete();
+                case DIFF_MEDIUM:
+                    return getQueryFeedbackSubset();
+                default:
+                    return new StatementOutput(getFeedbackMessage());
+            }
+        }
+        catch (SQLException e) {
+            System.out.println("Error: Couldn't read output.");
+            System.out.println(e);
+            return null;
         }
     }
     
@@ -792,63 +809,16 @@ public class Question {
      * of statement or null if DB connection/processing error occurs.
      * @author Tala Ross(RSSTAL002)
      */
-    private String getQueryFeedbackComplete() {
-        //Show expected output:
-        String feedback = "Expected Output:\n";
+    private StatementOutput getQueryFeedbackComplete() {
         try {
-            rsExpected.beforeFirst();   //move cursor to start of result set
-            
-            //Get column names:
-            for (int i=1; i<=expectedColCount; i++) {   
-                    feedback+= rsExpected.getMetaData().getColumnName(i) + "\t";
-                }
-            feedback+="\n";
-            
-            //Get row entries:
-            while(rsExpected.next()) {  //each row 
-                for (int i=1; i<=expectedColCount; i++) {   //each field in row
-                    feedback+= rsExpected.getObject(i) + "\t";
-                }
-                feedback+="\n";
-            }
-            feedback+="\n"; //end of expected output
-        } 
+            //Show expected output:
+            return new StatementOutput(getFeedbackMessage(), "Expected Output:", rsExpected, "Your Output:", rsStudent);
+        }
         catch (SQLException e) {
-            System.out.println("Error: Couldn't read lecturer output.");
+            System.out.println("Error: Couldn't read output.");
             System.out.println(e);
             return null;
         }
-        
-        //Show student output:
-        feedback+= "Your Output:\n";
-        
-        //Assume answer compiled:
-        try {
-            rsStudent.beforeFirst();    //move cursor to start of result set
-
-            //Get column names:
-            for (int i=1; i<=studentColCount; i++) {   
-                    feedback+= rsStudent.getMetaData().getColumnName(i) + "\t";
-                }
-            feedback+="\n";
-
-            //Get row entries:
-            while(rsStudent.next()) {  //each row
-                for (int i=1; i<=studentColCount; i++) {    //each field in row
-                    feedback+= rsStudent.getObject(i) + "\t";
-                }
-                feedback+="\n";
-            }
-            feedback+="\n"; //end of student's output
-        } 
-        catch (SQLException e) {
-            System.out.println("Error: Couldn't read student output.");
-            System.out.println(e);
-            return null;
-        }
-        
-        //All feedback with a basic message at start and some help if it didn't compile:
-        return getFeedbackMessage() + "\n" + feedback;   
     }
     
     /**
@@ -858,13 +828,20 @@ public class Question {
      * exist or null if DB connection/processing error occurs.
      * @author Tala Ross(RSSTAL002)
      */
-    private String getQueryFeedbackSubset() {
-        String feedback = "An example row difference is shown below.\n"
-                + "Expected Output: " + diffRowExpected + "\n"
-                + "Your Output: " + diffRowStudent + "\n";
-        
-        //All feedback with a basic message at start and some help if it didn't compile:
-        return getFeedbackMessage() + "\n" + feedback;  
+    private StatementOutput getQueryFeedbackSubset() {
+        try {
+            String feedback = "An example row difference is shown below.\n"
+                    + "Expected Output: " + diffRowExpected + "\n"
+                    + "Your Output: " + diffRowStudent + "\n";
+            
+            //All feedback with a basic message at start and some help if it didn't compile:
+            return new StatementOutput(getFeedbackMessage() + "\n" + feedback);
+        } 
+        catch (SQLException e) {
+            System.out.println("Error: Couldn't read output.");
+            System.out.println(e);
+            return null;
+        }
     }
     
     /**
@@ -880,15 +857,22 @@ public class Question {
      * question difficulty, or null if a connection/processing error occurs.
      * @author Tala Ross(RSSTAL002)
      */
-    private String getUpdateFeedback() {
+    private StatementOutput getUpdateFeedback() {
         //Get feedback and its level of help based on the question difficulty:
-        switch (difficulty) {
-            case DIFF_EASY:
-                return getUpdateFeedbackComplete();
-            case DIFF_MEDIUM:
-                return getUpdateFeedbackSubset();
-            default:
-                return getFeedbackMessage();
+        try {
+            switch (difficulty) {
+                case DIFF_EASY:
+                    return getUpdateFeedbackComplete();
+                case DIFF_MEDIUM:
+                    return getUpdateFeedbackSubset();
+                default:
+                    return new StatementOutput(getFeedbackMessage());
+            }
+        }
+        catch (SQLException e) {
+            System.out.println("Error: Couldn't read output.");
+            System.out.println(e);
+            return null;
         }
     }
     
@@ -899,63 +883,21 @@ public class Question {
      * connection/processing error occurs.
      * @author Tala Ross(RSSTAL002)
      */
-    private String getUpdateFeedbackComplete() {
-       
-        //Show expected output:
-        String feedback = "Expected table contents after update:\n";
+    private StatementOutput getUpdateFeedbackComplete() {
         try {
-            rsExpected.beforeFirst();   //move cursor to start of result set
-            
-            //Get column names:
-            for (int i=1; i<=expectedColCount; i++) {   
-                    feedback+= rsExpected.getMetaData().getColumnName(i) + "\t";
-                }
-            feedback+="\n";
-            
-            //Get row entries:
-            while(rsExpected.next()) {  //each row 
-                for (int i=1; i<=expectedColCount; i++) {   //each field in row
-                    feedback+= rsExpected.getObject(i) + "\t";
-                }
-                feedback+="\n";
-            }
-            feedback+="\n"; //end of expected output
-        } 
+            String feedback = "The expected changes after the update:\n"
+                            + tblNameExpected + " - " + raExpected + "row(s) affected\n\n"
+                            + "Your changes after the update:\n"
+                            + tblNameStudent + " - " + raStudent + "row(s) affected\n";
+            return new StatementOutput(getFeedbackMessage() + "\n" + feedback, 
+                                    "Expected table contents after update:", rsExpected, 
+                                    "Your changes after the update:", rsStudent);  
+        }
         catch (SQLException e) {
-            System.out.println("Error: Couldn't read lecturer output.");
+            System.out.println("Error: Couldn't read output.");
             System.out.println(e);
             return null;
         }
-        
-        //Show student output:
-        feedback+= "Your table contents after update:\n";
-        //Assume answer compiled:
-        try {
-            rsStudent.beforeFirst();    //move cursor to start of result set
-
-            //Get column names:
-            for (int i=1; i<=studentColCount; i++) {   
-                    feedback+= rsStudent.getMetaData().getColumnName(i) + "\t";
-                }
-            feedback+="\n";
-
-            //Get row entries:
-            while(rsStudent.next()) {  //each row
-                for (int i=1; i<=studentColCount; i++) {    //each field in row
-                    feedback+= rsStudent.getObject(i) + "\t";
-                }
-                feedback+="\n";
-            }
-            feedback+="\n"; //end of student's output
-        } 
-        catch (SQLException e) {
-            System.out.println("Error: Couldn't read student output.");
-            System.out.println(e);
-            return null;
-        }
-        
-        //All feedback with a basic message at start and some help if it didn't compile:
-        return getFeedbackMessage() + "\n" + feedback;  
     }
     
     /**
@@ -967,15 +909,19 @@ public class Question {
      * connection/processing error occurs.
      * @author Tala Ross(RSSTAL002)
      */
-    private String getUpdateFeedbackSubset() {
-        //Show expected output:
-        String feedback = "The expected changes after the update:\n"
-                        + tblNameExpected + " - " + raExpected + "row(s) affected\n\n"
-                        + "Your changes after the update:\n"
-                        + tblNameStudent + " - " + raStudent + "row(s) affected\n";
-        
-        //All feedback with a basic message at start and some help if it didn't compile:
-        return getFeedbackMessage() + "\n" + feedback;  
+    private StatementOutput getUpdateFeedbackSubset() {
+        try {
+            String feedback = "The expected changes after the update:\n"
+                            + tblNameExpected + " - " + raExpected + "row(s) affected\n\n"
+                            + "Your changes after the update:\n"
+                            + tblNameStudent + " - " + raStudent + "row(s) affected\n";
+            return new StatementOutput(getFeedbackMessage() + "\n" + feedback);  
+        }
+        catch (SQLException e) {
+            System.out.println("Error: Couldn't read output.");
+            System.out.println(e);
+            return null;
+        } 
     }
     
     /**

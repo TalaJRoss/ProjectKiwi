@@ -7,6 +7,9 @@ import java.sql.Savepoint;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Random;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import kiwi.message.StatementOutput;
 
 /**
  * Creates assignment interface.
@@ -306,8 +309,7 @@ public class Assignment {
      * @return returns string representing output or null if connection error occurs.
      * @author Tala Ross(RSSTAL002)
      */
-    public String check(String statement) {
-        String toReturn = "";
+    public StatementOutput check(String statement) {
         try { 
             //Get table being updated in expected sql update:
             String tblName = "";
@@ -331,8 +333,9 @@ public class Assignment {
             }
             else {   //not permitted statement
                 System.out.println("Error: statement from lecturer is not executing a permitted SQL DML statement!");
-                return "Statement provided is not executing a permitted SQL DML statement.\n"
-                        + "That is, SELECT, INSERT, UPDATE or DELETE.";
+                String message = "Statement provided is not executing a permitted SQL DML statement.\n"
+                                + "That is, SELECT, INSERT, UPDATE or DELETE.";
+                return new StatementOutput(message);
             }
             
             //Process a select statement:
@@ -344,32 +347,12 @@ public class Assignment {
                     rs = st.executeQuery(statement);
                 }
                 catch (SQLException e) {//didn't compile
-                    //Process error message:
-                    String errMessage = e.toString().substring("java.sql.".length()); //remove "java.sql." from error name
-                    if (errMessage.contains("kiwidb.")) {
-                        errMessage= errMessage.replace("kiwidb.","");    //remove "kiwidb." from table name
-                    }
-                    return "SQL Statement did not compile.\n" + errMessage + "\n";
+                    String message = "SQL Statement did not compile or was not allowed.";
+                    return new StatementOutput(message);
                 }
-
-                //Put output in string:
-                //Get column names:
-                int noColumns = rs.getMetaData().getColumnCount();
-                for (int i=1; i<=noColumns; i++) {   //each column
-                    toReturn+= rs.getMetaData().getColumnName(i) + "\t";
-                }
-                toReturn+="\n";
-
-                //Get row entries
-                while(rs.next()) {  //each row
-                    for (int i=1; i<=noColumns; i++) {  //each field in row
-                        toReturn+= rs.getObject(i) + "\t";
-                    }
-                    toReturn+="\n";     //end of row
-                } 
-                toReturn+="\n";     //end of output
-
-                return toReturn;
+                
+                //Return output object:
+                return new StatementOutput("The output of the statement, " + statement + ", is:\n", rs);
             }
             
             //Process update statement:
@@ -390,11 +373,8 @@ public class Assignment {
                 catch (SQLException e) { //didn't compile
                     connLimited.rollback(sp);
                     connLimited.setAutoCommit(true);
-                    String errMessage = e.toString().substring("java.sql.".length()); //remove "java.sql." from error name
-                    if (errMessage.contains("kiwidb.")) {
-                        errMessage= errMessage.replace("kiwidb.","");    //remove "kiwidb." from table name
-                    }
-                    return "SQL Statement did not compile.\n" + errMessage + "\n";
+                    String message = "SQL Statement did not compile or was not allowed.";
+                    return new StatementOutput(message);
                 }
 
                 //Get the new table after the update:
@@ -413,33 +393,20 @@ public class Assignment {
                 connLimited.rollback(sp);
                 connLimited.setAutoCommit(true);
                 
-                //Put output in string:
-                //Get column names:
-                toReturn+= tblName + ": " + ra + " row(s) affected\n\n";
-                toReturn+= "Table, " + tblName + ", after statement execution:\n";
-                int noColumns = rs.getMetaData().getColumnCount();
-                for (int i=1; i<=noColumns; i++) {   //each column
-                    toReturn+= rs.getMetaData().getColumnName(i) + "\t";
-                }
-                toReturn+="\n";
-
-                //Get row entries
-                while(rs.next()) {  //each row
-                    for (int i=1; i<=noColumns; i++) {  //each field in row
-                        toReturn+= rs.getObject(i) + "\t";
-                    }
-                    toReturn+="\n";     //end of row
-                } 
-                toReturn+="\n";     //end of output
-
-                return toReturn;
+                //Return output object:
+                String message = tblName + ": " + ra + " row(s) affected\n";
+                String intro = "Table, " + tblName + ", after statement execution:\n";
+                return new StatementOutput(message, intro, rs);
             }  
+        } catch (SQLException ex) {
+            Logger.getLogger(Assignment.class.getName()).log(Level.SEVERE, null, ex);
+            return null;
         }
-        catch (SQLException e) {    //connection error
+        /*catch (SQLException e) {    //connection error
             System.out.println("Error: Problem reading output.");
             System.out.println(e); 
             return null;
-        } 
+        } */
     }
     
     
@@ -499,6 +466,7 @@ public class Assignment {
     
     /**
      * Gets the mark received for the current question.
+     * @param studentAns The answer provided by student to the current question.
      * @return The the mark received for the current question.
      */
     public int mark(String studentAns) {
@@ -507,9 +475,10 @@ public class Assignment {
     
     /**
      * Gets the feedback received for the current question.
+     * @param studentAns The answer provided by student to the current question.
      * @return The the feedback received for the current question.
      */
-    public String getFeedback(String studentAns) {
+    public StatementOutput getFeedback(String studentAns) {
         return questionList.get(currentPos).getFeedback();
     }
     

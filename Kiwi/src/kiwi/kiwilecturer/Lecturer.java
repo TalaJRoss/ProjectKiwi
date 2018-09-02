@@ -288,7 +288,7 @@ public class Lecturer {
             writer.writeObject(new LecturerMessage(LecturerMessage.CMD_GRADE_ALPH, null));
             LecturerMessage response = (LecturerMessage) reader.readObject();
             if (response.getMessage() == LecturerMessage.RESP_SUCCESS) {
-                return ((Grades) response.getBody()).getGrades();
+                return ((StatementOutput)response.getBody()).getOutput();
             }
             else {
                 return FAIL_CONNECT;
@@ -313,7 +313,7 @@ public class Lecturer {
             writer.writeObject(new LecturerMessage(LecturerMessage.CMD_GRADE_DESC, null));
             LecturerMessage response = (LecturerMessage) reader.readObject();
             if (response.getMessage() == LecturerMessage.RESP_SUCCESS) {
-                return ((Grades) response.getBody()).getGrades();
+                return ((StatementOutput)response.getBody()).getOutput();
             }
             else {
                 return FAIL_CONNECT;

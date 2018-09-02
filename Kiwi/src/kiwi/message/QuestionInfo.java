@@ -50,7 +50,7 @@ public class QuestionInfo implements Serializable{
      * Feedback for the previous question.
      * This is initiated when message sent from server-end on CMD_SUBMIT.
      */
-    private String feedback;
+    private StatementOutput feedback;
     
     /**
      * Total mark overall for the whole assignment.
@@ -161,7 +161,7 @@ public class QuestionInfo implements Serializable{
      * Gets the feedback based on answer for the previous question.
      * @return The feedback for previous question.
      */
-    public String getFeedback() {
+    public StatementOutput getFeedback() {
         return feedback;
     }
     
