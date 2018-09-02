@@ -19,6 +19,7 @@ import java.sql.Time;
 import java.util.Calendar;
 import kiwi.message.LoginInfo;
 import kiwi.message.QuestionInfo;
+import kiwi.message.StatementOutput;
 import kiwi.message.StudentMessage;
 import kiwi.message.StudentStatement;
 import kiwi.message.StudentStatistics;
@@ -328,7 +329,7 @@ class StudentHandler extends Thread {
     }
 
     private void checkOutput(StudentStatement studentStatement) throws IOException {
-        String output = assignment.check(studentStatement.getStatement());
+        StatementOutput output = assignment.check(studentStatement.getStatement());
         if (output!=null) {
             writer.writeObject(new StudentMessage(StudentMessage.CMD_CHECK, output));
         }

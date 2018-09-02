@@ -11,6 +11,7 @@ import kiwi.kiwiserver.DBConnectionException;
 import kiwi.kiwiserver.ServerStartup;
 import kiwi.message.LoginInfo;
 import kiwi.message.QuestionInfo;
+import kiwi.message.StatementOutput;
 import kiwi.message.StudentStatement;
 import kiwi.message.StudentMessage;
 import kiwi.message.StudentStatistics;
@@ -269,7 +270,7 @@ public class Student {
             //Get output and save in instance variables:
             StudentMessage m = (StudentMessage) reader.readObject();
             if (m.getResponse()==StudentMessage.RESP_SUCCESS) {
-                currentCheckOutput = (String) m.getBody();
+                currentCheckOutput = ((StatementOutput) m.getBody()).getOutput();
                 return true;
             }
             else {  //Problem getting info from server.
@@ -299,7 +300,7 @@ public class Student {
             switch (m.getResponse()) {
                 case StudentMessage.RESP_SUCCESS:
                     qi = (QuestionInfo) m.getBody();
-                    currentFeedback = qi.getFeedback();
+                    currentFeedback = ((StatementOutput)qi.getFeedback()).getOutput();
                     currentMark = qi.getMark();
                     currentOutOf = qi.getOutOf();
                     nextQuestion = qi.getQuestion();
@@ -308,7 +309,7 @@ public class Student {
                     return SUCCESS;
                 case StudentMessage.RESP_FAIL_INPUT: //Lecturer error in their saved answer
                     qi = (QuestionInfo) m.getBody();
-                    currentFeedback = qi.getFeedback();
+                    currentFeedback = ((StatementOutput)qi.getFeedback()).getOutput();
                     currentOutOf = qi.getOutOf();
                     nextQuestion = qi.getQuestion();
                     nextQuestionNo = qi.getQuestionNo();

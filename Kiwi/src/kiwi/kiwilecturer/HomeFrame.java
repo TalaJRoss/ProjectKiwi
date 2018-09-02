@@ -1,5 +1,6 @@
 package kiwi.kiwilecturer;
 
+import java.awt.Font;
 import java.io.File;
 import java.io.IOException;
 import java.text.ParseException;
@@ -52,6 +53,7 @@ public class HomeFrame extends javax.swing.JFrame {
     
     public HomeFrame() {
         initComponents();
+        txtaMarks.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 13));
         try {
             
             lecturer = new Lecturer();

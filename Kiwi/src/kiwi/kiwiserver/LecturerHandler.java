@@ -578,11 +578,11 @@ final class LecturerHandler extends Thread{
      * ascending student number.
      */
     public void viewGradeAscStudent() throws IOException {
-        String response = getGrades(STUDENT_NO, ASCENDING);
+        StatementOutput response = getGrades(STUDENT_NO, ASCENDING);
         if (response.equals(FAIL)) {
             writer.writeObject(new LecturerMessage(LecturerMessage.CMD_GRADE_ALPH, null, LecturerMessage.RESP_FAIL_CONNECT));
         } else {
-            writer.writeObject(new LecturerMessage(LecturerMessage.CMD_GRADE_ALPH, new Grades(response), LecturerMessage.RESP_SUCCESS));
+            writer.writeObject(new LecturerMessage(LecturerMessage.CMD_GRADE_ALPH, response, LecturerMessage.RESP_SUCCESS));
         }
         
     }
@@ -595,11 +595,11 @@ final class LecturerHandler extends Thread{
      * descending grade.
      */
     public void viewGradeDescGrade() throws IOException {
-        String response = getGrades(GRADE, DESCENDING);
-        if (response.equals(FAIL)) {
+        StatementOutput response = getGrades(GRADE, DESCENDING);
+        if (response==null) {
             writer.writeObject(new LecturerMessage(LecturerMessage.CMD_GRADE_DESC, null, LecturerMessage.RESP_FAIL_CONNECT));
         } else {
-            writer.writeObject(new LecturerMessage(LecturerMessage.CMD_GRADE_DESC, new Grades(response), LecturerMessage.RESP_SUCCESS));
+            writer.writeObject(new LecturerMessage(LecturerMessage.CMD_GRADE_DESC, response, LecturerMessage.RESP_SUCCESS));
         }
     }
     
@@ -758,30 +758,19 @@ final class LecturerHandler extends Thread{
      * @return string representation of the the table containing student
      * numbers mapped to the student's highest grades.
      */
-    private String getGrades(String column, String order) {
-        
+    private StatementOutput getGrades(String column, String order) {
         try {
-
             //get student output: ordering based on input
             Statement st = conn.createStatement();
             String selectStatement = "SELECT StudentNo, HighestGrade FROM STUDENTS ORDER BY " + column + " " + order;
             ResultSet rs = st.executeQuery(selectStatement);
             
-            //put output in string:
-            String toReturn = "StudentNo\tHighestGrade\n";
-            while(rs.next()) {  //row entries
-                for (int i=1; i<=2; i++) {  //column entries
-                    toReturn+= rs.getObject(i) + "\t";
-                }
-                toReturn+="\n"; //next row
-            }
-            
-            return toReturn;    
+            return new StatementOutput(rs);   
         }
         catch (SQLException e) { 
             System.out.println("Error: Problem reading grades from database.");
             System.out.println(e);
-            return FAIL;
+            return null;
         } 
     }
     /**
