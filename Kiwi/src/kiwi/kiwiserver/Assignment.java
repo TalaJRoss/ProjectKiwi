@@ -99,7 +99,6 @@ public class Assignment {
     }
     
    
-    //TODO: don't select a reported/not compile/not permitted mark question (ie. problem field!=null)
     /**
      * Generates list of questions that make up the assignment.
      * This generates assignments using a random generator seed based on
@@ -137,11 +136,10 @@ public class Assignment {
         int noRows = rs.getInt("noRows");
 
         //Get number of different types of questions there are
-        /*query = "SELECT COUNT(DISTINCT type) AS numType FROM Questions";
+        query = "SELECT COUNT(DISTINCT type) AS numType FROM Questions";
         rs = st.executeQuery(query);
         rs.next();
-        int numType = rs.getInt("numType");*/
-        int numType =3;
+        int numType = rs.getInt("numType");
 
         //Calculate number of question per type and difficulty
         int numQperTypeDiff = noQuestions/(3*numType);
@@ -179,8 +177,6 @@ public class Assignment {
                         random = rnd.nextInt(numQ)+1;
                         if (!usedQuestions[random-1])
                         {
-                            //check permitted/compiled
-                            //If not set usedQuestion[random-1] = true but leave used=true
                             usedQuestions[random-1] = true;
                             used = false;
                         }
@@ -199,6 +195,7 @@ public class Assignment {
                     //Create question object from the result set
                     Question question = new Question (connLimited);
                     int Qid = 0;
+                    String problem = "";
                     while(rs.next())
                     {
                         Qid = rs.getInt("QuestionNo");
@@ -206,16 +203,50 @@ public class Assignment {
                         String answer = rs.getString("Answer");
                         int difficulty = rs.getInt("Difficulty");
                         String type = rs.getString("Type");
+                        problem = rs.getString("Problem");
                         question = new Question(tempQ, answer, difficulty, type, Qid, connLimited, conn);
                     }
-                    questionList.add(question);
+                    
+                    // Add question to the question list
+                    // Check that if the question has any error with it
+                    if ( problem == null)
+                    {
+                        questionList.add(question);
+                    }
+                    else
+                    {   // There is an error with the choosen question therefor need to loop through again for a new question 
+                        k--; 
+                        usedQuestions[random-1] = true; // Do not choose the current question again 
+                    }
 
                     // set the availibilty of this question to false
                     TotalUsed[Qid-1] = true;
+                    
+                    // Check is there is any questions availiable to satisfy he currernt type and difficulty 
+                    int NoUsedQuestion = 0;
+                    for (int x=0; x< usedQuestions.length;x++)
+                    {
+                        if (!usedQuestions[x])
+                        {
+                            break;
+                        }
+                        else
+                        {
+                            NoUsedQuestion++;
+                        }
+                        
+                    }
+                    // There are no more question for this category so exit the loop 
+                    if (NoUsedQuestion==usedQuestions.length)
+                    {
+                        k = numQperTypeDiff; 
+                    }
                 }
             }
         }
-
+        
+        // Check how many question is still required
+        numQRemaining = noQuestions - questionList.size();
         int random =0;
         //For the questions left over
         for (int i=0; i<numQRemaining; i++)
@@ -236,6 +267,7 @@ public class Assignment {
             rs = st.executeQuery(query);
 
             //Create question object:
+            String problem ="";
             Question question = new Question(connLimited);
             while (rs.next()) {
                 int Qid = rs.getInt("QuestionNo");
@@ -243,15 +275,24 @@ public class Assignment {
                 String answer = rs.getString("Answer");
                 int difficulty = rs.getInt("Difficulty");
                 String type = rs.getString("Type");
+                problem = rs.getString("Problem");
                 question = new Question(tempQuestion, answer, difficulty, type, Qid, connLimited, conn);
             }
 
             //Add question to list:
-            questionList.add(question);
+            //First check that there are no question in the list
+            if ( problem == null)
+            {
+                questionList.add(question);
+            }
+            else
+            {
+                i--;
+                TotalUsed[random-1] = true;
+            }
+            
+            
         }
-        
-        //check that 
-        
         //Clean up:
         rs.close();
         st.close();
