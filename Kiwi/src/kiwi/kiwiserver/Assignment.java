@@ -8,8 +8,6 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Random;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import kiwi.message.StatementOutput;
 
 /**
@@ -51,7 +49,7 @@ public class Assignment {
     /**
      * List of questions in assignment.
      */
-    private final ArrayList<Question> questionList;
+    private ArrayList<Question> questionList;
     
     /**
      * Current position in the question list.
@@ -138,16 +136,10 @@ public class Assignment {
         ResultSet rs = st.executeQuery(query);
         rs.next();  //take cursor to first row
         int noRows = rs.getInt("noRows");
-
-        //Get number of different types of questions there are
-        query = "SELECT COUNT(DISTINCT type) AS numType FROM Questions";
-        rs = st.executeQuery(query);
-        rs.next();
-        int numType = rs.getInt("numType");
-
+        
         //Calculate number of question per type and difficulty
-        int numQperTypeDiff = noQuestions/(3*numType);
-        int numQRemaining = noQuestions-(numQperTypeDiff*(3*numType));
+        int numQperTypeDiff = noQuestions/(Question.NO_DIFFICULTY_LEVELS*Question.NO_TYPES);
+        //int numQRemaining = noQuestions-(numQperTypeDiff*(Question.NO_DIFFICULTY_LEVELS*Question.NO_TYPES));
         boolean [] TotalUsed = new boolean [noRows];
 
         //Setup:
@@ -155,27 +147,26 @@ public class Assignment {
 
         //Get list of questions:
         //For each difficulty of the questions
-        for (int i=1; i<4; i++) {
+        for (int i=1; i<Question.NO_DIFFICULTY_LEVELS+1; i++) {
             //For each types of this question type
-            for (int j=0; j<numType; j++)
+            for (int j=0; j<Question.NO_TYPES; j++)
             {
                 //Get the number of questions that has difficulty i and type j
                 query = "SELECT COUNT(*) AS numQ FROM questions WHERE difficulty="
                         + i
-                        +" and type like '"
+                        +" and type LIKE '"
                         + QUESTION_TYPES[j]
                         +"'";
                 rs = st.executeQuery(query);
                 rs.next();
                 int numQ = rs.getInt("numQ");
 
+                boolean [] usedQuestions = new boolean [numQ];    //true if used otherwise false (used to avoid duplicates)
+                int random = 0;
+                
                 //For number of questions we need for each of these type and difficulty
                 for (int k=0; k<numQperTypeDiff; k++) 
                 {
-
-                    boolean [] usedQuestions = new boolean [numQ];    //true if used otherwise false (used to avoid duplicates)
-                    int random = 0;
-
                     boolean used = true;
                     while (used) {  //loop until unused question number found
                         random = rnd.nextInt(numQ)+1;
@@ -213,12 +204,12 @@ public class Assignment {
                     
                     // Add question to the question list
                     // Check that if the question has any error with it
-                    if ( problem == null)
+                    if ( problem == null)       //no error
                     {
                         questionList.add(question);
                     }
-                    else
-                    {   // There is an error with the choosen question therefor need to loop through again for a new question 
+                    else        
+                    {   // There is an error with the choosen question therefore need to loop through again for a new question 
                         k--; 
                         usedQuestions[random-1] = true; // Do not choose the current question again 
                     }
@@ -226,7 +217,7 @@ public class Assignment {
                     // set the availibilty of this question to false
                     TotalUsed[Qid-1] = true;
                     
-                    // Check is there is any questions availiable to satisfy he currernt type and difficulty 
+                    // Check if there are any questions availiable to satisfy the current type and difficulty 
                     int NoUsedQuestion = 0;
                     for (int x=0; x< usedQuestions.length;x++)
                     {
@@ -249,8 +240,9 @@ public class Assignment {
             }
         }
         
-        // Check how many question is still required
-        numQRemaining = noQuestions - questionList.size();
+        // Check how many question are still required
+        //(weren't enough type-diff pair questions without errors or remainder ie. didn't evenly divide between type-diff.)
+        int numQRemaining = noQuestions - questionList.size();
         int random =0;
         //For the questions left over
         for (int i=0; i<numQRemaining; i++)
@@ -293,6 +285,10 @@ public class Assignment {
             {
                 i--;
                 TotalUsed[random-1] = true;
+            }
+            
+            if (questionList.size()<noQuestions) {    //then there aren't enough questions without errors
+                questionList=null;
             }
             
             //Now that we have the complete quetion list, randomise its order:
@@ -527,5 +523,11 @@ public class Assignment {
         return noQuestions;
     }
     
-    
+    /**
+     * Gets whether or not a complete question list has been generated.
+     * @return true if the list was generated and false otherwise
+     */
+    public boolean couldGenerate() {
+        return questionList!=null;
+    }
 }

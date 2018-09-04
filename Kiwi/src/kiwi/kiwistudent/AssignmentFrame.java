@@ -69,6 +69,11 @@ public class AssignmentFrame extends javax.swing.JFrame {
                     + "\nYou may apply for extened deadline from the course convener.","Assignment Overdue" ,JOptionPane.ERROR_MESSAGE);
             createdFlag = false;
         }
+        else if (resp==Student.ASSIGNMENT_OVERDUE) {
+            JOptionPane.showMessageDialog(this, "The assignment couldn't be generated. There are too many errors in questions."
+                    + "\nPlease contact your lecturer about this immediately.","Assignment Generation Failure" ,JOptionPane.ERROR_MESSAGE);
+            createdFlag = false;
+        }
         else {  //error in creation of assignment
             JOptionPane.showMessageDialog(this, "There was an error connecting to the database."
                     + "\nPlease start the assignment again.", "Startup Error", JOptionPane.ERROR_MESSAGE);

@@ -50,6 +50,11 @@ public class Student {
      */
     public static int ASSIGNMENT_OVERDUE = 4;
     
+    /**
+     * Action executed successfully.
+     */
+    public static int FAIL_GEN = 5;
+    
     
     //Instance Variables:
     
@@ -245,6 +250,8 @@ public class Student {
                     return FAIL_DENY;
                 case StudentMessage.RESP_ASSIGNMENT_OVERDUE: //Past Assignment Deadline
                     return ASSIGNMENT_OVERDUE;
+                case StudentMessage.RESP_FAIL_GEN: //Past Assignment Deadline
+                    return FAIL_GEN;
                 default:    //Problem getting info from server.
                     return FAIL_CONNECT;    
             }

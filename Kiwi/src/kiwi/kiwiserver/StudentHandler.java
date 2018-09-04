@@ -218,7 +218,7 @@ class StudentHandler extends Thread {
             //System.out.println(""+currentDate);
             
             //Get the deadline Date and Deadline time
-            statement = "SELECT * FROM assignmentinfo";
+            statement = "SELECT * FROM students WHERE studentNo LIKE '" + studentNo + "';";
             rs = st.executeQuery(statement);
             Date deadlineSQLDate = null;
             Time deadlinSQLTime = null;
@@ -257,7 +257,11 @@ class StudentHandler extends Thread {
             
             //Submissions still allowed:
             assignment = new Assignment(conn, connLimited, studentNo, noSubmissionsCompleted);  //create assignment 
-        
+            if (!assignment.couldGenerate()) { //couldn't generate full question list
+                writer.writeObject(new StudentMessage(StudentMessage.CMD_START, null, StudentMessage.RESP_FAIL_GEN));
+                return;
+            }
+            
             //decrease submissions allowed on server:
             //increase noSubmissions by 1:
             conn.setAutoCommit(false);  //start transaction

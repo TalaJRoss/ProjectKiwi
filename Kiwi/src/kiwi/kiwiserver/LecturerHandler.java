@@ -1,7 +1,6 @@
 package kiwi.kiwiserver;
 
 import com.opencsv.CSVReader;
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.FileReader;
@@ -21,8 +20,6 @@ import java.sql.Statement;
 import java.sql.Time;
 import java.util.ArrayList;
 import java.util.Scanner;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import kiwi.message.*;
 
 /**
@@ -244,6 +241,10 @@ final class LecturerHandler extends Thread{
             Savepoint sp = conn.setSavepoint();
             try {
                 st.executeUpdate(insertStatement);
+                st.execute("SET SQL_SAFE_UPDATES = 0;");
+                st.executeUpdate("UPDATE students SET deadlineDate='" + assignmentInfo.getDate() + "';");
+                st.executeUpdate("UPDATE students SET deadlineTime='" + assignmentInfo.getTime() + "';");
+                st.execute("SET SQL_SAFE_UPDATES = 1;");
             }
             catch (SQLException e) {
                 conn.rollback(sp);
