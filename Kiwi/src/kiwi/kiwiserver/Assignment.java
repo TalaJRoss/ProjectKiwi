@@ -6,6 +6,7 @@ import java.sql.SQLException;
 import java.sql.Savepoint;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Random;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -294,7 +295,8 @@ public class Assignment {
                 TotalUsed[random-1] = true;
             }
             
-            
+            //Now that we have the complete quetion list, randomise its order:
+            Collections.shuffle(questionList);
         }
         //Clean up:
         rs.close();
@@ -398,15 +400,12 @@ public class Assignment {
                 String intro = "Table, " + tblName + ", after statement execution:\n";
                 return new StatementOutput(message, intro, rs);
             }  
-        } catch (SQLException ex) {
-            Logger.getLogger(Assignment.class.getName()).log(Level.SEVERE, null, ex);
-            return null;
-        }
-        /*catch (SQLException e) {    //connection error
+        } 
+        catch (SQLException e) {    //connection error
             System.out.println("Error: Problem reading output.");
             System.out.println(e); 
             return null;
-        } */
+        }
     }
     
     
