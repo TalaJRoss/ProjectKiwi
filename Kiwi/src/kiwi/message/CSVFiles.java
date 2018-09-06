@@ -1,6 +1,3 @@
-/*
- * Contains data for uploading csv files to the server
- */
 package kiwi.message;
 
 import java.io.Serializable;
@@ -10,13 +7,20 @@ import java.util.ArrayList;
  * Contains information pertaining to files the lecturer uploads to the database 
  * in CMD_UPLOAD_STUDENTS, CMD_UPLOAD_QUESTIONS and CMD_UPLOAD_QUERY 
  * message from Lecturer client to server.
- * @author nikai
+ * @author Nikai Jagganath (JGGNIK001)
  */
 public class CSVFiles implements Serializable{
     
     //Instance Variables:
-    private ArrayList<byte []> csvFiles;  
-    private String [] fileNames;
+    /**
+     * The list of csv files stored.
+     */
+    private final ArrayList<byte []> csvFiles;
+    
+    /**
+     * The list of file names of files stored.
+     */
+    private final String [] fileNames;
 
     // Constructors:
     /**

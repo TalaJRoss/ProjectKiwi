@@ -1,4 +1,3 @@
-
 package kiwi.message;
 
 import java.io.Serializable;
@@ -6,16 +5,19 @@ import java.io.Serializable;
 /**
  * Contains information pertaining to a Schema in a CMD_UPLOAD_SCHEMA
  * message from lecturer client to server.
- * @author nikai
+ * @author Nikai Jagganath (JGGNIK001)
  */
 public class Schema implements Serializable{
     
-    private byte [] schemaImg;
+    /**
+     * Byte array representing the schema image.
+     */
+    private final byte [] schemaImg;
     
     // Constructors:
     /**
      * Construct the Schema with parameter below
-     * @param schemaImg 
+     * @param schemaImg byte array representing the schema image.
      */
     public Schema(byte[] schemaImg) {
         this.schemaImg = schemaImg;
