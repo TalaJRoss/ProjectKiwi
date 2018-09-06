@@ -243,8 +243,8 @@ final class LecturerHandler extends Thread{
                 st.executeUpdate(insertStatement);
                 try {   //handles if students table doesn't exist
                     st.execute("SET SQL_SAFE_UPDATES = 0;");
-                    st.executeUpdate("UPDATE students SET deadlineDate='" + assignmentInfo.getDate() + "';");
-                    st.executeUpdate("UPDATE students SET deadlineTime='" + assignmentInfo.getTime() + "';");
+                    st.executeUpdate("UPDATE IF EXISTS students SET deadlineDate='" + assignmentInfo.getDate() + "';");
+                    st.executeUpdate("UPDATE IF EXISTS students SET deadlineTime='" + assignmentInfo.getTime() + "';");
                     st.execute("SET SQL_SAFE_UPDATES = 1;");
                 }
                 catch (SQLException e) {
