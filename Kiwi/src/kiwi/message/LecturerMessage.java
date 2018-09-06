@@ -8,7 +8,8 @@ package kiwi.message;
 import java.io.Serializable;
 
 /**
- *
+ * Contains information pertaining Different types of interaction 
+ * between the lecturer and the server.
  * @author nikai
  */
 public class LecturerMessage implements Serializable{
@@ -44,26 +45,52 @@ public class LecturerMessage implements Serializable{
     private Object body;
     private int returnMessage;
 
-
+    // Constructors:
+    /**
+     * Construct the Lecturer Message using the parameters provided below 
+     * with a return message
+     * @param cmd
+     * @param body
+     * @param returnMessage 
+     */
     public LecturerMessage(int cmd, Object body, int returnMessage) {
         this.cmd = cmd;
         this.body = body;
         this.returnMessage = returnMessage;
     }
 
+    /**
+     * Construct the Lecturer Message using the parameters provided below
+     * With no return message
+     * @param cmd
+     * @param body 
+     */
     public LecturerMessage(int cmd, Object body) {
         this.cmd = cmd;
         this.body = body;
     }
 
+    // Getters:
+    /**
+     * Get the Command
+     * @return The Fixed Variable command
+     */
     public int getCmd() {
         return cmd;
     }
 
+    /**
+     * Get the body of the message
+     * @return the body
+     */
     public Object getBody() {
         return body;
     }
     
+    /**
+     * Get the return message
+     * @return message
+     */
     public int getMessage() {
         return returnMessage;
     }
