@@ -742,8 +742,6 @@ public class HomeFrame extends javax.swing.JFrame {
 
     private void btnInfoUploadActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnInfoUploadActionPerformed
         
-        //TODO: Check for valid inputs and null values etc.
-        
         //Send assignment information to save on server
         
         String response;
@@ -1002,6 +1000,9 @@ public class HomeFrame extends javax.swing.JFrame {
 
         if(schemaPath==null){
             JOptionPane.showMessageDialog(this, "Please select a schema image to upload", "Error", JOptionPane.ERROR_MESSAGE);
+        }
+        else if(!schemaPath.substring(schemaPath.lastIndexOf(".")+1).equals("jpg")){
+            JOptionPane.showMessageDialog(this, "Please select a .jpg file.", "Error", JOptionPane.ERROR_MESSAGE);
         }
         else{
             response = lecturer.uploadSchema(schemaPath);
