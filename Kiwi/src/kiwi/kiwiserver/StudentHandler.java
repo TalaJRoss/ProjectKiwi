@@ -25,8 +25,10 @@ import kiwi.message.StudentStatement;
 import kiwi.message.StudentStatistics;
 
 /**
- *
+ * Thread that relays messages and processes student services.
  * @author Tala Ross(rsstal002)
+ * @author Nikai Jagganath (jggnik001)
+ * @author Steve Shun Wang (wngshu003)
  */
 class StudentHandler extends Thread {
     
@@ -60,16 +62,26 @@ class StudentHandler extends Thread {
     
     //DB stuff:
     
+    /**
+     * Connection to DB.
+     */
     Connection conn;
     
+    /**
+     * Connection to DB with restricted tables access.
+     */
     Connection connLimited;
     
+    /** 
+     * Byte array representation of the query data ER schema image.
+     */
     private byte [] schemaImg;
+    
+    
     //Constructor:
     
     /**
-     * Creates new client handler thread to relay message and process status
-     * updates and hashtag join/leaves.
+     * Creates new student handler thread to relay message and process services.
      * @param server server that client connects to and thread services
      * @param clientSocket socket on client side linking server to client
      */
@@ -102,6 +114,10 @@ class StudentHandler extends Thread {
     }
     
     //Setup database connection: requires mysql "KiwiDB" named database on host with user="root" and pass="mysql"
+    /**
+     * Sets up a connection to the database.
+     * @throws IOException 
+     */
     public void connectToDB() throws IOException {
         try {
             Class.forName("com.mysql.cj.jdbc.Driver");
@@ -115,6 +131,13 @@ class StudentHandler extends Thread {
     }
     
      @Override
+     /**
+     * Runs the thread, waiting for messages requesting a service and then
+     * executing the corresponding action and sending a response.
+     * @author Tala Ross(rsstal002)
+     * @author Nikai Jagganath (jggnik001)
+     * @author Steve Shun Wang (wngshu003)
+     */
     public void run() {
         try {
             connectToDB();
@@ -173,6 +196,9 @@ class StudentHandler extends Thread {
      * Checks whether student number given is stored in students table on the
      * database and initializes instance variables if login is successful.
      * @param loginInfo The student number of the student to login.
+     * @author Tala Ross(rsstal002)
+     * @author Nikai Jagganath (jggnik001)
+     * @author Steve Shun Wang (wngshu003)
      */
     public void login(LoginInfo loginInfo) throws IOException {
         try {
@@ -197,6 +223,16 @@ class StudentHandler extends Thread {
          
     }
     
+    /**
+     * Checks whether student is still allowed to complete the assignment based
+     * on their deadline and number of submissions completed.Then increments the
+     * number of submissions completed and generates a new assignment, sending
+     * the first question back to the student.
+     * @author Tala Ross(rsstal002)
+     * @author Nikai Jagganath (jggnik001)
+     * @author Steve Shun Wang (wngshu003)
+     * @throws IOException 
+     */
     private void generateAssignment() throws IOException {
         try {
             //Get max no. submissions allowed:
@@ -293,7 +329,14 @@ class StudentHandler extends Thread {
         QuestionInfo qi = new QuestionInfo(assignment, schemaImg);  //question info to return to student end
         writer.writeObject(new StudentMessage(StudentMessage.CMD_START, qi));
     }
-
+    
+    /**
+     * Calculates the number of submissions remaining based on submissions
+     * allowed and completed then gets the other students statistics and sends
+     * all this back to the student.
+     * @throws IOException
+     * @author Tala Ross(rsstal002)
+     */
     private void viewStats() throws IOException {
         try {
             //Get max no. submissions allowed:
@@ -331,7 +374,13 @@ class StudentHandler extends Thread {
             writer.writeObject(new StudentMessage(StudentMessage.CMD_STATS, null, StudentMessage.RESP_FAIL_CONNECT));
         }
     }
-
+    
+    /**
+     * Processes a student's request to check statement output and returns a
+     * response message containing the output.
+     * @param studentStatement The student's SQL statement to check.
+     * @throws IOException 
+     */
     private void checkOutput(StudentStatement studentStatement) throws IOException {
         StatementOutput output = assignment.check(studentStatement.getStatement());
         if (output!=null) {
@@ -342,14 +391,20 @@ class StudentHandler extends Thread {
         }
     }
     
+    /**
+     * Processes a student's request to submit an answer statement and returns a
+     * response message containing the mark and feedback.
+     * @param studentStatement The student's answer.
+     * @throws IOException 
+     */
     private void markQuestion(StudentStatement studentAns) throws IOException {
         //marks question and creates return object with feedback and next question info:
         QuestionInfo qi = new QuestionInfo(assignment, studentAns.getStatement());
         switch (qi.getMark()) {
-            case -1:    //lecturer answer is wrong
+            case Question.MARK_BASE_LECTURER_ERR:    //lecturer answer is wrong
                 writer.writeObject(new StudentMessage(StudentMessage.CMD_SUBMIT, qi, StudentMessage.RESP_FAIL_INPUT));
                 break;
-            case -2:    //problem comparing result sets
+            case Question.MARK_BASE_CONN_ERR:    //problem comparing result sets
                 writer.writeObject(new StudentMessage(StudentMessage.CMD_SUBMIT, qi, StudentMessage.RESP_FAIL_CONNECT));
                 break;
             default:
@@ -357,7 +412,14 @@ class StudentHandler extends Thread {
                 break;
         }
     }
-
+    
+    /**
+     * Processes a student's request to quit an assignment and saves their final
+     * grade, calculating the final grade if the assignment is complete,
+     * otherwise awarding 0.
+     * @throws IOException 
+     * @author Tala Ross (RSSTAL002)
+     */
     private void updateGrade() throws IOException {
         try {
             double grade = 0;
@@ -395,14 +457,26 @@ class StudentHandler extends Thread {
             writer.writeObject(new StudentMessage(StudentMessage.CMD_QUIT, null, StudentMessage.RESP_FAIL_CONNECT));
         }
     }
-
+    
+    /**
+     * Closes stream readers and writers and closes socket connection to lecturer end.
+     * @throws IOException 
+     */
     private void closeConnection() throws IOException {
         reader.close();
         writer.close();
         studentSocket.close();
         System.out.println("Student logged off and connection closed: " + studentNo);
     }
-
+    
+    /**
+     * Creates a reported table if it doesn't exist, adds the question info and
+     * suggested statement to the reported table and marks the question as
+     * Reported in the questions table.
+     * @param suggested the statement the student suggested as the correct answer.
+     * @throws IOException 
+     * @author Tala Ross (RSSTAL002)
+     */
     private void reportQuestion(StudentStatement suggested) throws IOException {
         try {
             Statement st = conn.createStatement();
@@ -468,7 +542,5 @@ class StudentHandler extends Thread {
             writer.writeObject(new StudentMessage(StudentMessage.CMD_REPORT, null, StudentMessage.RESP_FAIL_CONNECT));
         }
     }
-    
-    
     
 }
