@@ -7,9 +7,6 @@
   </NonVisualComponents>
   <Properties>
     <Property name="defaultCloseOperation" type="int" value="3"/>
-    <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
-      <Dimension value="[1600, 1024]"/>
-    </Property>
   </Properties>
   <SyntheticProperties>
     <SyntheticProperty name="formSizePolicy" type="int" value="1"/>
@@ -57,7 +54,7 @@
         <DimensionLayout dim="0">
           <Group type="103" groupAlignment="0" attributes="0">
               <Group type="102" alignment="1" attributes="0">
-                  <EmptySpace pref="35" max="32767" attributes="0"/>
+                  <EmptySpace pref="44" max="32767" attributes="0"/>
                   <Group type="103" groupAlignment="1" max="-2" attributes="0">
                       <Group type="102" alignment="1" attributes="0">
                           <EmptySpace min="-2" pref="12" max="-2" attributes="0"/>
@@ -99,7 +96,7 @@
                   </Group>
                   <EmptySpace type="separate" max="-2" attributes="0"/>
                   <Group type="103" groupAlignment="0" attributes="0">
-                      <Component id="plnGrades" pref="421" max="32767" attributes="0"/>
+                      <Component id="plnGrades" pref="468" max="32767" attributes="0"/>
                       <Component id="pnlFiles" max="32767" attributes="0"/>
                   </Group>
                   <EmptySpace min="-2" max="-2" attributes="0"/>
@@ -658,7 +655,7 @@
                           <Component id="txtfStudentFilename" alignment="3" min="-2" max="-2" attributes="0"/>
                       </Group>
                       <EmptySpace type="separate" max="-2" attributes="0"/>
-                      <Group type="103" groupAlignment="3" attributes="0">
+                      <Group type="103" groupAlignment="0" attributes="0">
                           <Component id="btnUploadStudent" alignment="0" min="-2" max="-2" attributes="0"/>
                           <Component id="btnResetStudents" alignment="0" min="-2" max="-2" attributes="0"/>
                       </Group>
@@ -668,7 +665,7 @@
                           <Component id="txtfQuestionsFilename" alignment="3" min="-2" max="-2" attributes="0"/>
                       </Group>
                       <EmptySpace type="separate" max="-2" attributes="0"/>
-                      <Group type="103" groupAlignment="3" attributes="0">
+                      <Group type="103" groupAlignment="0" attributes="0">
                           <Component id="btnUploadQuestions" alignment="0" min="-2" max="-2" attributes="0"/>
                           <Component id="btnResetQuestions" alignment="0" min="-2" max="-2" attributes="0"/>
                       </Group>
@@ -678,7 +675,7 @@
                           <Component id="txtfQueryDataFilename" alignment="3" min="-2" max="-2" attributes="0"/>
                       </Group>
                       <EmptySpace type="separate" max="-2" attributes="0"/>
-                      <Group type="103" groupAlignment="3" attributes="0">
+                      <Group type="103" groupAlignment="0" attributes="0">
                           <Component id="btnUploadQueryData" alignment="0" min="-2" max="-2" attributes="0"/>
                           <Component id="btnResetQueryData" alignment="0" min="-2" max="-2" attributes="0"/>
                       </Group>

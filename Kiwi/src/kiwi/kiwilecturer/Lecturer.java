@@ -1,6 +1,5 @@
 package kiwi.kiwilecturer;
 
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
@@ -15,36 +14,16 @@ import java.util.ArrayList;
 import kiwi.kiwiserver.ServerStartup;
 import kiwi.message.*;
 
-//TODO: get assignment deadline and no. submissions from lecturer
-//TODO: update create students table to just require studentNo fields in csv and not require formated headings row
-//TODO: update create questions table to not require formated headings row
 /**
- * Contains static lecturer functionality methods for uploading csv files.
+ * Controller class which communicates with the server and processes lecturer
+ * service requests.
  * @author Tala Ross(rsstal002)
  * @author Nikai Jagganath (jggnik001)
  * @author Steve Shun Wang (wngshu003)
  */
 public class Lecturer {
     
-    //Server:
-    
-    /**
-     * This lecturer's socket which is used to communicate with the server.
-     */
-    private final Socket lecturerSocket;
-    
-    /**
-     * Stream used to read in messages from the server.
-     */
-    private final ObjectOutputStream writer;
-    
-    /**
-     * Stream used to write messages to the server.
-     */
-    private final ObjectInputStream reader;
-    
-    private boolean connected;
-    
+    //Constants:
     /**
      * Success message.
      */
@@ -71,6 +50,34 @@ public class Lecturer {
     public static final String FAIL_QUESTIONS = "InsufficientVariety";
     
 
+    //Server Stuff:
+    
+    /**
+     * This lecturer's socket which is used to communicate with the server.
+     */
+    private final Socket lecturerSocket;
+    
+    /**
+     * Stream used to read in messages from the server.
+     */
+    private final ObjectOutputStream writer;
+    
+    /**
+     * Stream used to write messages to the server.
+     */
+    private final ObjectInputStream reader;
+    
+    /**
+     * Whether or not the application is connected to the database via the server.
+     */
+    private boolean connected;
+    
+    /**
+     * Creates a Lecturer controller object that will interact with server and
+     * process requests from the user.
+     * @throws IOException
+     * @throws ClassNotFoundException 
+     */
     public Lecturer() throws IOException, ClassNotFoundException {
         //make socket:
         lecturerSocket= new Socket(ServerStartup.SERVER_NAME, ServerStartup.LECTURER_PORT_NUM);
@@ -84,6 +91,10 @@ public class Lecturer {
         connected = (response.getMessage() == LecturerMessage.RESP_SUCCESS);
     }
     
+    /**
+     * Checks whether a connection is set up to the database.
+     * @return 
+     */
     public boolean isConnected() {
         return connected;
     }
@@ -415,6 +426,11 @@ public class Lecturer {
         }    
     }
     
+    /**
+     * Sets up a connection to the server and thus indirectly the database.
+     * @throws IOException
+     * @throws ClassNotFoundException 
+     */
     public void connectToDB() throws IOException, ClassNotFoundException {
         writer.writeObject(new LecturerMessage(LecturerMessage.CMD_CONNECT, null));
         LecturerMessage response = (LecturerMessage) reader.readObject();
