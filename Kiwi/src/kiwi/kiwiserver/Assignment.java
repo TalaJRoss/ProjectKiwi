@@ -24,6 +24,11 @@ public class Assignment {
      */
     public static final String [] QUESTION_TYPES = {Question.TYPE_SELECT, Question.TYPE_ARITHMETIC, Question.TYPE_UPDATE};
     
+    /**
+     * The String used to create a seed for a random question picker for a
+     * closed practical.
+     */
+    private static final String CLOSED_PRAC_SEED = "1378462509";
     
     //Instance Variables:
     
@@ -118,7 +123,7 @@ public class Assignment {
         String seed; 
         if (closedPrac == 1)
         {
-            seed = "1234";
+            seed = CLOSED_PRAC_SEED;
         }
         else
         {

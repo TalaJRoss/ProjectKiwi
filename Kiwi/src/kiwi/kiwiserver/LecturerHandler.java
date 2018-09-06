@@ -241,10 +241,15 @@ final class LecturerHandler extends Thread{
             Savepoint sp = conn.setSavepoint();
             try {
                 st.executeUpdate(insertStatement);
-                st.execute("SET SQL_SAFE_UPDATES = 0;");
-                st.executeUpdate("UPDATE students SET deadlineDate='" + assignmentInfo.getDate() + "';");
-                st.executeUpdate("UPDATE students SET deadlineTime='" + assignmentInfo.getTime() + "';");
-                st.execute("SET SQL_SAFE_UPDATES = 1;");
+                try {   //handles if students table doesn't exist
+                    st.execute("SET SQL_SAFE_UPDATES = 0;");
+                    st.executeUpdate("UPDATE students SET deadlineDate='" + assignmentInfo.getDate() + "';");
+                    st.executeUpdate("UPDATE students SET deadlineTime='" + assignmentInfo.getTime() + "';");
+                    st.execute("SET SQL_SAFE_UPDATES = 1;");
+                }
+                catch (SQLException e) {
+                    System.out.println("Students information hasn't been uploaded yet. Update wasn't propegated.");
+                }
             }
             catch (SQLException e) {
                 conn.rollback(sp);

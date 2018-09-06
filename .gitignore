@@ -14,3 +14,5 @@
 /Old/KiwiStudent/build/
 /Old/KiwiStudent/nbproject/private/
 /Kiwi/dist/
+*.cdg
+UMLDiagrams/umlproject

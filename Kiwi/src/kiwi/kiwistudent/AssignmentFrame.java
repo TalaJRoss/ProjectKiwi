@@ -37,11 +37,10 @@ public class AssignmentFrame extends javax.swing.JFrame {
     
     /**
      * Creates new form AssignmentFrame.
-     * @param home Home frame to return to when done viewing grade.
      * @param student Student object representing logged in student.
      */
     public AssignmentFrame(Student student) {
-        this.student = student;
+        student = student;
         int resp = student.startAssignment();
         if (resp==Student.SUCCESS) {    //successful startup
             initComponents();
