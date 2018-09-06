@@ -10,9 +10,10 @@ import java.util.logging.Logger;
 
 /**
  * ServerStartup used to connect the lecturer and student applications to database,
- generate assignments for students and generate additional questions/data for
- the lecturer. This must always be running.
- * @author talaj
+ * generate assignments for students and generate additional questions/data for
+ * the lecturer. This must always be running.
+ * @author Tala Ross(rsstal002)@author Tala Ross(rsstal002)
+ * @author Nikai Jagganath (jggnik001)
  */
 public class ServerStartup {
     
@@ -45,7 +46,8 @@ public class ServerStartup {
      */
     //Main Method:
     /**
-     * 
+     * Sets up the database and database users and then starts the 
+     * LecturerListener and StudentListener threads.
      * @param args the command line arguments
      */
     public static void main(String[] args) {
@@ -56,6 +58,11 @@ public class ServerStartup {
         studentListener.start();
     }
     
+    /**
+     * Creates the database if it doesn't already exist and sets up student and
+     * lecturer user privileges.
+     * @author Nikai Jagganath (jggnik001)
+     */
     public static void setUpDB(){
         
         try {

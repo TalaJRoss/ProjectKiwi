@@ -12,6 +12,7 @@ import java.net.Socket;
 public class LecturerListener extends Thread{
     
     //Instance Variables:
+    
     /**
      * Port number which server is listening for lecturer connections on.
      */
@@ -19,11 +20,10 @@ public class LecturerListener extends Thread{
     
     
     //Constructors:
+    
     /**
      * Creates listener socket for lecturer connections on server's lecturer
      * port number. 
-     * @param server The server which the listener is servicing
-     * @throws java.io.IOException
      */
     public LecturerListener() {
         try {
@@ -37,6 +37,7 @@ public class LecturerListener extends Thread{
     
     
     //Run Method:
+    
     /**
      * Listens for lecturer connections and starts lecturer handler thread when
      * connection is made.

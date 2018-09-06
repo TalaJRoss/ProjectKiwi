@@ -23,11 +23,14 @@ import java.util.Scanner;
 import kiwi.message.*;
 
 /**
- *
+ * Thread that relays messages and processes lecturer services.
  * @author Tala Ross(rsstal002)
+ * @author Nikai Jagganath (jggnik001)
+ * @author Steve Shun Wang (wngshu003)
  */
 final class LecturerHandler extends Thread{
-    //Constants for ordering grades table:
+    
+//Constants for ordering grades table:
     
     /**
      * Ascending order createStatement command.
@@ -82,8 +85,7 @@ final class LecturerHandler extends Thread{
     //Constructor:
     
     /**
-     * Creates new client handler thread to relay message and process status
-     * updates and hashtag join/leaves.
+     * Creates new lecturer handler thread to relay message and process services.
      * @param server server that client connects to and thread services
      * @param clientSocket socket on client side linking server to client
      */
@@ -101,9 +103,11 @@ final class LecturerHandler extends Thread{
         }
     }
     
-    
-    
     //Setup database connection: requires mysql "KiwiDB" named database on host with user="root" and pass="mysql"
+    /**
+     * Sets up a connection to the database.
+     * @throws IOException 
+     */
     public void connectToDB() throws IOException {
         try {
             Class.forName("com.mysql.cj.jdbc.Driver");
@@ -115,6 +119,13 @@ final class LecturerHandler extends Thread{
     }
     
     @Override
+    /**
+     * Runs the thread, waiting for messages requesting a service and then
+     * executing the corresponding action and sending a response.
+     * @author Tala Ross(rsstal002)
+     * @author Nikai Jagganath (jggnik001)
+     * @author Steve Shun Wang (wngshu003)
+     */
     public void run() {
         try {
             connectToDB();
@@ -187,9 +198,11 @@ final class LecturerHandler extends Thread{
     //Main functionality methods(public):
     
     /**
-     * Create a table with the noSubmissions, noQuestions, DeadlineDate, DeadlineTime and whether it is a ClosedPrac or not.
+     * Create a table with the noSubmissions, noQuestions, DeadlineDate,
+     * DeadlineTime and whether it is a ClosedPrac or not.
      * @param assignmentInfo an AssignmentInfo object with the details of an assignment.
-     * @throws IOException 
+     * @throws IOException
+     * @author Nikai Jagganath (jggnik001)
      */
     public void uploadAssignmentInfo(AssignmentInfo assignmentInfo) throws IOException{
         
@@ -272,7 +285,7 @@ final class LecturerHandler extends Thread{
     /**
      * Save the schema for the query data to the DB directory.
      * @param schema the Schema object containing the bytes for the image.
-     * @throws IOException 
+     * @author Nikai Jagganath (jggnik001)
      */
     public void uploadSchema(Schema schema) throws IOException{
         //save schema:
@@ -294,6 +307,9 @@ final class LecturerHandler extends Thread{
      * Expected csv file format:
      * studentNo,highestGrade,noSubmissionsCompleted
      * @param csv The csv file containing student information.
+     * @author Tala Ross(rsstal002)
+     * @author Nikai Jagganath (jggnik001)
+     * @author Steve Shun Wang (wngshu003)
      */
     public void uploadStudents(byte [] csv) throws IOException {
         try {
@@ -379,6 +395,9 @@ final class LecturerHandler extends Thread{
      * Expected csv file format:
      * questionNo,question,answer,difficulty
      * @param csv The csv file containing question-answer pairs.
+     * @author Tala Ross(rsstal002)
+     * @author Nikai Jagganath (jggnik001)
+     * @author Steve Shun Wang (wngshu003)
      */
     public void uploadQuestions(byte [] csv) throws IOException {
         try {
@@ -466,6 +485,7 @@ final class LecturerHandler extends Thread{
      * @param path the path to the questions file saved on the server.
      * @return success/fail depending on whether the questions file meets the 
      * criteria.
+     * @author Nikai Jagganath (jggnik001)
      */
     private boolean checkQuestions(String path){
     
@@ -554,6 +574,7 @@ final class LecturerHandler extends Thread{
      * Actual row entries: fields are comma-separated and enclosed in quotes
      * and lines are terminated by '\r\n'.
      * @param csvs Array of csv files containing query data.
+     * @author Nikai Jagganath (jggnik001)
      */
     public void uploadQueryData(ArrayList<byte []> csvs, String [] names) throws IOException {
         
@@ -614,6 +635,7 @@ final class LecturerHandler extends Thread{
      * performing an SQL update on the Students table.
      * @param updateInfo the object containing the details (studentNo, date and 
      * time) for the update.
+     * @author Nikai Jagganath (jggnik001)
      */
     
     public void updateDeadline(UpdateInfo updateInfo) throws IOException {
@@ -655,6 +677,9 @@ final class LecturerHandler extends Thread{
      * 2. 001,"Jon Smith"
      * @param tblName Name of the table to create and update.
      * @param csv File containing row entries information to add to table.
+     * @author Tala Ross(rsstal002)
+     * @author Nikai Jagganath (jggnik001)
+     * @author Steve Shun Wang (wngshu003)
      */
     private String createTable(String tblName, byte [] bytes) {
         
@@ -756,13 +781,12 @@ final class LecturerHandler extends Thread{
      * orders entries according to the given conditions. The ordering conditions
      * include:
      * 1. student number, ascending
-     * 2. student number, descending
-     * 3. highest grade, ascending
-     * 4. highest grade, descending
+     * 2. highest grade, descending
      * @param column The column to order the table based on.
      * @param order The way to order table(ascending/descending).
      * @return string representation of the the table containing student
      * numbers mapped to the student's highest grades.
+     * @author Tala Ross (RSSTAL002)
      */
     private StatementOutput getGrades(String column, String order) {
         try {
@@ -780,9 +804,11 @@ final class LecturerHandler extends Thread{
         } 
     }
     /**
-     * Drops the Students table, if it exists, in the database and deletes the csv file stored in the DB directory.
+     * Drops the Students table, if it exists, in the database and deletes the
+     * csv file stored in the DB directory.
      * @return success/fail response depending on Students table drop.
      * @throws IOException 
+     * @author Nikai Jagganath (JGGNIK001)
      */
     private String resetStudents() throws IOException{
         
@@ -812,13 +838,14 @@ final class LecturerHandler extends Thread{
             System.out.println(ex);
             return FAIL;
         }
-    
     }
     
     /**
-     * Drops the Questions table, if it exists, in the database and deletes the csv file stored in the DB directory.
+     * Drops the Questions table, if it exists, in the database and deletes the
+     * csv file stored in the DB directory.
      * @return success/fail response depending on Students table drop.
      * @throws IOException 
+     * @author Nikai Jagganath (JGGNIK001)
      */
     private String resetQuestions() throws IOException{
         
@@ -850,12 +877,14 @@ final class LecturerHandler extends Thread{
             System.out.println(ex);
             return FAIL;
         }
-    
     }
     
     /**
-     * Drops all QueryData tables, if they exist, in the database and deletes the csv files stored in the DB directory.
-     * @return success/fail response depending on whether all query data tables dropped.
+     * Drops all QueryData tables, if they exist, in the database and deletes
+     * the csv files stored in the DB directory.
+     * @return success/fail response depending on whether all query data tables
+     * dropped.
+     * @author Nikai Jagganath (JGGNIK001)
      */
     private String resetQueryData() throws IOException{
         //TODO: still to implement functionality
@@ -923,15 +952,17 @@ final class LecturerHandler extends Thread{
     /**
      * Deletes a single file from the DB directory.
      * @param filename name of the csv file to be deleted.
-     * @return 
+     * @return true if file was deleted and false otherwise
      */
     private boolean deleteFile(String filename){
-        
         File file = new File(ServerStartup.DB_PATH+filename);
         return file.delete();
-        
     }
     
+    /**
+     * Closes stream readers and writers and closes socket connection to lecturer end.
+     * @throws IOException 
+     */
     private void closeConnection() throws IOException {
         reader.close();
         writer.close();
